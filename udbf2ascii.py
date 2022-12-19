@@ -11,7 +11,8 @@ import pytz
 import os
 import sys
 import logging
-logger = logging.getLogger('')
+logger = logging.getLogger(__name__)
+logger.setLevel(logging.INFO)
 import struct
 import io
 import numpy as np

@@ -2,4 +2,5 @@ eclipse.preferences.version=1
 encoding//modal_analysis/PreprocessingTools.py=utf-8
 encoding//modal_analysis/SSICovRef.py=utf-8
 encoding//modal_analysis/StabilDiagram.py=utf-8
+encoding/post_processing.py=utf-8
 encoding/udbf2ascii.py=utf-8

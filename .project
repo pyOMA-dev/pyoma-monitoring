@@ -3,7 +3,6 @@
 	<name>tower_modal_analysis</name>
 	<comment></comment>
 	<projects>
-		<project>2017_tower_strain_conversion</project>
 		<project>modal_analysis_master</project>
 	</projects>
 	<buildSpec>

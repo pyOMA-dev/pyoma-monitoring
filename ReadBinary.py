@@ -39,7 +39,8 @@ Version    | Autor |    Aenderungen/Bemerkungen
 
 import os
 import logging
-logger = logging.getLogger('')
+logger = logging.getLogger(__name__)
+logger.setLevel(logging.INFO)
 
 import bz2
 

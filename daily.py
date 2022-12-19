@@ -1,7 +1,8 @@
 import sys
 import getopt
 
-from main_v2 import  *
+from main_v2 import get_file_info, get_file_list,round_dt, get_stats,get_modal_results
+from post_processing import plot_daily
 import os
 import logging
 logger = logging.getLogger()
@@ -50,20 +51,14 @@ def main(argv):
     
     path='/vegas/scratch/womo1998/towerdata/{}-minutes/'.format(duration)
     
-    origins = {'accel':'accel', 
-              'wind':'wind', 
-              'temp':'temp', 
-              'strain_rosettes':'strain', 
-              'strain_bolts':'strain'}
-    
     if quantity != 'strain_rosettes':
         config.file_cache = deque(maxlen=49)
     else:
         config.file_cache = deque(maxlen=3)
         
-    subpath = subpaths[quantity]
-
-    origin = origins[quantity]
+    subpath = config.subpaths[quantity]
+    origin = config.origins[quantity]
+    
     start_up_str = 'Geyer Monitoring System - Commandline Tool\n\n'
     start_up_str += 'Selected parameters:\n'
     start_up_str += f'Quantity: \t\t {quantity}\n'
