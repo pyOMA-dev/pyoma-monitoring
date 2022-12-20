@@ -65,7 +65,7 @@ def main(argv):
     start_up_str += 'Selected parameters:\n'
     start_up_str += f'Quantity: \t\t {quantity}\n'
     start_up_str += f'Duration: \t\t {duration} minutes\n'
-    start_up_str += f'Results stored at: \t {path}\n'
+    start_up_str += f'Results stored at: \t {db_path}\n'
     if plots:
         start_up_str += f'Figures stored at: \t {plot_dir}\n'
     start_up_str += '\nSelected analyses:\n'
