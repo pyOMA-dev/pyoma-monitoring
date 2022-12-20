@@ -228,7 +228,7 @@ def plot_file_info(path, subpath, origin, check_errors=True, filter_errors=False
         logger.debug(channel)
         plt.show()
 
-def plot_daily(path, quantity, duration, dtstart):
+def plot_daily(db_path, quantity, duration, dtstart):
     
     if quantity in ['accel', 'strain_rosettes']:
         modal = True
@@ -236,9 +236,9 @@ def plot_daily(path, quantity, duration, dtstart):
         modal = False
         
     if not modal:
-        ds =  get_stats(path, quantity)
+        ds =  get_stats(db_path, quantity)
     elif modal:
-        ds = get_modal_results(path, quantity)
+        ds = get_modal_results(db_path, quantity)
     
     ds = ds.isel(time=ds.time>dtstart)
     # print(ds)

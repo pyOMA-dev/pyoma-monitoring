@@ -3182,7 +3182,6 @@ def main():
     else: duration_selector = 3
         
     duration = [10,30,60,120][duration_selector]
-    slice_path = os.path.join(config.slice_root_path, f'{duration}-minutes/')
     db_path = os.path.join(config.db_root_path, f'{duration}-minutes/')
     
     if len(sys.argv) > 4: q_selector=int(sys.argv[4])
