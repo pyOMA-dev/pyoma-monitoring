@@ -110,10 +110,10 @@ def main(argv):
             start_times =fi_ds.start_time[dset].astype('datetime64[s]')
             if len(start_times) > 0:
                 dtstart = start_times.min().values
-                os.environ['DTSTART'] = repr(dtstart)
             else:
                 logger.warning('Processing files has failed. Check analysis scripts and file integrity.')
                 return
+        os.environ['DTSTART'] = repr(dtstart)
     else:
         fi_ds = get_file_info(db_path, origin, create_new=False)
         
