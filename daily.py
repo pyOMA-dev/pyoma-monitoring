@@ -1,5 +1,6 @@
 import sys
 import getopt
+import numpy as np
 import pandas as pd
 from main_v2 import get_file_info, get_file_list,round_dt, get_stats,get_modal_results
 import config
