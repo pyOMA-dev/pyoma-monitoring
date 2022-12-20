@@ -602,7 +602,7 @@ def create_file_info(db_path, origin, chunksize = 50, skip_existing=True, **kwar
             
             ds=ds.combine_first(dst)
             changed=True
-            logger.info(f'Success: , {(file_name==ds["file_name"]).any().item()}, Length: , {len(ds.time)},:, {len(ds.channels)},  Loading Time: , {time.time()-now}, s')
+            logger.debug(f'Success: , {(file_name==ds["file_name"]).any().item()}, Length: , {len(ds.time)},:, {len(ds.channels)},  Loading Time: , {time.time()-now}, s')
         
         i += 1
         if changed:
