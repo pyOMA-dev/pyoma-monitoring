@@ -110,6 +110,7 @@ def main(argv):
             start_times =fi_ds.start_time[dset].astype('datetime64[s]')
             if len(start_times) > 0:
                 dtstart = start_times.min().values
+                os.environ['DTSTART'] = repr(dtstart)
             else:
                 logger.warning('Processing files has failed. Check analysis scripts and file integrity.')
                 return
@@ -137,7 +138,6 @@ def main(argv):
         if modal:
             fig2.savefig(os.path.join(plot_dir,f'modal_{quantity}_{duration}.png'))
     
-    return repr(dtstart)
     
 if __name__ == '__main__':
     
