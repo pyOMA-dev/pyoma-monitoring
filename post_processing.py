@@ -382,8 +382,11 @@ def plot_stats(path, quantity, check_errors=True, filter_errors=False, modal=Fal
         logger.debug(channel)
         plt.show()
 
-def postprocess_modal_results(path, quantity, filter_errors=False, wind_range = 0, temp_range = 0, mode=0, 
-                              q_1=None, q_2=None, fig=None, axes=None, color='grey', hide_ticks=False, scatter=True, **kwargs):
+def postprocess_modal_results(path, quantity, 
+                              filter_errors=False, 
+                              wind_range = 0, temp_range = 0, mode=0, 
+                              q_1=None, q_2=None, 
+                              fig=None, axes=None, color='grey', hide_ticks=False, scatter=True, **kwargs):
     '''
     relating modal_results to other quantities:
             f,   d, MC, MPC,MPD,order, ⟵ modal results
@@ -830,7 +833,7 @@ def postprocess_modal_results(path, quantity, filter_errors=False, wind_range = 
 #                     
 #                     y = np.repeat(np.expand_dims(y, axis=naxis), repeats=x.shape[axis], axis=naxis)                
                 if len(y.shape)==2 and len(x.shape)==1:
-                    x = np.repeat(np.expand_dims(x, axis=1), repeats=y.shape[1], axis=1)                
+                    x = np.repeat(np.expand_dims(x, axis=1), repeats=y.shape[1], axis=1)
     
                 if len(x.shape)==2 and len(y.shape)==1:
                     y = np.repeat(np.expand_dims(y, axis=1), repeats=x.shape[1], axis=1)   
@@ -1897,11 +1900,11 @@ def main():
     logger.setLevel(logging.INFO)
     
     duration_selector = 3
-        
     duration = [10,30,60,120][duration_selector]
     
     path='/vegas/scratch/womo1998/towerdata/{}-minutes/'.format(duration)
     figpath = '/vegas/users/staff/womo1998/Projects/2023_EVACES/current_figures/'
+    db_path = os.path.join(config.db_root_path, f'{duration}-minutes/')
     
     save_figures=False
     
@@ -1909,14 +1912,14 @@ def main():
     pfi=0# plot_file_info
     ps=0# plot_stats
     pld=0# plot_daily
-    pmr=0# postprocess_modal_results
-    ft=0# frequencies over time
+    pmr=1# postprocess_modal_results (scatter plot)
+    ft=1# frequencies over time
     fT=0#frequencies over temp
-    dw=1#damping over wind
-    ic=1#icing
-    fr=1# frequencies over rms
-    cd=1# cov_freq over data_quality
-    ck=1# cov_freq over kurtosis
+    dw=0#damping over wind
+    ic=0#icing
+    fr=0# frequencies over rms
+    cd=0# cov_freq over data_quality
+    ck=0# cov_freq over kurtosis
     dd=0# main_dir over wind_dir
     
     q_selector = 0
@@ -1945,7 +1948,6 @@ def main():
                          # 'figure.figsize':(5.53,2.96),# beamer
                          # 'figure.figsize':(5.53/2,2.96),# half beamer
                          'figure.dpi':300}
-        #plt.rc('axes.formatter',use_locale=True) #german months
 
     if its:
         inspect_time_shifts(path)
@@ -1959,19 +1961,19 @@ def main():
         logger.info('{}, {}'.format(quantity, origin))
         
         if pfi:
-            plot_file_info(path, subpath, origin, check_errors=1, filter_errors=0)
+            plot_file_info(db_path, subpath, origin, check_errors=1, filter_errors=0)
             plt.show()
 
         if ps:
-            plot_stats(path, quantity, check_errors=0, filter_errors=0)
+            plot_stats(db_path, quantity, check_errors=0, filter_errors=0)
             plt.show()
         
         if ps:
-            plot_stats(path, quantity, check_errors=0, filter_errors=0, modal=True)
+            plot_stats(db_path, quantity, check_errors=0, filter_errors=0, modal=True)
             plt.show()
         
         if pld:
-            plot_daily(path, quantity, duration, np.datetime64('2022-12-12 00:00'))
+            plot_daily(db_path, quantity, duration, np.datetime64('2022-12-12 00:00'))
             plt.show()
         
         if pmr and quantity in ['accel', 'strain_rosettes']:
@@ -1995,7 +1997,7 @@ def main():
                             
                         with matplotlib.rc_context(rc=print_context_dict):
                             
-                            postprocess_modal_results(path, quantity, 
+                            postprocess_modal_results(db_path, quantity, 
                                                       filter_errors=False, 
                                                       wind_range=wind_range, 
                                                       temp_range=temp_range, 
@@ -2026,7 +2028,7 @@ def main():
                     color='maroon'
                 else:
                     color='black'
-                postprocess_modal_results(path, _quantity, filter_errors=True, wind_range=0, temp_range=0, mode=mode, q_1=q_1, q_2=q_2, fig=fig, axes=axes[i], color=color, scatter=False)
+                postprocess_modal_results(db_path, _quantity, filter_errors=True, wind_range=0, temp_range=0, mode=mode, q_1=q_1, q_2=q_2, fig=fig, axes=axes[i], color=color, scatter=False)
                 mode_str = ['all','first','second','third', 'fourth', 'fifth'][mode]
                 axes[i].set_ylabel('')
                 plt.subplots_adjust(left=0.09, right=0.97, top=0.95, bottom=0.14, hspace=0.12)
@@ -2063,7 +2065,7 @@ def main():
                 plt.subplots_adjust(left=0.1, right=0.98, top=0.975, bottom=0.115)
                 q_1=['frequencies']
                 q_2=['temp']
-                postprocess_modal_results(path, quantity, filter_errors=False, 
+                postprocess_modal_results(db_path, quantity, filter_errors=False, 
                                           wind_range=0, temp_range=(-10,35), mode=mode, q_1=q_1, q_2=q_2, 
                                           fig=fig,axes=axes[i], color=color, scatter=False, )
 
@@ -2109,7 +2111,7 @@ def main():
                 q_1=['damping']
                 q_2=['wind']
                 #continue
-                postprocess_modal_results(path, quantity, filter_errors=True, damp_range=(0,2.5),
+                postprocess_modal_results(db_path, quantity, filter_errors=True, damp_range=(0,2.5),
                                           wind_range=4, temp_range=0, mode=mode, q_1=q_1, q_2=q_2, 
                                           fig=fig,axes=axes[i], color=color,scatter=False, hexbin_extent=[0,20,0,2.5])
                 #plt.show()
@@ -2162,7 +2164,7 @@ def main():
             #for color,quantity in zip(['#006b9455','maroon'],['accel','strain_rosettes']):
             
             plt.subplots_adjust(left=0.095, right=0.97, top=0.95, bottom=0.11, hspace=0.12, wspace=0.06)
-            postprocess_modal_results(path, quantity, filter_errors=False, 
+            postprocess_modal_results(db_path, quantity, filter_errors=False, 
                                       wind_range=0, temp_range=0, mode=0, q_1=['temp'], q_2=['time'], 
                                       fig=fig, axes=axes[0], color=color, scatter=False)
             axes[0].axhline(0,color='black', lw=0.1)
@@ -2175,7 +2177,7 @@ def main():
                     q_1=['frequencies']
                     ax = axes[j * 2 + i + 1]
                     plt.subplots_adjust(left=0.095, right=0.97, top=0.95, bottom=0.11, hspace=0.12, wspace=0.06)
-                    postprocess_modal_results(path, quantity, filter_errors=False, 
+                    postprocess_modal_results(db_path, quantity, filter_errors=False, 
                                               wind_range=0, temp_range=0, mode=mode, q_1=q_1, q_2=q_2, 
                                               fig=fig,axes=ax, color=color, scatter=False)
 
@@ -2262,7 +2264,7 @@ def main():
                 q_2=['frequencies']
                 q_1=['rms_m']
                 ylim = [(0,24),(0,70)][i]
-                postprocess_modal_results(path, _quantity, filter_errors=True, rms_range=ylim,
+                postprocess_modal_results(db_path, _quantity, filter_errors=True, rms_range=ylim,
                                           wind_range=0, temp_range=0, mode=mode, q_1=q_1, q_2=q_2, 
                                           fig=fig,axes=axes[i], color=color, scatter=False)
                 fig.subplots_adjust(left=0.09, right=0.98, top=0.97, bottom=0.12, hspace=0.04)

@@ -136,7 +136,9 @@ def main(argv):
         fig1.savefig(os.path.join(plot_dir,f'stats_{quantity}_{duration}.png'))
         if modal:
             fig2.savefig(os.path.join(plot_dir,f'modal_{quantity}_{duration}.png'))
-        
+    
+    return repr(dtstart)
+    
 if __name__ == '__main__':
     
     main(sys.argv[1:])

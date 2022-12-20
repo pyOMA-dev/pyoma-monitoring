@@ -33,8 +33,8 @@ Content Information:
 num_channels ('time',)
 units ('channels',)
 sample_rate ('time',)
-duration ('time',)
-length ('time',)
+duration ('time',) (in seconds)
+length ('time',) (in samples)
 error ('time', 'channels')
 
 Statistical Description of the recorded signal:
