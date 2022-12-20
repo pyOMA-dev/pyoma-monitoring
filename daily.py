@@ -13,6 +13,8 @@ def main(argv):
     
     opts, args = getopt.getopt(argv,'hd:q:v',['file_info', 'stats', 'modal', 'plot_dir=', 'dtstart=','loglevel='])
     
+    duration = None
+    quantity = None
     file_info = False
     stats = False
     modal = False
@@ -47,6 +49,10 @@ def main(argv):
             assert os.path.exists(plot_dir)
         if opt == '--dtstart':
             dtstart = np.datetime64(arg)
+        
+    if duration is None or quantity is None:
+        print ('daily.py -d <duration in minutes> -q <quantity> --file_info --stats --modal --plot_dir --dtstart=YYYY-MM-DD hh:mm --loglevel=INFO')
+        sys.exit()
         
     
     path='/vegas/scratch/womo1998/towerdata/{}-minutes/'.format(duration)

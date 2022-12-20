@@ -1,7 +1,7 @@
 import os
+import datetime
 from _collections import deque
-
-file_cache = deque(maxlen=3)
+file_cache = deque(maxlen=5)
 
 origins = {'accel':'accel', 
           'wind':'wind', 
@@ -20,21 +20,51 @@ for quantity in origins.keys():
 pid=str(os.getpid())
 
 if os.uname()[1]=='srv-grk':     
-    subpaths = {'accel':'towerdata_bin_srv-grk',
-           'wind':'towerdata_bin_srv-grk',
-           'temp':'towerdata_bin_srv-grk',
-           'strain_rosettes':'strain_data_bin_srv-grk',
-           'strain_bolts':'strain_data_bin_srv-grk',}
+    subpaths = {'accel':'towerdata',
+           'wind':'towerdata',
+           'temp':'towerdata',
+           'strain':'strain_data'}
+    file_root_path = '/home/towermonitoring/'
+    slice_root_path = '/vegas/scratch/womo1998/towerdata/'
+    db_root_path = '/home/towermonitoring/analysis/result_db/'
+    modal_conf_dir = '/srv-grk/towermonitoring/analysis/modal_source_files/'
 else:
     subpaths = {'accel':'towerdata_bin',
            'wind':'towerdata_bin',
            'temp':'towerdata_bin',
-           'strain_rosettes':'strain_data_bin',
-           'strain_bolts':'strain_data_bin',}
-    
+           'strain':'strain_data_bin'}
+    file_root_path = '/vegas/scratch/womo1998/towerdata/'
+    slice_root_path = '/vegas/scratch/womo1998/towerdata/'
+    db_root_path = '/vegas/scratch/womo1998/towerdata/result_db/'
+    modal_conf_dir = '/vegas/scratch/womo1998/towerdata/modal_source_files/'
+
+dtstarts = {'accel':datetime.datetime(2015,5,20),
+            'wind':datetime.datetime(2015,5,20),
+            'temp':datetime.datetime(2015,5,20),
+            'strain':datetime.datetime(2016,12,16)}
+
+all_channels = {
+    'accel' : ['Accel_01','Accel_02',],
+    'wind' : ['Wr', 'Wg',],
+    'strain_rosettes' : ['A_Temp','B_Temp','C_Temp','D_Temp_1','D_Temp_2',
+                           'D_Temp_3','A_z','A_t','A_zt','B_z','B_t',
+                           'B_zt','C_z','C_t','C_zt','D_z','D_t','D_zt',],
+    'strain_bolts' : ['10_Temp','10_z1','10_z2','8_z1','8_z2',
+                        '8_z3','9_z1','9_z2','9_z3',],
+    'temp' : ['Pt100_01','Pt100_02','Pt100_03','Pt100_04',
+                       'Pt100_05']
+    }
+
+optional_channels = {'accel': ['Accel_01_top', 'Accel_02_top', 
+                               'Accel_03_top', 'Accel_04_top',
+                               'Accel_03','Accel_04', 'Accel_05',
+                               'Accel_06','Accel_07','Accel_08'] ,
+                    'wind': ['Wr_top','Wg_top']}
+
 strain_channels = ['A_z','A_t','A_zt','B_z','B_t','B_zt','C_z','C_t',
                        'C_zt','D_z','D_t','D_zt','10_z1','10_z2','8_z1',
                        '8_z2','8_z3','9_z1','9_z2','9_z3',]
+
 temp_channels = ['10_Temp', 'D_Temp_1','D_Temp_2','D_Temp_3','C_Temp','B_Temp','A_Temp']
 
 ranges={'Accel_01':(-5,5), 'Accel_01_top':(-1,1), 'Accel_02':(-5,5),

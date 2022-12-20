@@ -1,10 +1,12 @@
 import os
+import glob
 import time
 import simpleflock
 import numpy as np
 import logging
 logger = logging.getLogger(__name__)
 logger.setLevel(logging.INFO)
+import config
 
 class MultiLock():
     '''

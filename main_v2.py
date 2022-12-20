@@ -20,7 +20,7 @@ using different averages 1m, 10m and 1 hour should be possible
 _____________________________________________________________________
 Database: File Information (file_info_<quantity>.nc)
 
-Coordinates: time (synchronized to controller time), channels
+Coordinates: time (synchronized to controller time but in local timezone (w/ daylight saving), channels
 Variables:
 
 File Information:
@@ -171,14 +171,14 @@ import config
 reader_tz = tzlocal.get_localzone()
         
         
-def get_file_list(path, origin, reduced=False, file_info = None):
+def get_file_list(origin, reduced=False, file_info = None):
     '''
     read in all files from path
     origin may be 'q_station' or 'labview'
     return list of files, creation dates, file sizes
     '''
-
-    path= os.path.normpath(path)
+    path = os.path.join(config.file_root_path, config.subpaths[origin])
+    path = os.path.normpath(path)
     assert os.path.exists(path)
     
     if origin =='accel':
@@ -411,9 +411,9 @@ def read_file(path):
     return file_time, file_size, headers, units, start_time, sample_rate, measurement
     
 
-def get_file_info(path, subpath, origin, create_new=False, **kwargs):
+def get_file_info(db_path, origin, create_new=False, **kwargs):
     
-    ds_path = os.path.join(path,'result_db/file_info_{}.nc'.format(origin))
+    ds_path = os.path.join(db_path,f'file_info_{origin}.nc')
     if not os.path.exists(ds_path):
         logger.warning(f'Path for file_info does not exist {ds_path}. Re-creating!')
         create_new = True
@@ -432,7 +432,7 @@ def get_file_info(path, subpath, origin, create_new=False, **kwargs):
                  config.ds_cache[f'{origin}_file_info']['ds'] =  ds
                  config.ds_cache[f'{origin}_file_info']['mtime'] = stat_result.st_mtime
     else:
-        ds = create_file_info(path, subpath, origin, **kwargs)
+        ds = create_file_info(db_path, origin, **kwargs)
     compute_gap_lengths(ds)
     return ds     
    
@@ -504,7 +504,7 @@ def get_synchronized_time(start_time, file_time, duration):
 
 
     
-def create_file_info(path, subpath, origin, chunksize = 50, skip_existing=True, **kwargs):
+def create_file_info(db_path, origin, chunksize = 50, skip_existing=True, **kwargs):
     '''
     file_name, file_size, file_creation_time, num_channels, headers, units, sample_rate, type (qstation, labview), start_time,<- 1st run
     length (in samples), per channel: {errors, mean, min, max, var, skewness, kurtosis, q05, q95, q50, rms} <- 1st run
@@ -512,40 +512,40 @@ def create_file_info(path, subpath, origin, chunksize = 50, skip_existing=True, 
     '''
     
     logger.info('Creating file info for {}'.format(origin))   
-    try:
-        ds =  xr.open_dataset(os.path.join(path, 'result_db/file_info_{}.nc'.format(origin)))
+    ds_path = os.path.join(db_path, 'file_info_{}.nc'.format(origin))
+    
+    if os.path.exists(ds_path):
+        ds =  xr.open_dataset(ds_path)
+        ds.load()
         ds.close()
-    except:
-       ds = xr.Dataset() 
-       ds.to_netcdf(os.path.join(path, 'result_db/file_info_{}.nc'.format(origin)), format='NETCDF4')
-       ds.close()
+    else:
+        raise RuntimeError(f"DB Path {ds_path} does not exist.")
+        # ds = xr.Dataset() 
+        # ds.to_netcdf(os.path.join(db_path, 'file_info_{}.nc'.format(origin)), format='NETCDF4')
+        # ds.close()
     
     reduced = kwargs.pop('reduced',True)
     filtered_list = kwargs.pop('filtered_list',False)
     
     if filtered_list and reduced:
-        filelist = get_file_list(os.path.join(path,subpath), origin, reduced, ds)
+        filelist = get_file_list(origin, reduced, ds)
     else:
-        filelist = get_file_list(os.path.join(path,subpath), origin, reduced)
+        filelist = get_file_list(origin, reduced)
         
     logger.info('Total number of files: {}'.format(len(filelist)))
     
     logger.info('Total number of files already read: {}'.format(len(ds.time) if 'time' in ds else 0))
-    
-    if len(sys.argv)>1:
-        num_workers = int(sys.argv[2])
-        this_worker = int(sys.argv[1])
-        jobsize=int(np.ceil(len(filelist)/num_workers))
-        start = int((this_worker-1)%num_workers)
-    else:
-        jobsize=len(filelist)
-        start = 0
+        
+    num_workers = kwargs.get('num_workers',1)
+    this_worker = kwargs.get('this_worker',1)
+    jobsize = int(np.ceil(len(filelist)/num_workers))
+    start = int((this_worker-1)%num_workers)
     
     logger.debug('{} {}'.format(start, jobsize))
     i = 0
     
     while i*chunksize<jobsize:
-        ds =  xr.open_dataset(os.path.join(path,'result_db/file_info_{}.nc'.format(origin)))
+        ds =  xr.open_dataset(ds_path)
         ds.load()
         
         changed = False
@@ -556,7 +556,7 @@ def create_file_info(path, subpath, origin, chunksize = 50, skip_existing=True, 
             if 'file_name' in ds : 
                 if (file_name == ds.get('file_name')).any():
                     if skip_existing:
-                        logger.info('{} already present in dataset. Skipping!'.format(file_name))
+                        logger.debug('{} already present in dataset. Skipping!'.format(file_name))
                         continue
                     else:
                         logger.info('{} already present in dataset. Updating!'.format(file_name))
@@ -596,6 +596,8 @@ def create_file_info(path, subpath, origin, chunksize = 50, skip_existing=True, 
             sync_time = get_synchronized_time(start_time, file_time, duration)
     
             dst.coords['channels'] = np.array(headers,dtype=str)
+            # TODO: time is not a unique identifier
+            # if two files of the same quantity and origin were started at the same time (highly unlikely), results will get overwritten 
             dst.coords['time'] = [np.asarray(sync_time.astimezone(pytz.utc), dtype='datetime64[ns]')]
             
             ds=ds.combine_first(dst)
@@ -605,28 +607,29 @@ def create_file_info(path, subpath, origin, chunksize = 50, skip_existing=True, 
         i += 1
         if changed:
             now=time.time()
-            logger.info('saving ')
-            ds.to_netcdf(os.path.join(path,'result_db/file_info_{}.nc'.format(origin)), format='NETCDF4')  
-            logger.debug('{time.time()-now} s')
-        
+            # logger.info('saving ')
+            save_ds(ds, ds, ds_path, what='file_info', reload_current=True)
+            # ds.to_netcdf(os.path.join(path,'result_db/file_info_{}.nc'.format(origin)), format='NETCDF4')  
+            # logger.debug('{time.time()-now} s')
+    ds.close()
     return ds
 
-def remove_labels(ds, variable, match_str, dim):
-    
-    indices=[]
-    for i in range(len(ds[dim])):
-        if ds[{dim:i}][variable].item().startswith(match_str):
-            logger.debug(ds[{dim:i}])
-            continue
-        else:
-            indices+=[i]
-            
-    ds=ds[{dim:indices}]
-    
-    ds.dropna('channels', how='all')
-    ds.dropna('time', how='all')
-    
-    return ds
+# def remove_labels(ds, variable, match_str, dim):
+    #
+    # indices=[]
+    # for i in range(len(ds[dim])):
+        # if ds[{dim:i}][variable].item().startswith(match_str):
+            # logger.debug(ds[{dim:i}])
+            # continue
+        # else:
+            # indices+=[i]
+            #
+    # ds=ds[{dim:indices}]
+    #
+    # ds.dropna('channels', how='all')
+    # ds.dropna('time', how='all')
+    #
+    # return ds
         
 
 def describe_stats(measurement, headers=None, quantity=None):
@@ -738,10 +741,10 @@ def check_and_mark_errors(ds, new = True, check_kurtosis = False):
     
     return ds
         
-def get_stats(path, quantity, file_info=None, create_new=False, **kwargs):
+def get_stats(db_path, quantity, file_info=None, create_new=False, **kwargs):
     
     
-    ds_path = os.path.join(path,'result_db/stats_{}.nc'.format(quantity))
+    ds_path = os.path.join(db_path,'stats_{}.nc'.format(quantity))
     
     if not os.path.exists(ds_path):
         logger.warning(f'Path for stats does not exist {ds_path}. Re-creating!')
@@ -765,20 +768,20 @@ def get_stats(path, quantity, file_info=None, create_new=False, **kwargs):
                  config.ds_cache[f'{quantity}_stats']['ds'] =  ds
                  config.ds_cache[f'{quantity}_stats']['mtime'] = stat_result.st_mtime
     else:
-        ds = create_stats(path, quantity, file_info, **kwargs)
+        ds = create_stats(db_path, quantity, file_info, **kwargs)
     
     return ds
     
     
-def create_stats(path, quantity, file_info, duration=pd.Timedelta('60 minutes'), chunksize=10, skip_existing=False, **kwargs):
+def create_stats(db_path, quantity, file_info, duration=pd.Timedelta('60 minutes'), chunksize=10, skip_existing=False, **kwargs):
     '''
     mean, min, max, var, skewness, kurtosis, q05, q95, q50, rms
     '''
 
     logger.info('Creating statistics for {}'.format(quantity))
     
-    process_ds_path = os.path.join(path,'result_db/stats_{}.{}.nc'.format(quantity,config.pid))
-    master_ds_path = os.path.join(path,'result_db/stats_{}.nc'.format(quantity))
+    process_ds_path = os.path.join(db_path,'stats_{}.{}.nc'.format(quantity,config.pid))
+    master_ds_path = os.path.join(db_path,'stats_{}.nc'.format(quantity))
     
     if os.path.exists(process_ds_path):
         process_ds =  xr.open_dataset(process_ds_path)
@@ -796,16 +799,12 @@ def create_stats(path, quantity, file_info, duration=pd.Timedelta('60 minutes'),
     else:
         master_ds = xr.Dataset()
         
-    if quantity == 'strain_rosettes':
-        dtstart = datetime.datetime(2016,12,16)
-    else:
-        dtstart = datetime.datetime(2015,5,20)
-        
+    origin= config.origins[quantity]
+    dtstart = config.dtstarts[origin]
     dtstart=kwargs.pop('dtstart', dtstart)
-    
     dtstart = pd.Timestamp(dtstart).to_pydatetime()
     
-    fi_time_max = (file_info.time+file_info.duration).max().values
+    fi_time_max = (file_info.time + file_info.duration).max().values
     fi_time_max = round_dt(fi_time_max, duration, ceil=True)
     
     fi_time_max = pd.Timestamp(fi_time_max).to_pydatetime()
@@ -813,11 +812,21 @@ def create_stats(path, quantity, file_info, duration=pd.Timedelta('60 minutes'),
     until = kwargs.pop('until', fi_time_max)
     logger.debug(f'{until}, {fi_time_max}')
     
-    
     minutes = int(duration.total_seconds()/60)
-
+    
+    # time_iterator consists of non timezone-aware items,
+    # each item will be converted to timezone-aware pd.Timestamp,
+    # thus time_iterator is interpreted to be in "Europe/Berlin" with DST
+    # conversion to UTC by ts.to_datetime64() results in:
+    # even summer hours and uneven winter hours(for 120 minute slices)
+    # the converted UTC times are the indices of the database
+    # the only place, were timezone native times are used get_slice_corrected to generate the filename (=even hours year round)
+    # file_info['start_time'/'file_time'] is using timestamps (which are UTC by definition = seconds since 1.1.1970 (UTC))
+    # file_info['time'] is derived from tz-aware start_time and file_time in get_synchronized_time and converted to UTC
+     
     time_iterator = dateutil.rrule.rrule(dateutil.rrule.MINUTELY, interval=minutes, dtstart=dtstart, until=until, cache=True)
-    time_iterator = list(time_iterator)
+    # time_iterator = list(time_iterator)
+    time_iterator = [pd.Timestamp(ts, tz='Europe/Berlin') for ts in time_iterator]
     
     validate_slices = kwargs.pop('validate_slices', False)
     
@@ -827,19 +836,19 @@ def create_stats(path, quantity, file_info, duration=pd.Timedelta('60 minutes'),
         # filter out errorneous files to not do them again every time
         stats_ds = stats_ds.time[~np.logical_or(stats_ds['error'].any(dim='channels'), stats_ds.length.isnull())]
         
-        time_iterator = np.setdiff1d(np.array(time_iterator).astype('datetime64[ns]'), stats_ds.time.data, assume_unique=True)
+        time_iterator = np.setdiff1d(np.asarray(time_iterator, dtype='datetime64'), stats_ds.time.data, assume_unique=True)
     
     num_workers = kwargs.get('num_workers',1)
     this_worker = kwargs.get('this_worker',1)
     jobsize=int(np.ceil(len(time_iterator)/num_workers))
     start = int((this_worker-1)%num_workers)
-
     
     #logger.debug('this_worker: {}, num_workers: {}, duration: {}, quantity: {}'.format(this_worker, num_workers, duration, quantity))
     #return
     
     for i, time_ in enumerate(time_iterator[start*jobsize:(start+1)*jobsize]):
         logger.debug('')
+        # make 
         start_time = pd.Timestamp(time_, tz = 'Europe/Berlin')
         
         if not (i+1)%50: print('.',end='', flush=True) 
@@ -859,7 +868,7 @@ def create_stats(path, quantity, file_info, duration=pd.Timedelta('60 minutes'),
                     if  master_ds.sel(time=start_time)['mean'].isnull().all():
                         try:
                             with open(os.devnull, "w") as f, contextlib.redirect_stdout(f): 
-                                slice = get_slice_corrected(path, start_time, duration, quantity, file_info, **kwargs)
+                                slice = get_slice_corrected(start_time, duration, quantity, file_info, **kwargs)
                         except Exception as e:
                             logger.exception(e)
                             slice=None
@@ -885,7 +894,7 @@ def create_stats(path, quantity, file_info, duration=pd.Timedelta('60 minutes'),
         this_ds = xr.Dataset()
         
         try:
-            slice = get_slice_corrected(path, start_time, duration, quantity, file_info, **kwargs)
+            slice = get_slice_corrected(start_time, duration, quantity, file_info, **kwargs)
         except Exception as e:
             logger.exception(e)
             slice=None
@@ -906,10 +915,11 @@ def create_stats(path, quantity, file_info, duration=pd.Timedelta('60 minutes'),
 
             this_ds.coords['channels'] = np.array(headers,dtype=str)
 
-        this_ds.coords['time'] = [np.asarray(start_time, dtype='datetime64[ns]')]
+        # this_ds.coords['time'] = [np.asarray(start_time, dtype='datetime64[ns]')]
+        this_ds.coords['time'] = [np.asarray(start_time.to_datetime64())]
 
         process_ds = process_ds.combine_first(this_ds)
-        logger.info('Succes: {}, Length: {}'.format((start_time.to_datetime64()==process_ds.coords['time']).any().item(), len(process_ds.time)))
+        logger.debug('Success: {}, Length: {}'.format((start_time.to_datetime64()==process_ds.coords['time']).any().item(), len(process_ds.time)))
         
         if i>0 and not i%chunksize:
             # process_ds should not have changed on disk during processing
@@ -1015,6 +1025,8 @@ def save_ds(new_ds, current_ds, savepath, what='modal', reload_current = False):
             current_ds.to_netcdf(tempfile, engine='h5netcdf', invalid_netcdf=True)
         elif what=='stats':
             current_ds.to_netcdf(tempfile, format='NETCDF4')
+        elif what=='file_info':
+            current_ds.to_netcdf(tempfile, format='NETCDF4')
         
         if os.path.exists(savepath):
             os.remove(savepath)
@@ -1056,33 +1068,16 @@ def compute_gap_lengths(file_info):
     # put gap_length back into file_info 
     file_info['gap_length'] = gap_length
 
-def get_slice(path, start_time, duration , quantity, file_info, upsample_fs=None):
+def get_slice(start_time, duration , quantity, file_info, upsample_fs=None):
     '''
     channels 'Tagessekunden' and 'Time' are always dropped
     '''
     
     time_range = (start_time.to_datetime64(), (start_time + duration).to_datetime64())
     
-    all_channels = {
-        'accel' : ['Accel_01','Accel_02',],
-        'wind' : ['Wr', 'Wg',],
-        'strain_rosettes' : ['A_Temp','B_Temp','C_Temp','D_Temp_1','D_Temp_2',
-                               'D_Temp_3','A_z','A_t','A_zt','B_z','B_t',
-                               'B_zt','C_z','C_t','C_zt','D_z','D_t','D_zt',],
-        'strain_bolts' : ['10_Temp','10_z1','10_z2','8_z1','8_z2',
-                            '8_z3','9_z1','9_z2','9_z3',],
-        'temp' : ['Pt100_01','Pt100_02','Pt100_03','Pt100_04',
-                           'Pt100_05']
-        }
-    
-    optional_channels = {'accel': ['Accel_01_top', 'Accel_02_top', 
-                                   'Accel_03_top', 'Accel_04_top',
-                                   'Accel_03','Accel_04', 'Accel_05',
-                                   'Accel_06','Accel_07','Accel_08'] ,
-                        'wind': ['Wr_top','Wg_top']}
-
-    channels_required = all_channels[quantity]
-    subpath = config.subpaths[quantity]
+    channels_required = config.all_channels[quantity]
+    origin = config.origins[quantity]
+    subpath = config.subpaths[origin]
 #         
     file_start_time = file_info.time
     #duration = file_info.duration
@@ -1095,8 +1090,6 @@ def get_slice(path, start_time, duration , quantity, file_info, upsample_fs=None
     # then also select all files, that start in time_range i.e. 'time'+'duration' is within time_range
     b2 = file_start_time<=np.datetime64(time_range[1])
     
-
-
     # combine selectors and truncate dataset
     b = np.logical_and(b1, b2)
     file_info = file_info.where(b, drop=True)#.dropna(dim='time', how='all')
@@ -1104,9 +1097,12 @@ def get_slice(path, start_time, duration , quantity, file_info, upsample_fs=None
     if len(file_info['file_name']) == 0:
         logger.info('There is no file for: {} - {}; {} '.format(*time_range, quantity))
         return
-    logger.debug(file_info['file_name'])
-    logger.debug(file_info['sample_rate'])
-    logger.debug(file_info['gap_length'][:-1])
+    
+    if logger.isEnabledFor(logging.DEBUG):
+        logger.debug(file_info['file_name'])
+        logger.debug(file_info['sample_rate'])
+        logger.debug(file_info['gap_length'][:-1])
+        
     if len(file_info['file_name']) > 1 and (file_info['gap_length'][:-1]>0.).any():
 
         if quantity in [ 'temp', 'wind', 'strain_rosettes'] and (file_info['gap_length'][:-1]<32).all():
@@ -1131,7 +1127,7 @@ def get_slice(path, start_time, duration , quantity, file_info, upsample_fs=None
     
     if channels_required is not None:
         channels_in_file = set(file_info.channels.data.astype(str))
-        channels_to_drop = list(channels_in_file.difference(channels_required + optional_channels.get(quantity,[])))
+        channels_to_drop = list(channels_in_file.difference(channels_required + config.optional_channels.get(quantity,[])))
         # file_info = file_info.drop(channels_to_drop,'channels')
         file_info = file_info.drop_sel(channels=channels_to_drop)
     # logger.debug(all_channels)  
@@ -1177,7 +1173,7 @@ def get_slice(path, start_time, duration , quantity, file_info, upsample_fs=None
         filename = file.item()
         if 'Peaks' in filename: filename= os.path.join('binary_files_unusable',filename)
         
-        file_path = os.path.join(path, subpath,filename)
+        file_path = os.path.join(config.file_root_path, config.subpaths[origin], filename)
         
         with open(os.devnull, "w") as f, contextlib.redirect_stdout(f): 
             file_contents = read_file(file_path)
@@ -1258,12 +1254,12 @@ def get_slice(path, start_time, duration , quantity, file_info, upsample_fs=None
         
         # only one file that ends earlier than time_range
         elif len(file_info.time) ==1:
-            logger.info('This should not have happened!')
+            logger.warning('This should not have happened! Possibly there is a bug in the script!')
             new_end =sync_end_time.item()
         
         # if last file ends earlier than time_range
         elif file_num == len(file_info.time)-1:
-            logger.info('This should not have happened!')
+            logger.warning('This should not have happened! Possibly there is a bug in the script!')
             new_end =sync_end_time.item()
             
         
@@ -1347,12 +1343,19 @@ def get_slice(path, start_time, duration , quantity, file_info, upsample_fs=None
     
     return new_start, list(channels), units, new_end, this_sample_rate, this_measurement
 
-def get_slice_corrected(path, start_time, duration, quantity, file_info=None, **kwargs):
+def get_slice_corrected(start_time, duration, quantity, file_info=None, **kwargs):
     st = start_time
+    
     slice_name = '{}-{:02d}-{:02d}_{:02d}-{:02d}_{}.npz'.format(
         st.year, st.month, st.day, st.hour, st.minute, quantity)
-    slice_path = os.path.join(path, 'slices_{}'.format(quantity),
-                    '{}'.format(st.year),'{:02d}'.format(st.month), slice_name)
+    
+    minutes = int(duration.total_seconds()/60)
+    
+    slice_root = os.path.join(config.slice_root_path, f'{minutes}-minutes',
+                              'slices_{}'.format(quantity),
+                              '{}'.format(st.year),'{:02d}'.format(st.month))
+    
+    slice_path = os.path.join(slice_root, slice_name)
     
     if os.path.exists(slice_path):
         logger.info('Loading corrected slice: {}: {}'.format(start_time, quantity))
@@ -1383,11 +1386,11 @@ def get_slice_corrected(path, start_time, duration, quantity, file_info=None, **
         
 
     logger.info('Getting corrected slice for {}: {}'.format(start_time, quantity))
-    if not os.path.exists(path) and file_info is None:
+    if not os.path.exists(slice_path) and file_info is None:
         warnings.warn(slice_path+' does not exist, file_info needed for creation of new slice!')    
         return None
  
-    slice = get_slice(path, start_time, duration, quantity, file_info)
+    slice = get_slice(start_time, duration, quantity, file_info)
     
     if slice is None:
         return None
@@ -1405,7 +1408,7 @@ def get_slice_corrected(path, start_time, duration, quantity, file_info=None, **
             with open(os.devnull, "w") as f, contextlib.redirect_stdout(f): 
                 # suppress printout from getting the temp slice to not confuse user when inspecting logs
                 # if temp slice could not be read, a warning is printed 6 lines down
-                temp_slice = get_slice(path, strain_start, strain_end-strain_start, quantity='temp', file_info=file_info_temp, upsample_fs=strain_fs)
+                temp_slice = get_slice(strain_start, strain_end-strain_start, quantity='temp', file_info=file_info_temp, upsample_fs=strain_fs)
         else:
             temp_slice = None
         
@@ -1434,10 +1437,9 @@ def get_slice_corrected(path, start_time, duration, quantity, file_info=None, **
         'sample_rate':sample_rate,
         'measurement':measurement
         }
-    if not os.path.exists(os.path.join(path, 'slices_{}'.format(quantity),
-                        '{}'.format(st.year),'{:02d}'.format(st.month))):
-        os.makedirs(os.path.join(path, 'slices_{}'.format(quantity),
-                        '{}'.format(st.year),'{:02d}'.format(st.month)))
+
+    if not os.path.exists(slice_root):
+        os.makedirs(slice_root)
     
     np.savez_compressed(slice_path, **out_dict)
     
@@ -1446,7 +1448,7 @@ def get_slice_corrected(path, start_time, duration, quantity, file_info=None, **
     
     return start_time, headers, units, end_time, sample_rate, measurement 
 
-def get_slice_preprocessed(path,start_time, duration, quantity, file_info=None, **kwargs):
+def get_slice_preprocessed(start_time, duration, quantity, file_info=None, **kwargs):
     '''
     remove channels, detrend, filter bandpass and decimate
     '''
@@ -1454,7 +1456,7 @@ def get_slice_preprocessed(path,start_time, duration, quantity, file_info=None, 
     lowpass = 5
     target_fs = 10
     
-    slice = get_slice_corrected(path, start_time, duration, quantity, file_info, **kwargs)
+    slice = get_slice_corrected(start_time, duration, quantity, file_info, **kwargs)
     
     if slice is None:
         return None
@@ -1797,9 +1799,9 @@ def strain_manipulate_transform(start_time, headers, units, end_time, sample_rat
     
     return start_time, headers, units, end_time, sample_rate, new_measurement
 
-def get_modal_results(path, quantity, stats=None, create_new=False, **kwargs):
+def get_modal_results(db_path, quantity, stats=None, create_new=False, **kwargs):
     
-    ds_path = os.path.join(path,'result_db/modal_{}.nc'.format(quantity))
+    ds_path = os.path.join(db_path,'modal_{}.nc'.format(quantity))
     
     if not os.path.exists(ds_path):
         logger.warning(f'Path for modal does not exist {ds_path}. Re-creating!')
@@ -1824,11 +1826,11 @@ def get_modal_results(path, quantity, stats=None, create_new=False, **kwargs):
                  config.ds_cache[f'{quantity}_modal']['ds'] =  ds
                  config.ds_cache[f'{quantity}_modal']['mtime'] = stat_result.st_mtime
     else:
-        ds = create_modal_results(path, quantity, stats, **kwargs)
+        ds = create_modal_results(db_path, quantity, stats, **kwargs)
     
     return ds
 
-def create_modal_results(path, quantity, stats, chunksize=2, 
+def create_modal_results(db_path, quantity, stats, chunksize=2, 
                          skip_existing=True, check_errors=True, 
                          filter_errors=True, **kwargs):    
     # for the analysis accel and strain_rosettes should be error free
@@ -1851,8 +1853,8 @@ def create_modal_results(path, quantity, stats, chunksize=2,
     if check_errors:
         stats = check_and_mark_errors(stats)
         
-    process_ds_path = os.path.join(path,'result_db/modal_{}.{}.nc'.format(quantity,config.pid))
-    master_ds_path = os.path.join(path,'result_db/modal_{}.nc'.format(quantity))
+    process_ds_path = os.path.join(db_path,'modal_{}.{}.nc'.format(quantity,config.pid))
+    master_ds_path = os.path.join(db_path,'modal_{}.nc'.format(quantity))
     
     if os.path.exists(process_ds_path):
         process_ds =  xr.open_dataset(process_ds_path, engine='h5netcdf')
@@ -1963,7 +1965,7 @@ def create_modal_results(path, quantity, stats, chunksize=2,
         
         try:
             with open(os.devnull, 'w') as f, contextlib.redirect_stdout(f):
-                slice = get_slice_preprocessed(path, start_time, duration, quantity, **kwargs)
+                slice = get_slice_preprocessed(start_time, duration, quantity, **kwargs)
         except Exception as e:
             warnings.warn('Exception while trying to get preprocessed slice: ')
             warnings.warn(e)
@@ -2002,7 +2004,7 @@ def create_modal_results(path, quantity, stats, chunksize=2,
                 now=time.time()
                 with open(os.devnull, "w") as f, contextlib.redirect_stdout(f): 
                     results = modal_analysis_single(start_time,slice, path, quantity, 
-                                    conf_dir)
+                                    duration)
                 n, f, std_f, d, std_d, MPC, MP, MPD, MC, msh, s_vals_psd =results
                 logger.info('Modal Analysis took {:.2f} s to return {} modes for : {}'.format(time.time()-now, len(n), start_time))
                 
@@ -2038,7 +2040,6 @@ def create_modal_results(path, quantity, stats, chunksize=2,
             
         process_ds = process_ds.combine_first(this_ds)
         # logger.info('Succes: {}, Length: {}'.format((start_time.to_datetime64()==process_ds.coords['time']).any().item(), len(process_ds.time)))
-        
         i+=1
         
         if i>0 and not i%chunksize:
@@ -2049,25 +2050,26 @@ def create_modal_results(path, quantity, stats, chunksize=2,
         process_ds = save_ds(process_ds, process_ds, process_ds_path, what='modal')
         
         # master_ds almost certainly has changed on disk if multiple workers were processing files
-        
-
-            
         master_ds = save_ds(process_ds, master_ds, master_ds_path, reload_current = True, what='modal')
     
         os.rename(process_ds_path, process_ds_path+'.old')
         
     return master_ds
 
-def modal_analysis_single(start_time, slice, path, quantity, conf_dir):
+def modal_analysis_single(start_time, slice,  quantity, duration):
     
+    conf_dir = config.modal_conf_dir
     st=start_time
     
     skip_existing = True
     save_results = True
     interactive = False
     
-    result_folder = os.path.join(path, 'modal_{}'.format(quantity),
-                        '{}'.format(st.year),'{:02d}'.format(st.month))
+    result_folder = os.path.join(config.slice_root_path, 
+                                 f'{duration}-minutes',
+                                 'modal_{}'.format(quantity),
+                                 '{}'.format(st.year),
+                                 '{:02d}'.format(st.month))
         
     nodes_file = os.path.join(conf_dir, 'nodes')
     lines_file =os.path.join(conf_dir, 'lines')
@@ -3180,11 +3182,11 @@ def main():
     else: duration_selector = 3
         
     duration = [10,30,60,120][duration_selector]
-    
-    path='/vegas/scratch/womo1998/towerdata/{}-minutes/'.format(duration)
+    slice_path = os.path.join(config.slice_root_path, f'{duration}-minutes/')
+    db_path = os.path.join(config.db_root_path, f'{duration}-minutes/')
     
     if len(sys.argv) > 4: q_selector=int(sys.argv[4])
-    else: q_selector = 0
+    else: q_selector = 1
     
     quantities = [
         'accel', #0
@@ -3193,21 +3195,16 @@ def main():
         'strain_rosettes',#3 
         #'strain_bolts'    
         ][q_selector:q_selector+1]
-    
-    if q_selector != 3:
-        config.file_cache = deque(maxlen=49)
-    else:
-        config.file_cache = deque(maxlen=3)
 
     for quantity in quantities:
     
-        subpath = config.subpaths[quantity]
-
+        
         origin = config.origins[quantity]
-        logger.info('{}, {}'.format(quantity, origin))
+        subpath = config.subpaths[origin]
+        logger.info('Quantity: {}, Duration: {}'.format(quantity, duration))
         
         if 0:
-            file_contents = read_file(os.path.join(path, subpath, 'Wind_kontinuierlich__1_2018-06-13_15-00-00_000000.csv.bz2'))
+            file_contents = read_file(os.path.join(config.file_root_path, subpath, 'Wind_kontinuierlich__1_2018-06-13_15-00-00_000000.csv.bz2'))
             logger.debug(file_contents)
             meas = file_contents[-1]
             logger.debug(meas.shape)
@@ -3220,19 +3217,19 @@ def main():
                     break
             return
         
-        if 0:
-            merge_xarrays(path, quantity, 'file_info')
-            return
-        
         if 0: # create
-            file_info = get_file_info(path, subpath, origin, create_new=True, skip_existing=True, reduced=False)
+            file_info = get_file_info(db_path, origin, create_new=True, skip_existing=True, reduced=False)
             return
         else: # get    
-            file_info = get_file_info(path, subpath, origin, create_new=False)
+            file_info = get_file_info(db_path,  origin, create_new=False)
         
         
         if 0:
-            slice = get_slice_corrected(path, pd.Timestamp('2018-02-27 20:00',tz='Europe/Berlin'), pd.Timedelta(minutes=duration), quantity, file_info, file_info_temp = get_file_info(path, config.subpaths['temp'], config.origins['temp']))
+            slice = get_slice_corrected(pd.Timestamp('2018-02-27 20:00',tz='Europe/Berlin'), 
+                                        pd.Timedelta(minutes=duration), 
+                                        quantity, 
+                                        file_info, 
+                                        file_info_temp = get_file_info(db_path, config.origins['temp']))
             print(slice[:-1])
             print(slice[-1].shape)
             print(np.mean(slice[-1], axis=0))
@@ -3241,37 +3238,30 @@ def main():
             this_dict = describe_stats(measurement, headers, quantity)
             print(this_dict)
             return
-    
-        if 0:
-            merge_xarrays(path, quantity, what='stats')
-            return
         
-        if 0:
+        if 1:
             if 'strain' in quantity:
-                file_info_temp = get_file_info(path, config.subpaths['temp'], config.origins['temp'])
+                file_info_temp = get_file_info(db_path, config.origins['temp'])
                 
-                stats = get_stats(path, quantity, file_info, duration = pd.Timedelta(minutes=duration),
-                                  create_new=True, file_info_temp = file_info_temp, skip_existing=True, 
-                                  chunksize=500, num_workers=num_workers, this_worker=this_worker)
+                stats = get_stats(db_path, quantity, file_info, 
+                                  duration = pd.Timedelta(minutes=duration),
+                                  create_new=True, skip_existing=True, chunksize=500, 
+                                  file_info_temp = file_info_temp,
+                                  num_workers=num_workers, this_worker=this_worker)
             else:
-                stats = get_stats(path, quantity, file_info, duration = pd.Timedelta(minutes=duration), 
-                                  create_new=True, skip_existing=True, 
-                                  chunksize=500, num_workers=num_workers, this_worker=this_worker)
+                stats = get_stats(db_path, quantity, file_info, 
+                                  duration = pd.Timedelta(minutes=duration), 
+                                  create_new=True, skip_existing=True, chunksize=500, 
+                                  num_workers=num_workers, this_worker=this_worker)
                 
-            #merge_xarrays(path, quantity, what='stats')
             return
         else:
-            stats = get_stats(path, quantity)
+            stats = get_stats(db_path, quantity)
         
-        if 0:
-            merge_xarrays(path, quantity, what='modal')
-        
-        if 0:
-            merge_xarrays(path, quantity, what='modal')
         
         if 0 and quantity in ['accel', 'strain_rosettes']: 
             # file_info needed for slice generation, in case they were accidentally deleted or need to be regenerated
-            modal = get_modal_results(path, quantity, stats, 
+            modal = get_modal_results(db_path, quantity, stats, 
                                       skip_existing=True, create_new=True, filter_errors=False, 
                                       chunksize=20, num_workers=num_workers, this_worker=this_worker)
             return
