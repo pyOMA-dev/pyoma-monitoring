@@ -56,11 +56,6 @@ def main(argv):
         
     
     path='/vegas/scratch/womo1998/towerdata/{}-minutes/'.format(duration)
-    
-    if quantity != 'strain_rosettes':
-        config.file_cache = deque(maxlen=49)
-    else:
-        config.file_cache = deque(maxlen=3)
         
     subpath = config.subpaths[quantity]
     origin = config.origins[quantity]

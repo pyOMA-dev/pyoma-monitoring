@@ -1,6 +1,6 @@
 import os
 import datetime
-from _collections import deque
+from collections import deque
 file_cache = deque(maxlen=5)
 
 origins = {'accel':'accel', 
