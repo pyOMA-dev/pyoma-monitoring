@@ -31,7 +31,7 @@ def main(argv):
             duration = int(arg)
             if duration not in [10,30,60,120]:
                 raise ValueError(f"Duration {duration} is not supported. Choices [10, 30, 60, 120]")
-            duration = pd.Timedelta(duration)
+            duration = pd.Timedelta(minutes=duration)
         if opt == '-q':
             quantity = arg
             if quantity not in ['accel', 'wind', 'temp', 'strain_rosettes']:
