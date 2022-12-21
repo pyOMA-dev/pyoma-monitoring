@@ -124,14 +124,14 @@ def main(argv):
     if stats:
         # adjust dtstart to time_iterator slices
         dtstart = round_dt(dtstart, duration, floor=True)
-        stats_ds = get_stats(quantity, duration = pd.Timedelta(minutes=duration), 
+        stats_ds = get_stats(quantity, pd.Timedelta(minutes=duration), 
                              fi_ds, dtstart=dtstart, 
                              create_new=True, skip_existing=True, chunksize=500)#, until=until)
     else:
-        stats_ds = get_stats(quantity, duration=pd.Timedelta(minutes=duration))
+        stats_ds = get_stats(quantity, pd.Timedelta(minutes=duration))
     
     if modal: 
-        modal_ds = get_modal_results(quantity, duration=pd.Timedelta(minutes=duration), stats_ds, 
+        modal_ds = get_modal_results(quantity, pd.Timedelta(minutes=duration), stats_ds, 
                                   skip_existing=True, create_new=True, 
                                   filter_errors=False, 
                                   chunksize=50, missing=True)
