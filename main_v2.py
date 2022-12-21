@@ -132,6 +132,7 @@ import warnings
 import contextlib
 import logging
 logger = logging.getLogger(__name__)
+logger.setLevel(logging.INFO)
 
 import re
 import pytz
@@ -415,8 +416,8 @@ def get_file_info(origin: str, create_new: bool=False, **kwargs):
     
     ds_path = os.path.join(config.db_root_path, f'file_info_{origin}.nc')
     if not os.path.exists(ds_path):
-        logger.warning(f'Path for file_info does not exist {ds_path}. Re-creating!')
-        create_new = True
+        raise RuntimeError(f'Path for file_info does not exist {ds_path}.')
+
     
     if not create_new:
         stat_result = os.stat(ds_path, follow_symlinks=True)
@@ -751,8 +752,8 @@ def get_stats(quantity: str, duration: pd.Timedelta,
     ds_path = os.path.join(config.db_root_path, f'{minutes}-minutes/', 'stats_{}.nc'.format(quantity))
     
     if not os.path.exists(ds_path):
-        logger.warning(f'Path for stats does not exist {ds_path}. Re-creating!')
-        create_new = True
+        raise RuntimeError(f'Path for stats does not exist {ds_path}.')
+        
         
     if file_info is None and create_new:
         raise RuntimeError('File info xarray has to be provided to create a statistical description')
@@ -1816,8 +1817,8 @@ def get_modal_results(quantity: str, duration: pd.Timedelta,
     ds_path = os.path.join(config.db_root_path, f'{minutes}-minutes/', 'modal_{}.nc'.format(quantity))
     
     if not os.path.exists(ds_path):
-        logger.warning(f'Path for modal does not exist {ds_path}. Re-creating!')
-        create_new = True
+        raise RuntimeError(f'Path for modal does not exist {ds_path}.')
+
         
     if stats is None and create_new:
         raise RuntimeError('Statistics xarray has to be provided to run modal analysis.')
