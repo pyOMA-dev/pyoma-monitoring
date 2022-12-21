@@ -312,7 +312,7 @@ def plot_daily(quantity: str, duration: pd.Timedelta, dtstart: pd.Timestamp):
     ax.set_xlim((data.time.data.min(), data.time.data.max()))
     fig.legend(handles= handles, loc='center right')
     fig.autofmt_xdate()
-    fig.suptitle(f"mean / min / max over {duration.minutes} minutes for each channel of type {quantity}")
+    fig.suptitle(f"mean / min / max over {minutes} minutes for each channel of type {quantity}")
     
     if modal:
         y = ds['frequencies'].data
@@ -1948,11 +1948,12 @@ def main():
     logger.setLevel(logging.INFO)
     
     duration_selector = 3
-    duration = [10,30,60,120][duration_selector]
+    duration = pd.Timedelta(minutes=[10,30,60,120][duration_selector])
+    minutes = int(duration.total_seconds()/60)
     
-    path='/vegas/scratch/womo1998/towerdata/{}-minutes/'.format(duration)
+    # path='/vegas/scratch/womo1998/towerdata/{}-minutes/'.format(duration)
     figpath = '/vegas/users/staff/womo1998/Projects/2023_EVACES/current_figures/'
-    db_path = os.path.join(config.db_root_path, f'{duration}-minutes/')
+    db_path = os.path.join(config.db_root_path, f'{minutes}-minutes/')
     
     save_figures=False
     
@@ -2009,19 +2010,19 @@ def main():
         logger.info('{}, {}'.format(quantity, origin))
         
         if pfi:
-            plot_file_info(db_path, subpath, origin, check_errors=1, filter_errors=0)
+            plot_file_info(origin, check_errors=1, filter_errors=0)
             plt.show()
 
         if ps:
-            plot_stats(db_path, quantity, check_errors=0, filter_errors=0)
+            plot_stats(quantity, duration, check_errors=0, filter_errors=0)
             plt.show()
         
         if ps:
-            plot_stats(db_path, quantity, check_errors=0, filter_errors=0, modal=True)
+            plot_stats(quantity, duration, check_errors=0, filter_errors=0, modal=True)
             plt.show()
         
         if pld:
-            plot_daily(db_path, quantity, duration, np.datetime64('2022-12-12 00:00'))
+            plot_daily(quantity, duration, np.datetime64('2022-12-12 00:00'))
             plt.show()
         
         if pmr and quantity in ['accel', 'strain_rosettes']:
@@ -2045,7 +2046,7 @@ def main():
                             
                         with matplotlib.rc_context(rc=print_context_dict):
                             
-                            postprocess_modal_results(db_path, quantity, 
+                            postprocess_modal_results(quantity, duration,
                                                       filter_errors=False, 
                                                       wind_range=wind_range, 
                                                       temp_range=temp_range, 
@@ -2055,7 +2056,7 @@ def main():
                                                       scatter=False,
                                                       )
                         if save_figures:
-                            plt.gcf().savefig(figpath + 'q_{}-d_{}-m_{}-t_{}-w_{}.png'.format(quantity,duration, mode_str, temp_str, wind_str))
+                            plt.gcf().savefig(figpath + 'q_{}-d_{}-m_{}-t_{}-w_{}.png'.format(quantity,minutes, mode_str, temp_str, wind_str))
                         else:
                             plt.show()
     
@@ -2091,7 +2092,7 @@ def main():
             fig.text(0.01, 0.55, 'Frequency [\si{\hertz}]', va='center', rotation='vertical')
             
             if save_figures:
-                plt.gcf().savefig(figpath + f'q_all-d_{duration}-freq_vs_time.png', dpi=300)
+                plt.gcf().savefig(figpath + f'q_all-d_{minutes}-freq_vs_time.png', dpi=300)
                 plt.close('all')
             else:
                 plt.show()
@@ -2133,7 +2134,7 @@ def main():
             
             
             if save_figures:
-                plt.gcf().savefig(figpath + f'q_{quantity}-d_{duration}-freq_vs_temp.png', dpi=300)
+                plt.gcf().savefig(figpath + f'q_{quantity}-d_{minutes}-freq_vs_temp.png', dpi=300)
                 #plt.gcf().savefig('/ismhome/staff/womo1998/Projects/2018_ISMA/paper/figures/three_modes_temp.pdf', dpi=300)
                 plt.close('all')
             else:
@@ -2182,7 +2183,7 @@ def main():
                 
             
             if save_figures:
-                plt.gcf().savefig(figpath + f'q_{quantity}-d_{duration}-damp_vs_wind.png', dpi=300)
+                plt.gcf().savefig(figpath + f'q_{quantity}-d_{minutes}-damp_vs_wind.png', dpi=300)
                 #plt.gcf().savefig('/ismhome/staff/womo1998/Projects/2018_ISMA/paper/figures/three_modes_wind.pdf', dpi=300)
                 plt.close('all')
             else:
@@ -2297,7 +2298,7 @@ def main():
             fig.add_artist(l)
             
             if save_figures:
-                plt.gcf().savefig(figpath + f'q_{quantity}-d_{duration}-icing.png', dpi=300)
+                plt.gcf().savefig(figpath + f'q_{quantity}-d_{minutes}-icing.png', dpi=300)
                 plt.close('all')
             else:
                 plt.show()
@@ -2328,7 +2329,7 @@ def main():
             fig.align_ylabels()
 
             if save_figures:
-                fig.savefig(figpath + f'q_all-d_{duration}-freq_vs_rms.png', dpi=300)
+                fig.savefig(figpath + f'q_all-d_{minutes}-freq_vs_rms.png', dpi=300)
                 #plt.gcf().savefig('/ismhome/staff/womo1998/Projects/2018_ISMA/paper/figures/freq_vs_rms.pdf', dpi=300)
                 plt.close('all')
             else:
@@ -2461,7 +2462,7 @@ def main():
             #plt.show()
             
             if save_figures:
-                plt.gcf().savefig(figpath + f'q_{quantity}-d_{duration}-directions_msh_vs_wind.png', dpi=300)
+                plt.gcf().savefig(figpath + f'q_{quantity}-d_{minutes}-directions_msh_vs_wind.png', dpi=300)
                 #plt.gcf().savefig('/ismhome/staff/womo1998/Projects/2018_ISMA/paper/figures/main_dir_vs_wind.pdf', dpi=300)
                 plt.close('all')
             else:

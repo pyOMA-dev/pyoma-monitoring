@@ -746,7 +746,7 @@ def check_and_mark_errors(ds, new = True, check_kurtosis = False):
 def get_stats(quantity: str, duration: pd.Timedelta, file_info: xr.Dataset=None, create_new: bool=False, **kwargs):
     
     minutes = int(duration.total_seconds()/60)
-    ds_path = os.path.join(config.db_root_path, f'{duration}-minutes/', 'stats_{}.nc'.format(quantity))
+    ds_path = os.path.join(config.db_root_path, f'{minutes}-minutes/', 'stats_{}.nc'.format(quantity))
     
     if not os.path.exists(ds_path):
         logger.warning(f'Path for stats does not exist {ds_path}. Re-creating!')
@@ -785,8 +785,8 @@ def create_stats(quantity: str, duration: pd.Timedelta, file_info: xr.Dataset,
     
     minutes = int(duration.total_seconds()/60)
     
-    process_ds_path = os.path.join(config.db_root_path, f'{duration}-minutes/', 'stats_{}.{}.nc'.format(quantity,config.pid))
-    master_ds_path = os.path.join(config.db_root_path, f'{duration}-minutes/', 'stats_{}.nc'.format(quantity))
+    process_ds_path = os.path.join(config.db_root_path, f'{minutes}-minutes/', 'stats_{}.{}.nc'.format(quantity,config.pid))
+    master_ds_path = os.path.join(config.db_root_path, f'{minutes}-minutes/', 'stats_{}.nc'.format(quantity))
     
     if os.path.exists(process_ds_path):
         process_ds =  xr.open_dataset(process_ds_path)
@@ -1808,7 +1808,7 @@ def get_modal_results(quantity: str, duration: pd.Timedelta,
                       stats: xr.Dataset=None, create_new: bool=False, **kwargs):
     
     minutes = int(duration.total_seconds()/60)
-    ds_path = os.path.join(config.db_root_path, f'{duration}-minutes/', 'modal_{}.nc'.format(quantity))
+    ds_path = os.path.join(config.db_root_path, f'{minutes}-minutes/', 'modal_{}.nc'.format(quantity))
     
     if not os.path.exists(ds_path):
         logger.warning(f'Path for modal does not exist {ds_path}. Re-creating!')
@@ -1863,8 +1863,8 @@ def create_modal_results(quantity: str, duration: pd.Timedelta,
     
     minutes = int(duration.total_seconds()/60)
     
-    process_ds_path = os.path.join(config.db_root_path, f'{duration}-minutes/', 'modal_{}.{}.nc'.format(quantity,config.pid))
-    master_ds_path = os.path.join(config.db_root_path, f'{duration}-minutes/','modal_{}.nc'.format(quantity))
+    process_ds_path = os.path.join(config.db_root_path, f'{minutes}-minutes/', 'modal_{}.{}.nc'.format(quantity,config.pid))
+    master_ds_path = os.path.join(config.db_root_path, f'{minutes}-minutes/','modal_{}.nc'.format(quantity))
     
     if os.path.exists(process_ds_path):
         process_ds =  xr.open_dataset(process_ds_path, engine='h5netcdf')
@@ -2075,8 +2075,10 @@ def modal_analysis_single(start_time, slice,  quantity, duration):
     save_results = True
     interactive = False
     
+    minutes = int(duration.total_seconds()/60)
+    
     result_folder = os.path.join(config.slice_root_path, 
-                                 f'{duration}-minutes',
+                                 f'{minutes}-minutes',
                                  'modal_{}'.format(quantity),
                                  '{}'.format(st.year),
                                  '{:02d}'.format(st.month))
@@ -3191,8 +3193,9 @@ def main():
     if len(sys.argv)>3: duration_selector = int(sys.argv[3])
     else: duration_selector = 3
         
-    duration = pd.Timedelta([10,30,60,120][duration_selector])
-    db_path = os.path.join(config.db_root_path, f'{duration.minutes}-minutes/')
+    duration = pd.Timedelta(minutes=[10,30,60,120][duration_selector])
+    minutes = int(duration.total_seconds()/60)
+    db_path = os.path.join(config.db_root_path, f'{minutes}-minutes/')
     
     if len(sys.argv) > 4: q_selector=int(sys.argv[4])
     else: q_selector = 1
@@ -3210,7 +3213,7 @@ def main():
         
         origin = config.origins[quantity]
         subpath = config.subpaths[origin]
-        logger.info('Quantity: {}, Duration: {}'.format(quantity, duration.minutes))
+        logger.info('Quantity: {}, Duration: {}'.format(quantity, minutes))
         
         if 0:
             file_contents = read_file(os.path.join(config.file_root_path, subpath, 'Wind_kontinuierlich__1_2018-06-13_15-00-00_000000.csv.bz2'))

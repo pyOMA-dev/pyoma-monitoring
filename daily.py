@@ -59,8 +59,8 @@ def main(argv):
     if duration is None or quantity is None:
         print ('daily.py -d <duration in minutes> -q <quantity> --file_info --stats --modal --plot_dir --dtstart=YYYY-MM-DD hh:mm --loglevel=INFO')
         sys.exit()
-        
-    db_path = os.path.join(config.db_root_path, f'{duration.minutes}-minutes/')
+    minutes = int(duration.total_seconds()/60)
+    db_path = os.path.join(config.db_root_path, f'{minutes}-minutes/')
     # path='/vegas/scratch/womo1998/towerdata/{}-minutes/'.format(duration)
         
     subpath = config.subpaths[quantity]
@@ -69,7 +69,7 @@ def main(argv):
     start_up_str = 'Geyer Monitoring System - Commandline Tool\n\n'
     start_up_str += 'Selected parameters:\n'
     start_up_str += f'Quantity: \t\t {quantity}\n'
-    start_up_str += f'Duration: \t\t {duration.minutes} minutes\n'
+    start_up_str += f'Duration: \t\t {minutes} minutes\n'
     start_up_str += f'Results stored at: \t {db_path}\n'
     if plots:
         start_up_str += f'Figures stored at: \t {plot_dir}\n'
@@ -139,9 +139,9 @@ def main(argv):
         
     if plots:
         fig1, fig2 = plot_daily(quantity, duration, dtstart)
-        fig1.savefig(os.path.join(plot_dir,f'stats_{quantity}_{duration.minutes}.png'))
+        fig1.savefig(os.path.join(plot_dir,f'stats_{quantity}_{minutes}.png'))
         if modal:
-            fig2.savefig(os.path.join(plot_dir,f'modal_{quantity}_{duration.minutes}.png'))
+            fig2.savefig(os.path.join(plot_dir,f'modal_{quantity}_{minutes}.png'))
     
     
 if __name__ == '__main__':
