@@ -446,7 +446,9 @@ def close_to_utc_transition(file_time, close_hours=3):
     else:
         return False
 
-def round_dt(dt, duration, ceil=True, floor=False):
+def round_dt(dt: np.datetime64, duration: np.timedelta64,
+             ceil: bool=True, floor: bool=False):
+    
     if floor: ceil=False
     
     td = np.timedelta64(duration,'m')
@@ -1969,7 +1971,7 @@ def create_modal_results(quantity: str, duration: pd.Timedelta,
         if this_stats.length.isnull():
             continue
         
-        duration=pd.Timedelta(seconds=(this_stats.length/this_stats.sample_rate).variable.data.item())
+        # duration=pd.Timedelta(seconds=(this_stats.length/this_stats.sample_rate).variable.data.item())
         
         try:
             with open(os.devnull, 'w') as f, contextlib.redirect_stdout(f):
@@ -3189,8 +3191,8 @@ def main():
     if len(sys.argv)>3: duration_selector = int(sys.argv[3])
     else: duration_selector = 3
         
-    duration = [10,30,60,120][duration_selector]
-    db_path = os.path.join(config.db_root_path, f'{duration}-minutes/')
+    duration = pd.Timedelta([10,30,60,120][duration_selector])
+    db_path = os.path.join(config.db_root_path, f'{duration.minutes}-minutes/')
     
     if len(sys.argv) > 4: q_selector=int(sys.argv[4])
     else: q_selector = 1
@@ -3208,7 +3210,7 @@ def main():
         
         origin = config.origins[quantity]
         subpath = config.subpaths[origin]
-        logger.info('Quantity: {}, Duration: {}'.format(quantity, duration))
+        logger.info('Quantity: {}, Duration: {}'.format(quantity, duration.minutes))
         
         if 0:
             file_contents = read_file(os.path.join(config.file_root_path, subpath, 'Wind_kontinuierlich__1_2018-06-13_15-00-00_000000.csv.bz2'))
@@ -3233,7 +3235,7 @@ def main():
         
         if 0:
             slice = get_slice_corrected(pd.Timestamp('2018-02-27 20:00',tz='Europe/Berlin'), 
-                                        pd.Timedelta(minutes=duration), 
+                                        duration, 
                                         quantity, 
                                         file_info, 
                                         file_info_temp = get_file_info(config.origins['temp']))
@@ -3250,22 +3252,22 @@ def main():
             if 'strain' in quantity:
                 file_info_temp = get_file_info(config.origins['temp'])
                 
-                stats = get_stats(quantity, duration=pd.Timedelta(minutes=duration),file_info, 
+                stats = get_stats(quantity, duration,file_info, 
                                   create_new=True, skip_existing=True, chunksize=500, 
                                   file_info_temp=file_info_temp,
                                   num_workers=num_workers, this_worker=this_worker)
             else:
-                stats = get_stats(quantity, duration=pd.Timedelta(minutes=duration), file_info, 
+                stats = get_stats(quantity, duration, file_info, 
                                   create_new=True, skip_existing=True, chunksize=500, 
                                   num_workers=num_workers, this_worker=this_worker)
                 
             return
         else:
-            stats = get_stats(quantity, duration=pd.Timedelta(minutes=duration), )
+            stats = get_stats(quantity, duration, )
         
         
         if 0 and quantity in ['accel', 'strain_rosettes']: 
-            modal = get_modal_results(quantity, duration=pd.Timedelta(minutes=duration), stats, 
+            modal = get_modal_results(quantity, duration, stats, 
                                       skip_existing=True, create_new=True, filter_errors=False, 
                                       chunksize=20, num_workers=num_workers, this_worker=this_worker)
             return

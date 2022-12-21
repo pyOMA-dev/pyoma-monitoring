@@ -31,6 +31,7 @@ def main(argv):
             duration = int(arg)
             if duration not in [10,30,60,120]:
                 raise ValueError(f"Duration {duration} is not supported. Choices [10, 30, 60, 120]")
+            duration = pd.Timedelta(duration)
         if opt == '-q':
             quantity = arg
             if quantity not in ['accel', 'wind', 'temp', 'strain_rosettes']:
@@ -59,7 +60,7 @@ def main(argv):
         print ('daily.py -d <duration in minutes> -q <quantity> --file_info --stats --modal --plot_dir --dtstart=YYYY-MM-DD hh:mm --loglevel=INFO')
         sys.exit()
         
-    db_path = os.path.join(config.db_root_path, f'{duration}-minutes/')
+    db_path = os.path.join(config.db_root_path, f'{duration.minutes}-minutes/')
     # path='/vegas/scratch/womo1998/towerdata/{}-minutes/'.format(duration)
         
     subpath = config.subpaths[quantity]
@@ -68,7 +69,7 @@ def main(argv):
     start_up_str = 'Geyer Monitoring System - Commandline Tool\n\n'
     start_up_str += 'Selected parameters:\n'
     start_up_str += f'Quantity: \t\t {quantity}\n'
-    start_up_str += f'Duration: \t\t {duration} minutes\n'
+    start_up_str += f'Duration: \t\t {duration.minutes} minutes\n'
     start_up_str += f'Results stored at: \t {db_path}\n'
     if plots:
         start_up_str += f'Figures stored at: \t {plot_dir}\n'
@@ -123,24 +124,24 @@ def main(argv):
         
     if stats:
         # adjust dtstart to time_iterator slices
-        dtstart = round_dt(dtstart, duration, floor=True)
-        stats_ds = get_stats(quantity, pd.Timedelta(minutes=duration), 
+        dtstart = round_dt(dtstart, duration.to_timedelta64(), floor=True)
+        stats_ds = get_stats(quantity, duration, 
                              fi_ds, dtstart=dtstart, 
                              create_new=True, skip_existing=True, chunksize=500)#, until=until)
     else:
-        stats_ds = get_stats(quantity, pd.Timedelta(minutes=duration))
+        stats_ds = get_stats(quantity, duration)
     
     if modal: 
-        modal_ds = get_modal_results(quantity, pd.Timedelta(minutes=duration), stats_ds, 
+        modal_ds = get_modal_results(quantity, duration, stats_ds, 
                                   skip_existing=True, create_new=True, 
                                   filter_errors=False, 
                                   chunksize=50, missing=True)
         
     if plots:
         fig1, fig2 = plot_daily(quantity, duration, dtstart)
-        fig1.savefig(os.path.join(plot_dir,f'stats_{quantity}_{duration}.png'))
+        fig1.savefig(os.path.join(plot_dir,f'stats_{quantity}_{duration.minutes}.png'))
         if modal:
-            fig2.savefig(os.path.join(plot_dir,f'modal_{quantity}_{duration}.png'))
+            fig2.savefig(os.path.join(plot_dir,f'modal_{quantity}_{duration.minutes}.png'))
     
     
 if __name__ == '__main__':
