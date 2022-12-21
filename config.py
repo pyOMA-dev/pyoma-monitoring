@@ -1,7 +1,7 @@
 import os
 import datetime
 from collections import deque
-file_cache = deque(maxlen=5)
+file_cache = deque(maxlen=25)
 
 origins = {'accel':'accel', 
           'wind':'wind', 

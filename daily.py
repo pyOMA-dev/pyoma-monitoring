@@ -51,7 +51,9 @@ def main(argv):
             assert os.path.exists(plot_dir)
         if opt == '--dtstart':
             dtstart = np.datetime64(arg)
-            os.environ['DTSTART'] = repr(dtstart)
+            with open('dtstart.tmp','wt') as f:
+                f.write(repr(dtstart))
+                
         
     if duration is None or quantity is None:
         print ('daily.py -d <duration in minutes> -q <quantity> --file_info --stats --modal --plot_dir --dtstart=YYYY-MM-DD hh:mm --loglevel=INFO')
@@ -111,7 +113,8 @@ def main(argv):
             start_times =fi_ds.start_time[dset].astype('datetime64[s]')
             if len(start_times) > 0:
                 dtstart = start_times.min().values
-                os.environ['DTSTART'] = repr(dtstart)
+                with open('dtstart.tmp','wt') as f:
+                    f.write(repr(dtstart))
             else:
                 logger.warning('Processing files has failed. Check analysis scripts and file integrity.')
                 return
