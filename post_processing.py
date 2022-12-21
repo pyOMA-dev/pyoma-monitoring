@@ -90,7 +90,6 @@ def inspect_time_shifts():
     fig1=plt.figure(1)
     fig1.canvas.mpl_connect('pick_event',onpick)
     for quantity in ['accel','strain_rosettes']:
-        subpath=config.subpaths[quantity]
         origin=origins[quantity]
 
         ds = get_file_info(origin)
@@ -426,12 +425,289 @@ def plot_stats(quantity: str, duration: pd.Timedelta,
         #axes[2,0].set_ylim(-2,5)
         logger.debug(channel)
         plt.show()
+        
+def load_filter_merge(quantity: str, duration: pd.Timedelta, 
+                      time_range=None, 
+                      kurt_range = None,
+                      rms_range = None,
+                      wind_range = 0,
+                      temp_range = 0,
+                      f_range = None,
+                      damp_range = None,
+                      mode_pair = 0,
+                      mc_range = None, 
+                      filter_errors=False, 
+                       **kwargs):
+    '''
+    Loads:
+        - modal result DataSet of selected quantity
+        - statistics DataSet for wind
+        - statistics DataSet for temperature
+    for the selected block length of the signal
+    
+    Filters according to the given filter ranges. Ranges are all applied
+    and-wise if this is not desired only provide one range at the time.
+    
+    Merges all DataSets into a single DataSet and returns it for further processing.
+    
+    Parameters:
+    -----------
+        quantity: str
+            Quantity to load modal results from, must be one of 'accel' or 'strain_rosettes'
+        duration: pd.Timedelta
+            Define the block-length of the analysis must correspond to 10, 30, 60 or 120 minutes
+        time_range: tuple (pd.Timestamp, pd.Timestamp), optional
+            Defines the filter for DataSet coordinate 'time'
+        kurt_range: tuple (lower_kurtosis, upper_kurtosis), optional
+            Filters the kurtosis of the raw signal averaged over channels
+        rms_range: tuple (lower_rms, upper_rms), optional
+            Filters the DataSet based on the root-mean-square of the raw 
+            signal averaged over channels
+        wind_range: tuple (lower_windspeed, upper_windspeed) or integer, optional
+            Filters the DataSet based on the measured windspeed of channel 'Wg'
+            Alternatively an integer can be provided for predefined ranges:
+            0: all speeds, 1: weak wind, 2: moderate wind, 3: strong wind
+            
+        temp_range: tuple (lower_temperature, upper_temperature) or integer, optional 
+            Filter temperatures based on the median average over all 5 temperature channels
+            Alternatively an integer can be provided for predefined ranges:
+            0: (-20,40), 1: (-20,0), 2: (0,10), 3: (10,20), 4: (20,40)
+        f_range: tuple (lower_frequency, upper_frequency), optional
+            Filter identified frequencies. 
+            Alternatively, mode_pair can be provided for predefined ranges. 
+            f_range takes precedence over mode_pair
+        damp_range: tuple (lower_damping_ratio, upper_damping_ratio), optional
+            Filter identified damping ratios
+        mode_pair: integer, optional
+            Set f_range based on the following
+            0: (0,4), 1: (0.33,0.37), 2: (0.57,0.65), 3: (1.07,1.47), 4: (1.98,2.16), 5:(3.2,3.5)
+        mc_range: tuple (lower_modal_contribution, upper_modal_contribution), optional
+            Filter non-physical modes, based on the modal contributions criterion
+            Might not be available, depending on the OMA method, that was used for analysis
+        filter_errors: bool, optional
+            Filter entries that were marked as errorneous before, due to
+            sensor overload, analysis errors, or others...
+            
 
+    
+    
+    relating modal_results to other quantities:
+            f,   d, MC, MPC,MPD,order, ⟵ modal results
+           _________________________
+    time   | x | x | x | x | x | x |
+    rms    | x | x | x |   |   |   |
+    wind   | x | x | x |   |   |   |
+    temp   | x | x | x |   |   |   |
+    (kurt.)| x | x | x |   |   |   |
+      ↑    ‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾
+    related quantities
+   
+    relating modes with each other:
+        MC vs. MC, msh vs msh (MAC)
+   
+    relating quantities with each other (strain vs. accel):
+       f vs. f, d vs. d, MC vs. MC
+    '''
+    
+    assert quantity in ['accel', 'strain_rosettes']
+    assert isinstance(duration, pd.Timedelta)
+    
+    ds =  get_modal_results(quantity, duration)
+    logger.debug(len(ds.time))
+    
+    wind_stats = get_stats('wind', duration)
+    wind_stats.load()
+    temp_stats = get_stats('temp', duration)
+    temp_stats.load()
+    
+    ds, wind_stats, temp_stats = xr.align(ds, wind_stats, temp_stats, exclude=['channels','modes'])
+    logger.debug(len(ds.time))
+    if time_range is None:
+        time_range = (pd.Timestamp('2015-05-20', tz='Europe/Berlin'), pd.Timestamp(ds.time.max().item(), tz='Europe/Berlin'))
+    else:
+        assert len(time_range)==2
+        assert isinstance(time_range[0], pd.Timestamp)
+        assert isinstance(time_range[1], pd.Timestamp)
+    
+    if isinstance(wind_range, int):
+        #             ['all',     'weak wind','moderate wind','strong wind',custom scaling]
+        wind_range = [(0,40),(0,5.4),(5.4,10.7),(10.7,25),(0,20)][wind_range]
+    else:
+        assert len(wind_range)==2
+    
+    #             [ 'all',    'frost'    , '0-10','10-20','20-...'] 
+    if isinstance(temp_range,int):
+        temp_range = [(-20,40),(-20,0),(0,10),(10,20),(20,40)][temp_range]
+    else:
+        assert len(temp_range)==2
+    
+    if f_range is not None:
+        logger.warning(f"Using provided frequency ranges {f_range}, ignoring mode_pair {mode_pair}")
+        assert len(f_range)==2
+    else:
+        #          ['all','first mode','second mode,'third mode', fourth mode', 'fifth mode']
+        # f_range = [(0,4),(0.33,0.38),(0.57,0.65),(1.17,1.4),(2.0,2.15),(3.15,3.55)][mode]
+        # f_range = [(0,4),(0.305,0.405),(0.57,0.675),(1.118,1.4975),(1.915,2.2),(3.13,3.69)][mode]
+        f_range = [(0,4),(0.33,0.37),(0.57,0.65),(1.07,1.47),(1.98,2.16),(3.2,3.5)][mode_pair]
+        
+        
+    if rms_range is None:
+        if quantity=='accel':
+            rms_range = (0,24)
+        elif quantity=='strain_rosettes':
+            rms_range = (0,70)
+        logger.warning(f"Setting a pre-defined filter on RMS {rms_range}")
+    else:
+        assert len(rms_range)==2
+            
+    #f_range = None
+    logger.info('wind: {}, temp: {}, mode: {}'.format(wind_range, temp_range, f_range))
+
+
+    # pre-filtering:
+    #    modal_results: frequency_range (always) i.e. mode, mode_assignment (if necessary)
+    #    related_quantities: time_range, rms_range, wind_range, temperature_range, 
+    
+    # ranges affecting dimension: time
+    if time_range is not None:
+        logger.debug('Filter Time')
+        ds = ds.sel(time=slice(*time_range))
+    
+    if filter_errors:
+        logger.debug('Filter Errors')
+        error_ind = (ds['min']==ds['max']).any(dim='channels')
+        ds = ds.where(np.logical_not(error_ind))
+    
+    wind_arr = wind_stats['mean'].sel(channels='Wg').rename('wind') 
+    if wind_range is not None:
+        logger.debug('Filter Wind')
+        wind_ind = np.logical_and(wind_arr>wind_range[0],wind_arr<=wind_range[1])
+        ds = ds.where(wind_ind)
+        wind_arr = wind_arr.where(wind_ind)
+    ds = xr.merge([ds, wind_arr])
+    
+    temp_arr = temp_stats['q50'].mean(dim='channels').rename('temp')   
+    #temp_arr = temp_stats['q50'].sel(channels='Pt100_01').rename('temp')    
+    if temp_range is not None:
+        logger.debug('Filter Temp')
+        temp_ind = np.logical_and(temp_arr>temp_range[0],temp_arr<temp_range[1])
+        ds = ds.where(temp_ind)
+        temp_arr = temp_arr.where(temp_ind)
+    ds = xr.merge([ds, temp_arr])
+    
+    # prepare averaged RMS DataArrays for filtering
+    if quantity == 'accel':
+        rms_arr = ds['rms'].sel(channels=['Accel_01','Accel_02']).mean(dim='channels').rename('rms_m')
+        rms_arr*=1000
+        kurt_arr = ds['kurtosis'].sel(channels=['Accel_01','Accel_02']).mean(dim='channels').rename('kurtosis_m')
+    elif quantity == 'strain_rosettes':
+        rms = ds['rms']
+        rms = rms.sel(channels=['A_z','B_z', 'C_z', 'D_z'])
+        rms = rms.mean(dim='channels')
+        rms = rms.rename('rms_m')  
+        rms_arr = ds['rms'].sel(channels=['A_z','B_z', 'C_z', 'D_z']).mean(dim='channels').rename('rms_m')   
+        rms_arr*=10e6
+        kurt_arr = ds['kurtosis'].sel(channels=['A_z','B_z', 'C_z', 'D_z']).mean(dim='channels').rename('kurtosis_m')
+
+    ds = xr.merge([ds, rms_arr, kurt_arr])
+    
+    if rms_range is not None:
+        logger.debug('Filter RMS')
+        rms_ind = np.logical_and(rms_arr>=rms_range[0],rms_arr<=rms_range[1])
+        ds = ds.where(rms_ind)
+        
+    if kurt_range is not None:
+        logger.debug('Filter Kurtosis')
+        kurt_ind = np.logical_and(kurt_arr>=kurt_range[0],kurt_arr<=kurt_range[1])
+        ds = ds.where(kurt_ind)
+   
+    # drop all entries that are empty after filtering  
+    ds = ds.dropna(dim='time', how='all')
+    
+    
+    # ranges affecting dimension: modes
+    modal_ind = ds['frequencies'].isnull()
+    modal_ind = np.logical_not(modal_ind)
+    if f_range is not None:
+        f_ind = np.logical_and(ds['frequencies']>=f_range[0],ds['frequencies']<=f_range[1])
+        modal_ind = np.logical_and(f_ind, modal_ind)
+    if mc_range is not None:
+        mc_ind = np.logical_and(ds['modal_contributions']>mc_range[0], ds['modal_contributions']<=mc_range[1])
+        modal_ind = np.logical_and(modal_ind, mc_ind)
+    if damp_range is not None:
+        damp_ind = np.logical_and(ds['damping']>damp_range[0], ds['damping']<=damp_range[1])
+        modal_ind = np.logical_and(modal_ind, damp_ind)
+
+    # TODO: mode assignment would have to be done here
+    
+    # ranges affecting dimension: channels
+    # None
+    try:
+        cv_f=ds['std_frequencies']/ds['frequencies']
+        #cv_f=cv_f.where(cv_f<cv_f.quantile(0.95))
+        # if not log_scale:
+            # cv_f = xr.ufuncs.log10(cv_f)
+        
+        ds['cov_frequencies']=cv_f
+        
+        cv_d=ds['std_damping']/ds['damping']
+        #cv_d=cv_d.where(cv_d<cv_d.quantile(0.95))
+        # if not log_scale:
+            # cv_d = xr.ufuncs.log10(cv_d)
+        ds['cov_damping']=cv_d
+        
+        #data_quality_1 = ds['mean_svd_psd'].isel(channels=0,drop=True)/ds['energy_svd_psd'].isel(channels=0,drop=True)
+        #data_quality_1 = ds['energy_svd_psd'].isel(channels=0,drop=True)
+        data_quality_1 = ds['max_svd_psd'].isel(channels=0,drop=True)
+        
+        #data_quality_21 = ds['mean_svd_psd'].sel(channels='Accel_04_top',drop=True)/ds['energy_svd_psd'].sel(channels='Accel_04_top',drop=True)    
+        #data_quality_21 = ds['energy_svd_psd'].sel(channels='Accel_04_top',drop=True)
+        if quantity == 'accel':
+            data_quality_21 = ds['mean_svd_psd'].sel(channels='Accel_04_top',drop=True)
+            data_quality_21 =data_quality_21.rename('data_quality')
+            
+            #data_quality_22 = ds['mean_svd_psd'].sel(channels='Accel_06',drop=True)/ds['energy_svd_psd'].sel(channels='Accel_06',drop=True)
+            #data_quality_22 = ds['energy_svd_psd'].sel(channels='Accel_06',drop=True)
+            data_quality_22 = ds['mean_svd_psd'].sel(channels='Accel_06',drop=True)
+            data_quality_22 =data_quality_22.rename('data_quality')
+            
+            data_quality_2 = xr.merge([data_quality_21,data_quality_22])
+        else:
+            data_quality_2 = ds['mean_svd_psd'].isel(channels=5,drop=True)
+            data_quality_2 = data_quality_2.rename('data_quality')
+            
+        
+        data_quality=data_quality_1/data_quality_2
+        #data_quality.rename('data_quality')
+        #data_quality = data_quality/ds['rms'].mean(dim='channels')
+        #data_quality=data_quality.where(data_quality<data_quality.quantile(0.95))
+        # if not log_scale:
+            # data_quality = 10*xr.ufuncs.log10(data_quality)
+        # else:
+        data_quality = data_quality**10
+        #data_quality = data_quality
+        if quantity =='accel':
+            ds = xr.merge([ds,data_quality])
+        else:
+            ds['data_quality']=data_quality
+    except Exception as e:
+        logger.exception(e)
+        
+    ds = ds.where(modal_ind)
+    
+    ds = ds.transpose('time','modes','channels')
+    
+    return ds
+    
+    
+    
 def postprocess_modal_results(quantity: str, duration: pd.Timedelta, 
+                              time_range=None, kurt_range=None, rms_range=None, 
+                              wind_range=None, temp_range=None, 
+                              f_range=None, damp_range=None, mode_pair=0, mc_range=None, 
                               filter_errors=False, 
-                              wind_range = 0, temp_range = 0, mode=0, 
                               q_1=None, q_2=None, 
-                              fig=None, axes=None, color='grey', hide_ticks=False, scatter=True, **kwargs):
+                              fig=None, axes=None, color='grey', hide_ticks=False, scatter=True, log_scale=False, **kwargs):
     '''
     relating modal_results to other quantities:
             f,   d, MC, MPC,MPD,order, ⟵ modal results
@@ -508,211 +784,24 @@ def postprocess_modal_results(quantity: str, duration: pd.Timedelta,
     else:
         sns = None
     
-    assert quantity in ['accel', 'strain_rosettes']
-    assert isinstance(duration, pd.Timedelta)
-    
-    ds =  get_modal_results(quantity, duration)
-    logger.debug(len(ds.time))
-    wind_stats = get_stats('wind', duration)
-    #wind_stats.load()
-    
-    temp_stats = get_stats('temp', duration)
-    temp_stats.load()
-        
-    ds, wind_stats, temp_stats = xr.align(ds, wind_stats, temp_stats, exclude=['channels','modes'])
-    logger.debug(len(ds.time))
-    
-    time_range = (pd.Timestamp('2015-05-20', tz='Europe/Berlin'), pd.Timestamp('2022-12-14', tz='Europe/Berlin'))
-#     time_range = (pd.Timestamp('2018-09-13', tz='Europe/Berlin'), pd.Timestamp('2020-03-08', tz='Europe/Berlin'))
-    #[2.5e-7,np.inf]a
-
-    if filter_errors:
-        kurt_range = (-1,7.5)
-    else:
-        kurt_range = None
-    
-    #             ['all',     'weak wind','moderate wind','strong wind',custom scaling]
-    wind_range = [(0,40),(0,5.4),(5.4,10.7),(10.7,25),(0,20)][wind_range]
-    #wind_range = None
-    
-    #             [ 'all',    'frost'    , '0-10','10-20','20-...'] 
-    if isinstance(temp_range,int):
-        temp_range = [(-20,40),(-20,0),(0,10),(10,20),(20,40)][temp_range]
-    
-    #temp_range = None
-    #          ['all','first mode','second mode,'third mode', fourth mode', 'fifth mode']
-    # f_range = [(0,4),(0.33,0.38),(0.57,0.65),(1.17,1.4),(2.0,2.15),(3.15,3.55)][mode]
-    # f_range = [(0,4),(0.305,0.405),(0.57,0.675),(1.118,1.4975),(1.915,2.2),(3.13,3.69)][mode]
-    f_range = [(0,4),(0.33,0.37),(0.57,0.65),(1.07,1.47),(1.98,2.16),(3.2,3.5)][mode]
-
-    #f_range = None
-    logger.info('wind: {}, temp: {}, mode: {}'.format(wind_range, temp_range, f_range))
-    mc_range = (0.01,1)
-    mc_range = None
-    damp_range = kwargs.pop('damp_range',(0,5))
-    #damp_range = None
-    
-    log_scale = kwargs.get('log_scale',False)
-    
-    
-    # pre-filtering:
-    #    modal_results: frequency_range (always) i.e. mode, mode_assignment (if necessary)
-    #    related_quantities: time_range, rms_range, wind_range, temperature_range, 
-    #
-    # ranges affecting dimension: time
-    # ranges are all applied  and-wise
-    # if this is not desired only provide one range at the time
-    if time_range is not None:
-        ds = ds.sel(time=slice(*time_range))
-    
-    if quantity == 'accel':
-        rms_arr = ds['rms'].sel(channels=['Accel_01','Accel_02']).mean(dim='channels').rename('rms_m')
-        rms_arr*=1000
-        kurt_arr = ds['kurtosis'].sel(channels=['Accel_01','Accel_02']).mean(dim='channels').rename('kurtosis_m')
-    elif quantity == 'strain_rosettes':
-        rms = ds['rms']
-        rms = rms.sel(channels=['A_z','B_z', 'C_z', 'D_z'])
-        rms = rms.mean(dim='channels')
-        rms = rms.rename('rms_m')  
-        rms_arr = ds['rms'].sel(channels=['A_z','B_z', 'C_z', 'D_z']).mean(dim='channels').rename('rms_m')   
-        rms_arr*=10e6
-        kurt_arr = ds['kurtosis'].sel(channels=['A_z','B_z', 'C_z', 'D_z']).mean(dim='channels').rename('kurtosis_m')
-
-    ds = xr.merge([ds, rms_arr, kurt_arr])
-    
-    if filter_errors:
-        logger.debug('filter errors')
-                    
-        error_ind = (ds['min']==ds['max']).any(dim='channels')
-        
-        ds = ds.where(np.logical_not(error_ind))
-   
-    rms_range = kwargs.pop('rms_range', None)
-    
-    if rms_range is None and scatter==False:
-        if quantity=='accel':
-            rms_range = (0,24)
-        elif quantity=='strain_rosettes':
-            rms_range = (0,70)
-            
-    if rms_range is not None:
-        logger.debug('Filter RMS')
-          
-        rms_ind = np.logical_and(rms_arr>=rms_range[0],rms_arr<=rms_range[1])
-        ds = ds.where(rms_ind)
-        
-    if kurt_range is not None:
-        logger.debug('Filter Kurtosis')
-        kurt_ind = np.logical_and(kurt_arr>=kurt_range[0],kurt_arr<=kurt_range[1])
-
-        ds = ds.where(kurt_ind)
-   
-    wind_arr = wind_stats['mean'].sel(channels='Wg').rename('wind') 
-    if wind_range is not None:
-        wind_ind = np.logical_and(wind_arr>wind_range[0],wind_arr<=wind_range[1])
-        
-        ds = ds.where(wind_ind)
-        wind_arr = wind_arr.where(wind_ind)
-        
-    ds = xr.merge([ds, wind_arr])
-    
-        #ds = ds.combine_first(wind_arr)
-    temp_arr = temp_stats['q50'].mean(dim='channels').rename('temp')   
-    #temp_arr = temp_stats['q50'].sel(channels='Pt100_01').rename('temp')    
-    if temp_range is not None:
-        
-        temp_ind = np.logical_and(temp_arr>temp_range[0],temp_arr<temp_range[1])
-        
-        ds = ds.where(temp_ind)
-        temp_arr = temp_arr.where(temp_ind)
-        
-    ds = xr.merge([ds, temp_arr])
-        #ds = ds.combine_first(temp_arr)
-    #ds
-    ds = ds.dropna(dim='time', how='all')
-    
-    #plt.show()
-    # ranges affecting dimension: modes
-    modal_ind = ds['frequencies'].isnull()
-    modal_ind = np.logical_not(modal_ind)
-    if f_range is not None:
-        f_ind = np.logical_and(ds['frequencies']>=f_range[0],ds['frequencies']<=f_range[1])
-        modal_ind = np.logical_and(f_ind, modal_ind)
-    if mc_range is not None:
-        #ds['modal_contributions']=ds['modal_contributions']*ds['frequencies']**2
-        mc_ind = np.logical_and(ds['modal_contributions']>mc_range[0], ds['modal_contributions']<=mc_range[1])
-        modal_ind = np.logical_and(modal_ind, mc_ind)
-    if damp_range is not None:
-        damp_ind = np.logical_and(ds['damping']>damp_range[0], ds['damping']<=damp_range[1])
-        modal_ind = np.logical_and(modal_ind, damp_ind)
-
-    # mode assignment here
-    
-    # ranges affecting dimension: channels
-    # None
-    try:
-        cv_f=ds['std_frequencies']/ds['frequencies']
-        #cv_f=cv_f.where(cv_f<cv_f.quantile(0.95))
-        if not log_scale:
-            cv_f = xr.ufuncs.log10(cv_f)
-        
-        ds['cov_frequencies']=cv_f
-        
-        cv_d=ds['std_damping']/ds['damping']
-        #cv_d=cv_d.where(cv_d<cv_d.quantile(0.95))
-        if not log_scale:
-            cv_d = xr.ufuncs.log10(cv_d)
-        ds['cov_damping']=cv_d
-        
-        #data_quality_1 = ds['mean_svd_psd'].isel(channels=0,drop=True)/ds['energy_svd_psd'].isel(channels=0,drop=True)
-        #data_quality_1 = ds['energy_svd_psd'].isel(channels=0,drop=True)
-        data_quality_1 = ds['max_svd_psd'].isel(channels=0,drop=True)
-        
-        #data_quality_21 = ds['mean_svd_psd'].sel(channels='Accel_04_top',drop=True)/ds['energy_svd_psd'].sel(channels='Accel_04_top',drop=True)    
-        #data_quality_21 = ds['energy_svd_psd'].sel(channels='Accel_04_top',drop=True)
-        if quantity == 'accel':
-            data_quality_21 = ds['mean_svd_psd'].sel(channels='Accel_04_top',drop=True)
-            data_quality_21 =data_quality_21.rename('data_quality')
-            
-            #data_quality_22 = ds['mean_svd_psd'].sel(channels='Accel_06',drop=True)/ds['energy_svd_psd'].sel(channels='Accel_06',drop=True)
-            #data_quality_22 = ds['energy_svd_psd'].sel(channels='Accel_06',drop=True)
-            data_quality_22 = ds['mean_svd_psd'].sel(channels='Accel_06',drop=True)
-            data_quality_22 =data_quality_22.rename('data_quality')
-            
-            data_quality_2 = xr.merge([data_quality_21,data_quality_22])
-        else:
-            data_quality_2 = ds['mean_svd_psd'].isel(channels=5,drop=True)
-            data_quality_2 = data_quality_2.rename('data_quality')
-            
-        
-        data_quality=data_quality_1/data_quality_2
-        #data_quality.rename('data_quality')
-        #data_quality = data_quality/ds['rms'].mean(dim='channels')
-        #data_quality=data_quality.where(data_quality<data_quality.quantile(0.95))
-        if not log_scale:
-            data_quality = 10*xr.ufuncs.log10(data_quality)
-        else:
-            data_quality = data_quality**10
-        #data_quality = data_quality
-        if quantity =='accel':
-            ds = xr.merge([ds,data_quality])
-        else:
-            ds['data_quality']=data_quality
-    except Exception as e:
-        logger.exception(e)
+    ds = load_filter_merge(quantity, duration, 
+                           time_range, kurt_range, rms_range, 
+                           wind_range, temp_range, 
+                           f_range, damp_range, mode_pair, mc_range, 
+                           filter_errors)
 
     
-    channels={
-        '1': [[ 90, 180],['Accel_01', 'Accel_02']],
-        '4': [[180, 90 ],['Accel_03', 'Accel_04']],
-        '5': [[180, 90 ],['Accel_05', 'Accel_06']],
-        '6': [[180, 90 ],['Accel_07', 'Accel_08']],
-        '3': [[270, 180],['Accel_01_top', 'Accel_02_top']],       
-        '2': [[270, 0  ],['Accel_03_top', 'Accel_04_top']]}['1'][1]
-    
-    if 'dirs' in ds:
-        directions = np.degrees(ds['dirs'].sel(channels=channels[0], drop=True)).rename('directions')
-        ds['directions'] = directions
+    # channels={
+        # '1': [[ 90, 180],['Accel_01', 'Accel_02']],
+        # '4': [[180, 90 ],['Accel_03', 'Accel_04']],
+        # '5': [[180, 90 ],['Accel_05', 'Accel_06']],
+        # '6': [[180, 90 ],['Accel_07', 'Accel_08']],
+        # '3': [[270, 180],['Accel_01_top', 'Accel_02_top']],       
+        # '2': [[270, 0  ],['Accel_03_top', 'Accel_04_top']]}['1'][1]
+        #
+    # if 'dirs' in ds:
+        # directions = np.degrees(ds['dirs'].sel(channels=channels[0], drop=True)).rename('directions')
+        # ds['directions'] = directions
     
     modal_results=['frequencies',
                    'damping', 
@@ -743,16 +832,9 @@ def postprocess_modal_results(quantity: str, duration: pd.Timedelta,
     else:
         assert isinstance(q_2, list)
         all_keys_2 = q_2
-#   
-    if 0:          
-        dpi=96
-        figsize=(1920/dpi,1080/dpi)
-    else:
-        dpi=None
-        figsize=None
         
     if fig is None and axes is None:
-        fig, axes = subplots(len(all_keys_1), len(all_keys_2), sharex='col', sharey='row', figsize=figsize, dpi=dpi, gridspec_kw={'hspace':0.05, 'wspace':0.05})
+        fig, axes = subplots(len(all_keys_1), len(all_keys_2), sharex='col', sharey='row', gridspec_kw={'hspace':0.05, 'wspace':0.05})
     single_ax = False
     if not isinstance(axes, np.ndarray):
         single_ax = True
@@ -826,10 +908,10 @@ def postprocess_modal_results(quantity: str, duration: pd.Timedelta,
                     if hide_ticks:
                         ax.set_xticks([])
               
-            if q_1 in modal_results:
-                y = ds[q_1].where(modal_ind).data
-            else:
-                y = ds[q_1].data
+            # if q_1 in modal_results:
+                # y = ds[q_1].where(modal_ind).data
+            # else:
+            y = ds[q_1].data
             logger.debug(y.shape)
             if np.issubdtype(y.dtype, np.datetime64):
                 nan_func_2 = np.isnat
@@ -857,10 +939,10 @@ def postprocess_modal_results(quantity: str, duration: pd.Timedelta,
                                 color=matplotlib.colors.to_rgba(color, alpha=0.8))
             else:
                 
-                if q_2 in modal_results:
-                    x = ds[q_2].where(modal_ind).data
-                else:
-                    x = ds[q_2].data
+                # if q_2 in modal_results:
+                    # x = ds[q_2].where(modal_ind).data
+                # else:
+                x = ds[q_2].data
                     
                 if np.issubdtype(x.dtype, np.datetime64):
                     nan_func_1 = np.isnat
@@ -1946,45 +2028,53 @@ def assign_modes(time_stamps, frequencies, modeshapes, threshold, damping=None, 
         plt.show()
     
 def main():
+    ###################################################################
+    # Input the following:                                            #
+    ###################################################################
+    
+    # set the root directory where the database files are stored
+    # that directory should contain file_info_<quanity>.nc at its root
+    # and subfolders with stats_<>.nc/modal_<>.nc for each block length in minutes
+    config.db_root_path = '/home/towermonitoring/analysis/result_db/'
+    
+    # define the length of signal blocks to analyse
+    minutes = 120 # in minutes, must be one of 10, 30, 60, 120
+    # define the quantity to use for postprocessing (not all plots)
+    quantity = 'accel' # must be one of 'accel', 'wind', 'temp', 'strain_rosettes'
+    # define if plots should be saved or shown
+    save_figures=False
+    # define the path were figures should be saved
+    figpath = '/vegas/users/staff/womo1998/Projects/2023_EVACES/current_figures/'
+    # should LaTeX be used to render figure labels and numbers?
+    use_tex = False
+    
+    # select plots to draw (toogle with 
+    its = False# inspect_time_shifts
+    pfi = False# plot_file_info
+    ps = False# plot_stats
+    pld = False# plot_daily
+    pmr = False# postprocess_modal_results (scatter plot)
+    ft = True# frequencies over time
+    fT = False#frequencies over temp
+    dw = False#damping over wind
+    ic = False#icing
+    fr = True# frequencies over rms
+    cd = False# cov_freq over data_quality !!possibly broken code!!
+    ck = False# cov_freq over kurtosis !!possibly broken code!!
+    dd = False# main_dir over wind_dir !!possibly broken code!!
+    
+    ####################################################################
     
     logger.setLevel(logging.INFO)
     
-    duration_selector = 3
-    duration = pd.Timedelta(minutes=[10,30,60,120][duration_selector])
+    assert quantity in ['accel', 'wind', 'temp', 'strain_rosettes']
+    
+    assert minutes in [10,30,60,120]
+    duration = pd.Timedelta(minutes=minutes)
     minutes = int(duration.total_seconds()/60)
     
-    # path='/vegas/scratch/womo1998/towerdata/{}-minutes/'.format(duration)
-    figpath = '/vegas/users/staff/womo1998/Projects/2023_EVACES/current_figures/'
-    db_path = os.path.join(config.db_root_path, f'{minutes}-minutes/')
-    
-    save_figures=False
-    
-    its=0# inspect_time_shifts
-    pfi=0# plot_file_info
-    ps=0# plot_stats
-    pld=0# plot_daily
-    pmr=1# postprocess_modal_results (scatter plot)
-    ft=1# frequencies over time
-    fT=0#frequencies over temp
-    dw=0#damping over wind
-    ic=0#icing
-    fr=0# frequencies over rms
-    cd=0# cov_freq over data_quality
-    ck=0# cov_freq over kurtosis
-    dd=0# main_dir over wind_dir
-    
-    q_selector = 0
-    
-    quantities = [
-        'accel', #0
-        'wind', #1
-        'temp',#2
-        'strain_rosettes',#3 
-        #'strain_bolts'    
-        ][q_selector:q_selector+1]
-    
     locale.setlocale(locale.LC_ALL,'de_DE.utf8')
-    print_context_dict ={'text.usetex':True,
+    print_context_dict ={'text.usetex':use_tex,
                         'font.size':9,                                                                                 
                          'legend.fontsize':9, 
                          'legend.labelspacing':0.1,                                                       
@@ -2001,67 +2091,63 @@ def main():
                          'figure.dpi':300}
 
     if its:
-        inspect_time_shifts(path)
+        inspect_time_shifts()
         return
 
-    for quantity in quantities:
+    origin = config.origins[quantity]
+    logger.info('{}, {}'.format(quantity, origin))
     
-        subpath = config.subpaths[quantity]
+    if pfi:
+        plot_file_info(origin, check_errors=1, filter_errors=0)
+        plt.show()
 
-        origin = config.origins[quantity]
-        logger.info('{}, {}'.format(quantity, origin))
+    if ps:
+        plot_stats(quantity, duration, check_errors=0, filter_errors=0)
+        plt.show()
+    
+    if ps:
+        plot_stats(quantity, duration, check_errors=0, filter_errors=0, modal=True)
+        plt.show()
+    
+    if pld:
+        plot_daily(quantity, duration, np.datetime64('2022-12-12 00:00'))
+        plt.show()
+    
+    if pmr and quantity in ['accel', 'strain_rosettes']:
         
-        if pfi:
-            plot_file_info(origin, check_errors=1, filter_errors=0)
-            plt.show()
-
-        if ps:
-            plot_stats(quantity, duration, check_errors=0, filter_errors=0)
-            plt.show()
-        
-        if ps:
-            plot_stats(quantity, duration, check_errors=0, filter_errors=0, modal=True)
-            plt.show()
-        
-        if pld:
-            plot_daily(quantity, duration, np.datetime64('2022-12-12 00:00'))
-            plt.show()
-        
-        if pmr and quantity in ['accel', 'strain_rosettes']:
-            
-            for wind_range in range(1):
-                for temp_range in range(1):
-                    for mode in range(6):
-                        wind_str =['all',     'weak','moderate','strong','custom'][wind_range]
-                        temp_str =[ 'all',    'frost'    , '0-10','10-20','hot'][temp_range]
-                        mode_str = ['all','first','second','third', 'fourth', 'fifth'][mode]
+        for wind_range in range(1):
+            for temp_range in range(1):
+                for mode in range(6):
+                    wind_str =['all',     'weak','moderate','strong','custom'][wind_range]
+                    temp_str =[ 'all',    'frost'    , '0-10','10-20','hot'][temp_range]
+                    mode_str = ['all','first','second','third', 'fourth', 'fifth'][mode]
+                    
+                    if os.path.exists(figpath + 'q_{}-m_{}-t_{}-w_{}.png'.format(quantity, mode_str, temp_str, wind_str)):
+                        logger.debug('q_{}-m_{}-t_{}-w_{}'.format(quantity, mode_str, temp_str, wind_str))
+                        #continue
+                    if quantity == 'accel':
+                        color='#006B94'
+                    elif quantity =='strain_rosettes':
+                        color='maroon'
+                    else:
+                        color='black'
                         
-                        if os.path.exists(figpath + 'q_{}-m_{}-t_{}-w_{}.png'.format(quantity, mode_str, temp_str, wind_str)):
-                            logger.debug('q_{}-m_{}-t_{}-w_{}'.format(quantity, mode_str, temp_str, wind_str))
-                            #continue
-                        if quantity == 'accel':
-                            color='#006B94'
-                        elif quantity =='strain_rosettes':
-                            color='maroon'
-                        else:
-                            color='black'
-                            
-                        with matplotlib.rc_context(rc=print_context_dict):
-                            
-                            postprocess_modal_results(quantity, duration,
-                                                      filter_errors=False, 
-                                                      wind_range=wind_range, 
-                                                      temp_range=temp_range, 
-                                                      mode=mode,
-                                                      color=color, 
-                                                      hide_ticks=True, 
-                                                      scatter=False,
-                                                      )
-                        if save_figures:
-                            plt.gcf().savefig(figpath + 'q_{}-d_{}-m_{}-t_{}-w_{}.png'.format(quantity,minutes, mode_str, temp_str, wind_str))
-                        else:
-                            plt.show()
-    
+                    with matplotlib.rc_context(rc=print_context_dict):
+                        
+                        postprocess_modal_results(quantity, duration,
+                                                  filter_errors=False, 
+                                                  wind_range=wind_range, 
+                                                  temp_range=temp_range, 
+                                                  mode=mode,
+                                                  color=color, 
+                                                  hide_ticks=True, 
+                                                  scatter=False,
+                                                  )
+                    if save_figures:
+                        plt.gcf().savefig(figpath + 'q_{}-d_{}-m_{}-t_{}-w_{}.png'.format(quantity,minutes, mode_str, temp_str, wind_str))
+                    else:
+                        plt.show()
+
     # frequencies over time
     if ft:
         # print_context_dict['figure.figsize']=(5.53*0.62,2.96)
@@ -2079,7 +2165,7 @@ def main():
                     color='maroon'
                 else:
                     color='black'
-                postprocess_modal_results(db_path, _quantity, filter_errors=True, wind_range=0, temp_range=0, mode=mode, q_1=q_1, q_2=q_2, fig=fig, axes=axes[i], color=color, scatter=False)
+                postprocess_modal_results(_quantity, duration, filter_errors=True, wind_range=0, temp_range=0, mode=mode, q_1=q_1, q_2=q_2, fig=fig, axes=axes[i], color=color, scatter=False)
                 mode_str = ['all','first','second','third', 'fourth', 'fifth'][mode]
                 axes[i].set_ylabel('')
                 plt.subplots_adjust(left=0.09, right=0.97, top=0.95, bottom=0.14, hspace=0.12)
@@ -2116,7 +2202,7 @@ def main():
                 plt.subplots_adjust(left=0.1, right=0.98, top=0.975, bottom=0.115)
                 q_1=['frequencies']
                 q_2=['temp']
-                postprocess_modal_results(db_path, quantity, filter_errors=False, 
+                postprocess_modal_results(quantity, duration, filter_errors=False, 
                                           wind_range=0, temp_range=(-10,35), mode=mode, q_1=q_1, q_2=q_2, 
                                           fig=fig,axes=axes[i], color=color, scatter=False, )
 
@@ -2162,7 +2248,7 @@ def main():
                 q_1=['damping']
                 q_2=['wind']
                 #continue
-                postprocess_modal_results(db_path, quantity, filter_errors=True, damp_range=(0,2.5),
+                postprocess_modal_results(quantity, duration, filter_errors=True, damp_range=(0,2.5),
                                           wind_range=4, temp_range=0, mode=mode, q_1=q_1, q_2=q_2, 
                                           fig=fig,axes=axes[i], color=color,scatter=False, hexbin_extent=[0,20,0,2.5])
                 #plt.show()
@@ -2215,7 +2301,7 @@ def main():
             #for color,quantity in zip(['#006b9455','maroon'],['accel','strain_rosettes']):
             
             plt.subplots_adjust(left=0.095, right=0.97, top=0.95, bottom=0.11, hspace=0.12, wspace=0.06)
-            postprocess_modal_results(db_path, quantity, filter_errors=False, 
+            postprocess_modal_results(quantity, duration, filter_errors=False, 
                                       wind_range=0, temp_range=0, mode=0, q_1=['temp'], q_2=['time'], 
                                       fig=fig, axes=axes[0], color=color, scatter=False)
             axes[0].axhline(0,color='black', lw=0.1)
@@ -2228,7 +2314,7 @@ def main():
                     q_1=['frequencies']
                     ax = axes[j * 2 + i + 1]
                     plt.subplots_adjust(left=0.095, right=0.97, top=0.95, bottom=0.11, hspace=0.12, wspace=0.06)
-                    postprocess_modal_results(db_path, quantity, filter_errors=False, 
+                    postprocess_modal_results(quantity, duration, filter_errors=False, 
                                               wind_range=0, temp_range=0, mode=mode, q_1=q_1, q_2=q_2, 
                                               fig=fig,axes=ax, color=color, scatter=False)
 
@@ -2315,7 +2401,7 @@ def main():
                 q_2=['frequencies']
                 q_1=['rms_m']
                 ylim = [(0,24),(0,70)][i]
-                postprocess_modal_results(db_path, _quantity, filter_errors=True, rms_range=ylim,
+                postprocess_modal_results(_quantity, duration, filter_errors=True, rms_range=ylim,
                                           wind_range=0, temp_range=0, mode=mode, q_1=q_1, q_2=q_2, 
                                           fig=fig,axes=axes[i], color=color, scatter=False)
                 fig.subplots_adjust(left=0.09, right=0.98, top=0.97, bottom=0.12, hspace=0.04)
@@ -2324,9 +2410,9 @@ def main():
             axes[1].set_xticks([0.35,0.62,1.31,2.06,3.36])
             axes[0].grid(True, 'major','x', zorder=0, lw=0.1)
             axes[1].grid(True, 'major','x', zorder=0, lw=0.1)
-
-            axes[0].set_ylabel('$\\text{RMS}_{\\text{accel}} [\si{\milli\metre\per\square\second}]$', ha='center',rotation='vertical')    
-            axes[1].set_ylabel('$\\text{RMS}_{\\text{strain}}[\si{\micro\metre\per\metre}]$', ha='center',rotation='vertical')   
+            if use_tex:
+                axes[0].set_ylabel('$\\text{RMS}_{\\text{accel}} [\si{\milli\metre\per\square\second}]$', ha='center',rotation='vertical')    
+                axes[1].set_ylabel('$\\text{RMS}_{\\text{strain}}[\si{\micro\metre\per\metre}]$', ha='center',rotation='vertical')   
             axes[1].set_xlabel('Frequency [\si{\hertz}]')
             fig.align_ylabels()
 
@@ -2350,7 +2436,7 @@ def main():
                 q_1=['cov_frequencies']
                 q_2=['data_quality']
 
-                postprocess_modal_results(path, quantity, filter_errors=False, 
+                postprocess_modal_results(quantity, duration, filter_errors=False, 
                                           wind_range=0, temp_range=0, mode=mode, 
                                           q_1=q_1, q_2=q_2, 
                                           fig=fig,axes=axes[i], color=color,scatter=False,
@@ -2409,7 +2495,7 @@ def main():
                 q_1=['cov_frequencies']
                 q_2=['kurtosis_m']
 
-                postprocess_modal_results(path, quantity, filter_errors=False, 
+                postprocess_modal_results(quantity, duration, filter_errors=False, 
                                           wind_range=0, temp_range=0, mode=mode, 
                                           q_1=q_1, q_2=q_2, 
                                           fig=fig,axes=axes[i], color=color,scatter=False,
