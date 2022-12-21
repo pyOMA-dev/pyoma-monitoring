@@ -283,6 +283,8 @@ def plot_daily(quantity: str, duration: pd.Timedelta, dtstart: pd.Timestamp):
     elif modal:
         ds = get_modal_results(quantity, duration)
     
+    minutes = int(duration.total_seconds()/60)
+    
     ds = ds.isel(time=ds.time>dtstart)
     # print(ds)
     ds = ds.dropna(dim='channels', how='all')

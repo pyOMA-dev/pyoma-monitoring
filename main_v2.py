@@ -909,7 +909,7 @@ def create_stats(quantity: str, duration: pd.Timedelta, file_info: xr.Dataset,
             slice=None
             
         if slice is None:
-            logger.info('Returned Slice is empty. Skipping!')
+            logger.debug('Returned Slice is empty. Skipping!')
             
         else:
             actual_start_time, headers, units, end_time, sample_rate, measurement = slice
@@ -1002,7 +1002,7 @@ def save_ds(new_ds, current_ds, savepath, what='modal', reload_current = False):
             logger.debug('Dataset is empty. Skipping!')        
             return current_ds
         
-        logger.info('Merging Datasets')
+        logger.info(f'Merging Datasets {os.path.split(savepath)[-1]}')
         if 'time' in current_ds:
             old_length=len(current_ds.time)
         else:
@@ -1022,13 +1022,13 @@ def save_ds(new_ds, current_ds, savepath, what='modal', reload_current = False):
             except that xr.merge raises MergeError when there are conflicting values in 
             variables to be merged, whereas .combine_first defaults to the calling object's values.
             '''
-            logger.info('length before/after: {}/{}, '.format(old_length, len(current_ds.time)))
+            logger.info('Dataset length before/after: {}/{}, '.format(old_length, len(current_ds.time)))
     
         else:
             warnings.warn("'Dataset' object has not attribute 'time'. Overwriting!")
             current_ds = new_ds
     
-        logger.info('Saving Dataset ')
+        logger.info(f'Saving Dataset to {savepath}')
         tempfile = savepath + '.tmp'
         if what=='modal':
             current_ds.to_netcdf(tempfile, engine='h5netcdf', invalid_netcdf=True)
@@ -1112,17 +1112,16 @@ def get_slice(start_time, duration , quantity, file_info, upsample_fs=None):
         logger.debug(file_info['sample_rate'])
         logger.debug(file_info['gap_length'][:-1])
         
+    logger.info('Extracting signal slice for {} starting at {} until {}'.format(quantity, *np.datetime_as_string(time_range, unit='m')))
     if len(file_info['file_name']) > 1 and (file_info['gap_length'][:-1]>0.).any():
 
         if quantity in [ 'temp', 'wind', 'strain_rosettes'] and (file_info['gap_length'][:-1]<32).all():
             #gaps of 32 samples are allowed and will be interpolated (in strains) in qstation records there should be bigger gaps or none
             pass
         else:
-            logger.info('Getting slice for {}-{}: {}'.format(*np.datetime_as_string(time_range, unit='m'), quantity))
             logger.info('Files are not consecutive. Gap of max. length {} s between files.'.format((file_info['gap_length']/file_info['sample_rate'])[:-1].data.max()))
             return
 
-    logger.info('Getting slice for {}-{}: {}'.format(*np.datetime_as_string(time_range, unit='m'), quantity))
     # logger.debug(file_info['error'])
     if 'Tagessekunden' in file_info.channels.data:
         # file_info = file_info.drop(['Tagessekunden'],'channels')
@@ -1368,7 +1367,7 @@ def get_slice_corrected(start_time: pd.Timestamp, duration: pd.Timedelta,
     slice_path = os.path.join(slice_root, slice_name)
     
     if os.path.exists(slice_path):
-        logger.info('Loading corrected slice: {}: {}'.format(start_time, quantity))
+        logger.info('Loading corrected signal slice for {} at {}'.format(quantity, start_time))
         try:
             
             in_dict = np.load(slice_path, allow_pickle=True)
@@ -1395,12 +1394,13 @@ def get_slice_corrected(start_time: pd.Timestamp, duration: pd.Timedelta,
             os.remove(slice_path)
         
 
-    logger.info('Getting corrected slice for {}: {}'.format(start_time, quantity))
     if not os.path.exists(slice_path) and file_info is None:
-        warnings.warn(slice_path+' does not exist, file_info needed for creation of new slice!')    
+        warnings.warn(slice_path + ' does not exist, file_info needed for creation of new slice!')    
         return None
  
     slice = get_slice(start_time, duration, quantity, file_info)
+    
+    logger.debug(f'Correcting slice for {quantity}: {start_time}')
     
     if slice is None:
         return None

@@ -13,19 +13,20 @@ logger.setLevel(logging.INFO)
 
 def main(argv):
     
-    opts, args = getopt.getopt(argv,'hd:q:v',['file_info', 'stats', 'modal', 'plot_dir=', 'dtstart=','loglevel='])
+    opts, args = getopt.getopt(argv,'hd:q:v',['file_info', 'stats', 'modal', 'plot','tmp_dir=', 'dtstart=','loglevel='])
     
     duration = None
     quantity = None
     file_info = False
     stats = False
     modal = False
-    plots = False
+    plot = False
     dtstart = None
+    tmp_dir = None
     
     for opt, arg in opts:
         if opt == '-h':
-            print ('daily.py -d <duration in minutes> -q <quantity> --file_info --stats --modal --plot_dir --dtstart=YYYY-MM-DD hh:mm --loglevel=INFO')
+            print ('daily.py -d <duration in minutes> -q <quantity> --file_info --stats --modal --plot --tmp_dir=<directory path> --dtstart=YYYY-MM-DD hh:mm --loglevel=INFO')
             sys.exit()
         if opt == '-d':
             duration = int(arg)
@@ -48,18 +49,22 @@ def main(argv):
             logger.setLevel(arg)
             for name in logging.root.manager.loggerDict:
                 logging.getLogger(name).setLevel(arg)
-        if opt == '--plot_dir':
-            plots = True
-            plot_dir = arg
-            assert os.path.exists(plot_dir)
+        if opt == '--plot':
+            plot = True
+        if opt == '--tmp_dir':
+            tmp_dir = arg
+            assert os.path.exists(tmp_dir)
         if opt == '--dtstart':
             dtstart = np.datetime64(arg)
-            with open('dtstart.tmp','wt') as f:
-                f.write(str(dtstart))
                 
-        
+    if plot:
+        if tmp_dir is None:
+            plot_dir = os.getcwd()
+        else:
+            plot_dir = tmp_dir 
+    
     if duration is None or quantity is None:
-        print ('daily.py -d <duration in minutes> -q <quantity> --file_info --stats --modal --plot_dir --dtstart=YYYY-MM-DD hh:mm --loglevel=INFO')
+        print ('daily.py -d <duration in minutes> -q <quantity> --file_info --stats --modal --plot --tmp_dir=<directory path> --dtstart=YYYY-MM-DD hh:mm --loglevel=INFO')
         sys.exit()
     minutes = int(duration.total_seconds()/60)
     db_path = os.path.join(config.db_root_path, f'{minutes}-minutes/')
@@ -73,7 +78,7 @@ def main(argv):
     start_up_str += f'Quantity: \t\t {quantity}\n'
     start_up_str += f'Duration: \t\t {minutes} minutes\n'
     start_up_str += f'Results stored at: \t {db_path}\n'
-    if plots:
+    if plot:
         start_up_str += f'Figures stored at: \t {plot_dir}\n'
     start_up_str += '\nSelected analyses:\n'
     
@@ -120,14 +125,16 @@ def main(argv):
             start_times =fi_ds.start_time[dset].astype('datetime64[s]')
             if len(start_times) > 0:
                 dtstart = start_times.min().values
-                with open('dtstart.tmp','wt') as f:
-                    f.write(str(dtstart))
             else:
                 logger.warning('Processing files has failed. Check analysis scripts and file integrity.')
                 return
     else:
         fi_ds = get_file_info(origin, create_new=False)
-        
+    
+    if dtstart is not None and tmp_dir is not None:
+        with open(os.path.join(tmp_dir,'dtstart.tmp'),'wt') as f:
+            f.write(str(dtstart))
+    
     if stats:
         # adjust dtstart to time_iterator slices
         dtstart = round_dt(dtstart, duration.to_timedelta64(), floor=True)
@@ -143,7 +150,7 @@ def main(argv):
                                   filter_errors=False, 
                                   chunksize=50, missing=True)
         
-    if plots:
+    if plot:
         fig1, fig2 = plot_daily(quantity, duration, dtstart)
         fig1.savefig(os.path.join(plot_dir,f'stats_{quantity}_{minutes}.png'))
         if modal:
