@@ -32,13 +32,14 @@ pd.plotting.register_matplotlib_converters()
 
 import config
 
-from main_v2 import get_file_info, get_stats, get_modal_results, check_and_mark_errors
+from main_v2 import get_file_info, get_stats, get_modal_results,\
+    check_and_mark_errors, read_file, get_slice_corrected, get_slice_preprocessed
 
 #global logger
 logger = logging.getLogger(__name__)
 
 
-def inspect_time_shifts(path,):
+def inspect_time_shifts():
     '''
      There are two measurement systems running independently:
          - Gantner Q.Station 101T Controller (acceleration, wind and temperature measurements)
@@ -92,7 +93,7 @@ def inspect_time_shifts(path,):
         subpath=config.subpaths[quantity]
         origin=origins[quantity]
 
-        ds = get_file_info(path, subpath, origin)
+        ds = get_file_info(origin)
         
         plt.figure(1)
         duration = ds['duration'].values.astype('int64')*1e-9
@@ -124,7 +125,7 @@ def inspect_time_shifts(path,):
     plt.ylim((-4,4))
     plt.show() 
            
-def plot_file_info(path, subpath, origin, check_errors=True, filter_errors=False):
+def plot_file_info(origin: str, check_errors: bool=True, filter_errors: bool=False):
     
     
     def onpick(event):
@@ -136,8 +137,7 @@ def plot_file_info(path, subpath, origin, check_errors=True, filter_errors=False
         filename = ds.sel(time=picked_time)['file_name'].data.item()
         yn = input('read and plot {} (y/n)'.format(filename))
         if yn == 'y':
-            subpath = config.subpaths[origin]
-            filepath = os.path.join(path,subpath, filename)
+            filepath = os.path.join(config.file_root_path, config.subpaths[origin], filename)
             file_contents = read_file(filepath)
             if file_contents is None:
                 logger.warning('File unreadable: {}'.format(filepath))
@@ -148,7 +148,7 @@ def plot_file_info(path, subpath, origin, check_errors=True, filter_errors=False
             
     global ds
 
-    ds =  get_file_info(path, subpath, origin)
+    ds =  get_file_info(origin)
     logger.debug(ds.channels)
     #return
     ax = plt.subplot()
@@ -227,8 +227,51 @@ def plot_file_info(path, subpath, origin, check_errors=True, filter_errors=False
         axes[2,0].set_ylim(-10,10)
         logger.debug(channel)
         plt.show()
-
-def plot_daily(db_path, quantity, duration, dtstart):
+        
+def plot_file(file_time, headers, units, start_time, sample_rate, measurement):
+    if 0:
+        num_channels = len(headers)
+        # figure size = 1x1.61, subplot sizes = 1x0.81
+        # twice the number of subplots in columns than in rows
+        nrows = int(np.ceil(np.sqrt(num_channels/2)))
+        ncols = int(np.ceil(num_channels/nrows))
+        logger.debug(sample_rate)
+        time_=[file_time+datetime.timedelta(seconds=i/sample_rate) for i in range(measurement.shape[0])]
+        logger.debug(time_)
+        fig,axes = plt.subplots(nrows=nrows, ncols=ncols, sharex=True,sharey=False)
+        for row in range(nrows):
+            for col in range(ncols):
+                if row*ncols+col >= num_channels:
+                    continue
+                axes[row,col].plot(time_,measurement[:,row*ncols+col], color='blue',alpha=.3,marker=',',ls='solid',markersize=2,label=headers[row*ncols+col])
+                logger.debug(np.sqrt(np.mean(np.square(measurement[:,row*ncols+col])))*1e6)
+                axes[row,col].legend()
+        fig.autofmt_xdate()
+    else:
+    
+        
+        num_channels = len(headers)
+        
+        logger.debug(sample_rate)
+        time_=[file_time+datetime.timedelta(seconds=i/sample_rate) for i in range(measurement.shape[0])]
+        logger.debug(time_)
+        plt.figure()
+        ax = plt.subplot()
+        for channel in range(num_channels):
+            ax.plot(time_,measurement[:,channel]-np.mean(measurement[:,channel]), alpha=.3,marker=',',ls='solid',markersize=2,label=headers[channel].replace('_','\_'))
+            #ax.plot(time_,measurement[:,channel], alpha=.3,marker=',',ls='solid',markersize=2,label=headers[channel].replace('_','\_'))
+            #ax.legend(loc='upper right')
+        #fig.autofmt_xdate()
+        #locator = matplotlib.dates.MinuteLocator(byminute=5)
+        #ax.xaxis.set_major_locator(locator)
+        myFmt = matplotlib.dates.DateFormatter('%H:%M')
+        ax.xaxis.set_major_formatter(myFmt)
+        #ax.set_ylabel('Acceleration [\si{\metre\per\second\squared}]')
+        ax.set_ylabel('Strain [\si{\micro\metre\per\metre}]')
+        
+    plt.show()
+    
+def plot_daily(quantity: str, duration: pd.Timedelta, dtstart: pd.Timestamp):
     
     if quantity in ['accel', 'strain_rosettes']:
         modal = True
@@ -236,9 +279,9 @@ def plot_daily(db_path, quantity, duration, dtstart):
         modal = False
         
     if not modal:
-        ds =  get_stats(db_path, quantity)
+        ds =  get_stats(quantity, duration)
     elif modal:
-        ds = get_modal_results(db_path, quantity)
+        ds = get_modal_results(quantity, duration)
     
     ds = ds.isel(time=ds.time>dtstart)
     # print(ds)
@@ -248,7 +291,6 @@ def plot_daily(db_path, quantity, duration, dtstart):
     # print(n_channels)
     
     fig, axes = plt.subplots(nrows=n_channels, figsize=(5.906, n_channels), sharex=True, tight_layout=True, dpi=300)
-    
     
     handles = []
     
@@ -270,7 +312,7 @@ def plot_daily(db_path, quantity, duration, dtstart):
     ax.set_xlim((data.time.data.min(), data.time.data.max()))
     fig.legend(handles= handles, loc='center right')
     fig.autofmt_xdate()
-    fig.suptitle(f"mean / min / max over {duration} minutes for each channel of type {quantity}")
+    fig.suptitle(f"mean / min / max over {duration.minutes} minutes for each channel of type {quantity}")
     
     if modal:
         y = ds['frequencies'].data
@@ -287,8 +329,9 @@ def plot_daily(db_path, quantity, duration, dtstart):
         fig2 = None
     return fig, fig2
 
-def plot_stats(path, quantity, check_errors=True, filter_errors=False, modal=False):
-    
+def plot_stats(quantity: str, duration: pd.Timedelta, 
+               check_errors: bool=True, filter_errors: bool=False, 
+               modal: bool=False):
     
     def onpick(event):
         #event._xorig
@@ -297,20 +340,20 @@ def plot_stats(path, quantity, check_errors=True, filter_errors=False, modal=Fal
         time_ind = np.argmin(np.abs(time_data - time_picked))
         picked_time = event.artist._xorig[time_ind]
         ds2 = ds.sel(time=picked_time)
-        yn = input('read and plot slice {}, duration {}? (y/n)'.format(pd.Timestamp(picked_time, tz='Europe/Berlin'), pd.Timedelta(minutes=int(ds2.length/ds2.sample_rate/60))))
+        yn = input('read and plot slice {}, duration {}? (y/n)'.format(pd.Timestamp(picked_time, tz='Europe/Berlin'), duration))
         if yn == 'y':
             if modal:
-                slice=get_slice_preprocessed(path, pd.Timestamp(picked_time, tz='Europe/Berlin'), pd.Timedelta(minutes=int(ds2.length/ds2.sample_rate/60)), quantity)
+                slice=get_slice_preprocessed(pd.Timestamp(picked_time, tz='Europe/Berlin'), duration, quantity)
             else:
-                slice=get_slice_corrected(path, pd.Timestamp(picked_time, tz='Europe/Berlin'), pd.Timedelta(minutes=int(ds2.length/ds2.sample_rate/60)), quantity)
+                slice=get_slice_corrected(pd.Timestamp(picked_time, tz='Europe/Berlin'), duration, quantity)
             plot_file(*slice)
             
     global ds
     
     if not modal:
-        ds =  get_stats(path, quantity)
+        ds =  get_stats(quantity, duration)
     elif modal:
-        ds = get_modal_results(path, quantity)
+        ds = get_modal_results(quantity, duration)
     else:
         raise
     logger.debug(ds)
@@ -382,7 +425,7 @@ def plot_stats(path, quantity, check_errors=True, filter_errors=False, modal=Fal
         logger.debug(channel)
         plt.show()
 
-def postprocess_modal_results(path, quantity, 
+def postprocess_modal_results(quantity: str, duration: pd.Timedelta, 
                               filter_errors=False, 
                               wind_range = 0, temp_range = 0, mode=0, 
                               q_1=None, q_2=None, 
@@ -463,12 +506,15 @@ def postprocess_modal_results(path, quantity,
     else:
         sns = None
     
-    ds =  get_modal_results(path, quantity)
+    assert quantity in ['accel', 'strain_rosettes']
+    assert isinstance(duration, pd.Timedelta)
+    
+    ds =  get_modal_results(quantity, duration)
     logger.debug(len(ds.time))
-    wind_stats = get_stats(path, quantity='wind')
+    wind_stats = get_stats('wind', duration)
     #wind_stats.load()
     
-    temp_stats = get_stats(path, quantity='temp')
+    temp_stats = get_stats('temp', duration)
     temp_stats.load()
         
     ds, wind_stats, temp_stats = xr.align(ds, wind_stats, temp_stats, exclude=['channels','modes'])
@@ -994,10 +1040,12 @@ def postprocess_modal_results(path, quantity,
             plt.subplots_adjust(left=0.04, right=0.95, top=0.97, bottom=0.09)
     return
   
-def modal_dirs(path, quantity, update=False, plot_=False):
+def modal_dirs(quantity, duration, update=False, plot_=False):
     
+    assert quantity=='accel'
+    assert isinstance(duration, pd.Timedelta)
     warnings.warn("Modeshapes are mostly missing from result db, would have to reread them all from disk.")
-    modal = get_modal_results(path, quantity)
+    modal = get_modal_results(quantity, duration)
     chan_dofs={
         '1': [[ 90, 180],['Accel_01', 'Accel_02']],
         '4': [[180, 90 ],['Accel_03', 'Accel_04']],
@@ -1396,7 +1444,7 @@ def modal_dirs(path, quantity, update=False, plot_=False):
                         #'Wg_top',
                         'Wr_top'
                         ]:
-        wind_ds = get_stats(path, quantity='wind')
+        wind_ds = get_stats('wind', duration)
 
         return dir_wind_histo(modal_sorted, chan_dofs, wind_ds,  node, target_wind)
 
@@ -1485,7 +1533,7 @@ def subplots(nrows=1, ncols=1, sharex=False, sharey=False, squeeze=True,
 
     return ret
     
-def strain_vs_accel(path, mode = 0):
+def strain_vs_accel(duration: pd.Timedelta, mode: int=0):
     
     
     modal_results=['frequencies',
@@ -1510,7 +1558,7 @@ def strain_vs_accel(path, mode = 0):
         elif quantity == 'strain_rosettes':
             rms_range = (3.5e-7,np.inf)
         
-        results = get_modal_results(path, quantity)
+        results = get_modal_results(quantity, duration)
         
         results = results.stack(flat_modes=['time','modes'])
         

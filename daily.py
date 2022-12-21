@@ -94,7 +94,7 @@ def main(argv):
         raise RuntimeError('dtstart must be provided if file_info shall not be updated')
     
     if file_info:
-        fi_ds = get_file_info(db_path, origin, create_new=False)
+        fi_ds = get_file_info(origin, create_new=False)
         
         filtered_list = get_file_list(origin, True, fi_ds)
         # empty list -> no new files arrived
@@ -102,7 +102,7 @@ def main(argv):
             logger.warning("No new files have arrived since the last run. Check that the monitoring system is online and working!")
             return
         
-        fi_ds = get_file_info(db_path, origin, create_new=True, skip_existing=True, reduced=True, filtered_list=True)
+        fi_ds = get_file_info(origin, create_new=True, skip_existing=True, reduced=True, filtered_list=True)
         
         if dtstart is None:
             # get start of current file list, to only create statistics for these new files
@@ -119,25 +119,25 @@ def main(argv):
                 logger.warning('Processing files has failed. Check analysis scripts and file integrity.')
                 return
     else:
-        fi_ds = get_file_info(db_path, origin, create_new=False)
+        fi_ds = get_file_info(origin, create_new=False)
         
     if stats:
         # adjust dtstart to time_iterator slices
         dtstart = round_dt(dtstart, duration, floor=True)
-        stats_ds = get_stats(db_path, quantity, fi_ds, 
-                             duration = pd.Timedelta(minutes=duration), dtstart=dtstart, 
+        stats_ds = get_stats(quantity, duration = pd.Timedelta(minutes=duration), 
+                             fi_ds, dtstart=dtstart, 
                              create_new=True, skip_existing=True, chunksize=500)#, until=until)
     else:
-        stats_ds = get_stats(db_path, quantity)
+        stats_ds = get_stats(quantity, duration=pd.Timedelta(minutes=duration))
     
     if modal: 
-        modal_ds = get_modal_results(db_path, quantity, stats_ds, 
+        modal_ds = get_modal_results(quantity, duration=pd.Timedelta(minutes=duration), stats_ds, 
                                   skip_existing=True, create_new=True, 
                                   filter_errors=False, 
                                   chunksize=50, missing=True)
         
     if plots:
-        fig1, fig2 = plot_daily(db_path, quantity, duration, dtstart)
+        fig1, fig2 = plot_daily(quantity, duration, dtstart)
         fig1.savefig(os.path.join(plot_dir,f'stats_{quantity}_{duration}.png'))
         if modal:
             fig2.savefig(os.path.join(plot_dir,f'modal_{quantity}_{duration}.png'))
