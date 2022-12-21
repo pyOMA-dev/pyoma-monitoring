@@ -7,7 +7,7 @@ import config
 from post_processing import plot_daily
 import os
 import logging
-logger = logging.getLogger()
+logger = logging.getLogger(__name__)
 logger.setLevel(logging.INFO)
 
 
@@ -46,6 +46,8 @@ def main(argv):
                 raise ValueError(f'Modal analysis can only be performed on vibration data ("accel", "strain_rosettes"')
         if opt=='--loglevel':
             logger.setLevel(arg)
+            for name in logging.root.manager.loggerDict:
+                logging.getLogger(name).setLevel(arg)
         if opt == '--plot_dir':
             plots = True
             plot_dir = arg
@@ -53,7 +55,7 @@ def main(argv):
         if opt == '--dtstart':
             dtstart = np.datetime64(arg)
             with open('dtstart.tmp','wt') as f:
-                f.write(repr(dtstart))
+                f.write(str(dtstart))
                 
         
     if duration is None or quantity is None:
@@ -80,11 +82,15 @@ def main(argv):
     if stats:
         if file_info:
             start_up_str += ' - Do statistical analysis on new signal slices\n'
+        if dtstart is not None:
+            start_up_str += f' - Do statistical analysis on all signal slices since {dtstart}\n'
         else:
             start_up_str += ' - Do statistical analysis on all signal slices that have not yet been analysed\n'
     if modal:
         if file_info:
             start_up_str += ' - Do modal analysis on new signal slices\n'
+        if dtstart is not None:
+            start_up_str += f' - Do modal analysis on all signal slices since {dtstart}\n'
         else:
             start_up_str += ' - Do modal analysis on all signal slices that have not yet been analysed\n'
     
@@ -115,7 +121,7 @@ def main(argv):
             if len(start_times) > 0:
                 dtstart = start_times.min().values
                 with open('dtstart.tmp','wt') as f:
-                    f.write(repr(dtstart))
+                    f.write(str(dtstart))
             else:
                 logger.warning('Processing files has failed. Check analysis scripts and file integrity.')
                 return
