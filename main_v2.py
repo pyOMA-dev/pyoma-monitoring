@@ -851,7 +851,7 @@ def create_stats(quantity: str, duration: pd.Timedelta, file_info: xr.Dataset,
     #return
     
     for i, time_ in enumerate(time_iterator[start*jobsize:(start+1)*jobsize]):
-        logger.debug('')
+        logger.debug(time_)
         # make 
         start_time = pd.Timestamp(time_, tz = 'Europe/Berlin')
         
@@ -867,6 +867,7 @@ def create_stats(quantity: str, duration: pd.Timedelta, file_info: xr.Dataset,
                     # other checks may be added here
                     
                     if not validate_slices:
+                        logger.debug(f'{str(start_time)} already present in master dataset. Skipping!')
                         continue
                     
                     if  master_ds.sel(time=start_time)['mean'].isnull().all():
@@ -879,8 +880,10 @@ def create_stats(quantity: str, duration: pd.Timedelta, file_info: xr.Dataset,
                         if slice is not None:
                             logger.info(f'{str(start_time)} empty in master dataset, but slice available. Updating!')
                         else:
+                            logger.debug(f'{str(start_time)} empty but present in master dataset. Skipping!')
                             continue
                     else:
+                        logger.debug(f'{str(start_time)} already present in master dataset. Skipping!')
                         continue
                 else: 
                     logger.info(f'{str(start_time)} already present in master dataset. Updating!')
