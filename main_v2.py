@@ -743,7 +743,9 @@ def check_and_mark_errors(ds, new = True, check_kurtosis = False):
     
     return ds
         
-def get_stats(quantity: str, duration: pd.Timedelta, file_info: xr.Dataset=None, create_new: bool=False, **kwargs):
+def get_stats(quantity: str, duration: pd.Timedelta, 
+              file_info: xr.Dataset=None, create_new: bool=False, 
+              **kwargs):
     
     minutes = int(duration.total_seconds()/60)
     ds_path = os.path.join(config.db_root_path, f'{minutes}-minutes/', 'stats_{}.nc'.format(quantity))
@@ -806,7 +808,7 @@ def create_stats(quantity: str, duration: pd.Timedelta, file_info: xr.Dataset,
         
     origin= config.origins[quantity]
     dtstart = config.dtstarts[origin]
-    dtstart=kwargs.pop('dtstart', dtstart)
+    dtstart = kwargs.pop('dtstart', dtstart)
     dtstart = pd.Timestamp(dtstart).to_pydatetime()
     
     fi_time_max = (file_info.time + file_info.duration).max().values
@@ -815,7 +817,7 @@ def create_stats(quantity: str, duration: pd.Timedelta, file_info: xr.Dataset,
     fi_time_max = pd.Timestamp(fi_time_max).to_pydatetime()
     
     until = kwargs.pop('until', fi_time_max)
-    logger.debug(f'{until}, {fi_time_max}')
+    logger.debug(f'Analyzing time range: {dtstart} ... {until} <= {fi_time_max}')
     
     
     # time_iterator consists of non timezone-aware items,
