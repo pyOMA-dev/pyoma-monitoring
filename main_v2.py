@@ -2019,7 +2019,7 @@ def create_modal_results(quantity: str, duration: pd.Timedelta,
                 
                 now=time.time()
                 with open(os.devnull, "w") as f, contextlib.redirect_stdout(f): 
-                    results = modal_analysis_single(start_time,slice, path, quantity, 
+                    results = modal_analysis_single(start_time,slice, quantity, 
                                     duration)
                 n, f, std_f, d, std_d, MPC, MP, MPD, MC, msh, s_vals_psd =results
                 logger.info('Modal Analysis took {:.2f} s to return {} modes for : {}'.format(time.time()-now, len(n), start_time))
