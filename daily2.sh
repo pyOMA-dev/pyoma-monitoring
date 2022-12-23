@@ -1,31 +1,41 @@
 #!/bin/bash
 
-rsync -a srv-grk:/home/towermonitoring/towerdata/ /vegas/scratch/womo1998/towerdata/towerdata_bin
+#rsync -a srv-grk:/home/towermonitoring/towerdata/ /vegas/scratch/womo1998/towerdata/towerdata_bin
+#module load python/intelpython3.7
 
-module load python/intelpython3.7
-
-PYTHONPATH=/vegas/users/staff/womo1998/git/pyOMA:/vegas/users/staff/womo1998/Projects/2015_modal_analysis_tower/strain_conversion
+PATH=/vegas/apps/compiler/intel/intelpython3.7/bin:$PATH
+export PATH
+PYTHONPATH=/vegas/users/staff/womo1998/git/pyOMA
 export PYTHONPATH
-cd /vegas/users/staff/womo1998/Projects/2015_modal_analysis_tower/code/
-
-/vegas/apps/compiler/intel/intelpython3/bin/python daily.py 1 1 0 0 | mail -s "Structural Monitoring Tower: Daily Analysis of Acceleration Records" volkmar.zabel@uni-weimar.de
-/vegas/apps/compiler/intel/intelpython3/bin/python daily.py 1 1 0 1 | mail -s "Structural Monitoring Tower: Daily Analysis of Wind Records" volkmar.zabel@uni-weimar.de
-/vegas/apps/compiler/intel/intelpython3/bin/python daily.py 1 1 0 2 | mail -s "Structural Monitoring Tower: Daily Analysis of Temperature Records" volkmar.zabel@uni-weimar.de
+cd /home/towermonitoring/analysis/code/
+TMPDIR=/dev/shm/geyer_tmp
 
 
-/vegas/apps/compiler/intel/intelpython3/bin/python daily.py 1 1 1 0 | mail -s "Structural Monitoring Tower: Daily Analysis of Acceleration Records" volkmar.zabel@uni-weimar.de
-/vegas/apps/compiler/intel/intelpython3/bin/python daily.py 1 1 1 1 | mail -s "Structural Monitoring Tower: Daily Analysis of Wind Records" volkmar.zabel@uni-weimar.de
-/vegas/apps/compiler/intel/intelpython3/bin/python daily.py 1 1 1 2 | mail -s "Structural Monitoring Tower: Daily Analysis of Temperature Records" volkmar.zabel@uni-weimar.de
+rm -rf ${TMPDIR}
+mkdir ${TMPDIR}
+python daily.py -d 120 -q temp --file_info --stats --tmp_dir=${TMPDIR}> ${TMPDIR}/geyer_out.txt
+DTSTART=`cat ${TMPDIR}/dtstart.tmp`
+python daily.py -d 60 -q temp --stats --tmp_dir=${TMPDIR} --dtstart=${DTSTART} >> ${TMPDIR}/geyer_out.txt
+python daily.py -d 30 -q temp --stats --tmp_dir=${TMPDIR} --dtstart=${DTSTART} >> ${TMPDIR}/geyer_out.txt
+python daily.py -d 10 -q temp  --stats --plot --tmp_dir=${TMPDIR} --dtstart=${DTSTART}  >> ${TMPDIR}/geyer_out.txt
+cat ${TMPDIR}/geyer_out.txt | mail -s "Structural Monitoring Tower: Daily Analysis of Temperature Records" -a ${TMPDIR}/*.png simon.jakob.marwitz@uni-weimar.de
 
+rm -rf ${TMPDIR}
+mkdir ${TMPDIR}
+python daily.py -d 120 -q wind --file_info --stats --tmp_dir=${TMPDIR}> ${TMPDIR}/geyer_out.txt
+DTSTART=`cat ${TMPDIR}/dtstart.tmp`
+python daily.py -d 60 -q wind --stats --tmp_dir=${TMPDIR} --dtstart=${DTSTART} >> ${TMPDIR}/geyer_out.txt
+python daily.py -d 30 -q wind --stats --tmp_dir=${TMPDIR} --dtstart=${DTSTART} >> ${TMPDIR}/geyer_out.txt
+python daily.py -d 10 -q wind  --stats --plot --tmp_dir=${TMPDIR} --dtstart=${DTSTART}  >> ${TMPDIR}/geyer_out.txt
+cat ${TMPDIR}/geyer_out.txt | mail -s "Structural Monitoring Tower: Daily Analysis of Wind Records" -a ${TMPDIR}/*.png simon.jakob.marwitz@uni-weimar.de
 
-/vegas/apps/compiler/intel/intelpython3/bin/python daily.py 1 1 2 0 | mail -s "Structural Monitoring Tower: Daily Analysis of Acceleration Records" volkmar.zabel@uni-weimar.de
-/vegas/apps/compiler/intel/intelpython3/bin/python daily.py 1 1 2 1 | mail -s "Structural Monitoring Tower: Daily Analysis of Wind Records" volkmar.zabel@uni-weimar.de
-/vegas/apps/compiler/intel/intelpython3/bin/python daily.py 1 1 2 2 | mail -s "Structural Monitoring Tower: Daily Analysis of Temperature Records" volkmar.zabel@uni-weimar.de
+rm -rf ${TMPDIR}
+mkdir ${TMPDIR}
+python daily.py -d 120 -q accel --file_info --stats --modal --tmp_dir=${TMPDIR}> ${TMPDIR}/geyer_out.txt
+DTSTART=`cat ${TMPDIR}/dtstart.tmp`
+python daily.py -d 60 -q accel --stats --modal --tmp_dir=${TMPDIR} --dtstart=${DTSTART} >> ${TMPDIR}/geyer_out.txt
+python daily.py -d 30 -q accel --stats --modal --tmp_dir=${TMPDIR} --dtstart=${DTSTART} >> ${TMPDIR}/geyer_out.txt
+python daily.py -d 10 -q accel  --stats --plot --modal --tmp_dir=${TMPDIR} --dtstart=${DTSTART}  >> ${TMPDIR}/geyer_out.txt
+cat ${TMPDIR}/geyer_out.txt | mail -s "Structural Monitoring Tower: Daily Analysis of Acceleration Records" -a ${TMPDIR}/*.png simon.jakob.marwitz@uni-weimar.de
 
-
-/vegas/apps/compiler/intel/intelpython3/bin/python daily.py 1 1 3 0 | mail -s "Structural Monitoring Tower: Daily Analysis of Acceleration Records" volkmar.zabel@uni-weimar.de
-/vegas/apps/compiler/intel/intelpython3/bin/python daily.py 1 1 3 1 | mail -s "Structural Monitoring Tower: Daily Analysis of Wind Records" volkmar.zabel@uni-weimar.de
-/vegas/apps/compiler/intel/intelpython3/bin/python daily.py 1 1 3 2 | mail -s "Structural Monitoring Tower: Daily Analysis of Temperature Records" volkmar.zabel@uni-weimar.de
-
-
-# arg[1]: worker number (stats, modal), arg[2]: number of workers, arg[3]: duration (10,30,60,120 minutes), arg[4]: quantity (accel, wind,temp, strain)
+rm -rf /dev/shm/geyer_plots

@@ -1862,7 +1862,7 @@ def create_modal_results(quantity: str, duration: pd.Timedelta,
 
     # prepare modal analysis, config files, geometry, result_folder, etc.
     PreProcessSignals.load_measurement_file = dummy_load
-    conf_dir = os.path.join('/vegas/scratch/womo1998/towerdata/modal_source_files', quantity)
+    conf_dir = os.path.join(config.modal_conf_dir, quantity)
     
     if check_errors:
         stats = check_and_mark_errors(stats)
@@ -2074,7 +2074,7 @@ def create_modal_results(quantity: str, duration: pd.Timedelta,
 
 def modal_analysis_single(start_time, slice,  quantity, duration):
     
-    conf_dir = config.modal_conf_dir
+    conf_dir = os.path.join(config.modal_conf_dir, quantity)
     st=start_time
     
     skip_existing = True

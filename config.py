@@ -27,7 +27,7 @@ if os.uname()[1]=='srv-grk':
     file_root_path = '/home/towermonitoring/'
     slice_root_path = '/vegas/scratch/womo1998/towerdata/'
     db_root_path = '/home/towermonitoring/analysis/result_db/'
-    modal_conf_dir = '/srv-grk/towermonitoring/analysis/modal_source_files/'
+    modal_conf_dir = '/home/towermonitoring/analysis/modal_source_files/'
 else:
     subpaths = {'accel':'towerdata_bin',
            'wind':'towerdata_bin',
