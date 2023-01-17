@@ -319,7 +319,7 @@ def plot_daily(quantity: str, duration: pd.Timedelta, dtstart: pd.Timestamp):
         y = ds['frequencies'].data
         x = ds['time'].data
         x = np.repeat(np.expand_dims(x, axis=1), repeats=y.shape[1], axis=1)
-        plt.figure(figsize=(5.906,5.906/1.618), dpi=300)
+        plt.figure(figsize=(5.906,5.906/1.618), tight_layout=True, dpi=300)
         plt.scatter(x,y,marker='+',c='grey')
         plt.ylabel('Frequencies [Hz]')
         plt.yticks([0.35,0.62,1.31,2.06,3.36])

@@ -9,7 +9,11 @@ import os
 import logging
 logger = logging.getLogger(__name__)
 logger.setLevel(logging.INFO)
-
+'''
+TODO:
+ - store output of file_info, stats, modal, etc. as a log file and attach it to mail
+ - only log exit status and other relevant information, e.g. num_file, num_slices, dtstart, runtimes, statistics, etc. to stdout
+'''
 
 def main(argv):
     
