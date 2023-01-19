@@ -4,7 +4,7 @@ import numpy as np
 import pandas as pd
 from main_v2 import get_file_info, get_file_list,round_dt, get_stats,get_modal_results
 import config
-from post_processing import plot_daily
+from post_processing import plot_daily, plot_waterfall
 import os
 import logging
 logger = logging.getLogger(__name__)
@@ -159,6 +159,10 @@ def main(argv):
         fig1.savefig(os.path.join(plot_dir,f'stats_{quantity}_{minutes}.png'))
         if modal:
             fig2.savefig(os.path.join(plot_dir,f'modal_{quantity}_{minutes}.png'))
+            fig3 = plot_waterfall(quantity, duration, dtstart)
+            fig3.savefig(os.path.join(plot_dir,f'spec_{quantity}_{minutes}.png'))
+            
+            
     
     
 if __name__ == '__main__':

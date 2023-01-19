@@ -270,7 +270,45 @@ def plot_file(file_time, headers, units, start_time, sample_rate, measurement):
         
     plt.show()
     
-def plot_daily(quantity: str, duration: pd.Timedelta, dtstart: pd.Timestamp):
+def plot_waterfall(quantity: str, duration: pd.Timedelta, dtstart: np.datetime64):
+    from core.PreProcessingTools import PreProcessSignals
+    ds = get_modal_results(quantity, duration)
+    minutes = int(duration.total_seconds()/60)
+    
+    ds = ds.isel(time=ds.time>dtstart)
+    ds = ds.dropna(dim='channels', how='all')
+    plt.figure(tight_layout=True)
+    Sxx = []
+    time_iterator = ds.time.values
+    for start_time in time_iterator:
+        
+        st = pd.Timestamp(start_time, tz = 'Europe/Berlin')
+        result_folder = os.path.join(config.slice_root_path, 
+                             f'{minutes}-minutes',
+                             'modal_{}'.format(quantity),
+                             '{}'.format(st.year),
+                             '{:02d}'.format(st.month))
+        fname = os.path.join(result_folder,
+        '{:02d}_{:02d}-{:02d}_{:02d}-{:02d}_prep_data.npz'.format(
+            st.year, st.month, st.day, st.hour, st.minute))
+        prep_data = PreProcessSignals.load_state(fname)
+        s_vals_psd = prep_data.sv_psd()[0,:]
+        s_vals_psd = 10 * np.log10(np.abs(s_vals_psd))
+        Sxx.append(s_vals_psd)
+        freqs = prep_data.freqs
+    Sxx = np.vstack(Sxx)
+    plt.pcolormesh(time_iterator, freqs, Sxx.T, shading='gouraud')#, norm=matplotlib.colors.LogNorm())
+    plt.gcf().autofmt_xdate()
+    cbar = plt.colorbar(label='$\sigma_1(|PSD|)$ [dB]')
+    # cbar.set_label('')
+    plt.ylabel('Frequency [Hz]')
+    # plt.xlabel('Time [sec]')
+    
+    return plt.gcf()
+    
+        
+    
+def plot_daily(quantity: str, duration: pd.Timedelta, dtstart: np.datetime64):
     
     if quantity in ['accel', 'strain_rosettes']:
         modal = True
@@ -2038,7 +2076,7 @@ def main():
     config.db_root_path = '/home/towermonitoring/analysis/result_db/'
     
     # define the length of signal blocks to analyse
-    minutes = 120 # in minutes, must be one of 10, 30, 60, 120
+    minutes = 10 # in minutes, must be one of 10, 30, 60, 120
     # define the quantity to use for postprocessing (not all plots)
     quantity = 'accel' # must be one of 'accel', 'wind', 'temp', 'strain_rosettes'
     # define if plots should be saved or shown
@@ -2054,11 +2092,11 @@ def main():
     ps = False# plot_stats
     pld = False# plot_daily
     pmr = False# postprocess_modal_results (scatter plot)
-    ft = True# frequencies over time
+    ft = False# frequencies over time
     fT = False#frequencies over temp
     dw = False#damping over wind
     ic = False#icing
-    fr = True# frequencies over rms
+    fr = False# frequencies over rms
     cd = False# cov_freq over data_quality !!possibly broken code!!
     ck = False# cov_freq over kurtosis !!possibly broken code!!
     dd = False# main_dir over wind_dir !!possibly broken code!!
@@ -2097,6 +2135,8 @@ def main():
     origin = config.origins[quantity]
     logger.info('{}, {}'.format(quantity, origin))
     
+    plot_waterfall(quantity, duration, pd.Timestamp('2023-01-18T03:00').to_datetime64())
+    plot.show()
     if pfi:
         plot_file_info(origin, check_errors=1, filter_errors=0)
         plt.show()
