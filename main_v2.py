@@ -2068,7 +2068,8 @@ def create_modal_results(quantity: str, duration: pd.Timedelta,
         # master_ds almost certainly has changed on disk if multiple workers were processing files
         master_ds = save_ds(process_ds, master_ds, master_ds_path, reload_current = True, what='modal')
     
-        os.rename(process_ds_path, process_ds_path+'.old')
+        # os.rename(process_ds_path, process_ds_path+'.old')
+        os.remove(process_ds_path)
         
     return master_ds
 

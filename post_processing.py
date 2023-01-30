@@ -2135,8 +2135,8 @@ def main():
     origin = config.origins[quantity]
     logger.info('{}, {}'.format(quantity, origin))
     
-    plot_waterfall(quantity, duration, pd.Timestamp('2023-01-18T03:00').to_datetime64())
-    plot.show()
+    plot_waterfall(quantity, duration, pd.Timestamp('2023-01-21T01:00').to_datetime64())
+    plt.show()
     if pfi:
         plot_file_info(origin, check_errors=1, filter_errors=0)
         plt.show()
