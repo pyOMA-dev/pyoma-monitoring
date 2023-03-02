@@ -735,7 +735,7 @@ def load_filter_merge(quantity: str, duration: pd.Timedelta,
     
     ds = ds.transpose('time','modes','channels')
     
-    return ds
+    return ds, (time_range, rms_range, wind_range, temp_range, f_range, )
     
     
     
@@ -822,7 +822,8 @@ def postprocess_modal_results(quantity: str, duration: pd.Timedelta,
     else:
         sns = None
     
-    ds = load_filter_merge(quantity, duration, 
+    ds, (time_range, rms_range, wind_range, temp_range, f_range, ) = \
+         load_filter_merge(quantity, duration, 
                            time_range, kurt_range, rms_range, 
                            wind_range, temp_range, 
                            f_range, damp_range, mode_pair, mc_range, 
@@ -1014,8 +1015,14 @@ def postprocess_modal_results(quantity: str, duration: pd.Timedelta,
                 ind = np.logical_or(nan_func_1(x), nan_func_2(y))
                 ind = np.logical_not(ind)            
                 y = y[ind]
-                x = x[ind]         
+                x = x[ind]
                 
+                if kwargs.get('predict', None) is not None:
+                    # list of factors for powers of x (last is power 0)
+                    y_ = np.zeros_like(y)
+                    for i,factor in enumerate(reversed(kwargs['predict'])):
+                        y_ += factor * y**i
+                    y = y_
                 if col>row+1:
                     if not (np.issubdtype(y.dtype, np.datetime64) or np.issubdtype(x.dtype, np.datetime64)):
                         
@@ -1038,8 +1045,16 @@ def postprocess_modal_results(quantity: str, duration: pd.Timedelta,
                         
                     if scatter:# or (np.issubdtype(y.dtype, np.datetime64) or np.issubdtype(x.dtype, np.datetime64)):
                         ax.plot(x,y, ls='none', marker='.', markerfacecolor=color,markeredgecolor='none',markersize=1, 
-                            #alpha=0.75, 
+                            alpha=0.75, 
                             zorder=0)
+                        
+                        if False: # linear regression
+                            A = np.vstack([x, np.ones(len(x))]).T
+                            curve_fit = np.linalg.lstsq(A, y, rcond=None)[0]
+                            print(curve_fit)
+                            xlin = np.array([x.min(), x.max()])
+                            ylin = xlin*curve_fit[0]+curve_fit[1]
+                            ax.plot(xlin,ylin)#, ls='none', marker='.', alpha=0.2, color='red', markersize=1, )
                     #    ax.set_xscale(xscale)
                     #    ax.set_yscale(yscale)        
                     else:
@@ -1082,13 +1097,16 @@ def postprocess_modal_results(quantity: str, duration: pd.Timedelta,
                             ybins = np.logspace(np.log10(np.nanmin(y_)), np.log10(np.nanmax(y_)), axes_size[1])
                         else:
                             ybins=axes_size[1]
+                        xbins //= kwargs.get('bin_factor',1)
+                        ybins //= kwargs.get('bin_factor',1)
                         #hist2d produces artifacts when using alpha colormaps due to internal use of pcolormesh (draws Patches)
                         #ax.hist2d(x_, y_, bins=(xbins, ybins), density=True, cmap=cmap, norm=matplotlib.colors.LogNorm(), zorder=10)
                         
                         # compute the histogram and draw it as image
                         counts, xedges, yedges=np.histogram2d(x_,y_,(xbins, ybins), density=True)
                         ax.imshow(counts.T, cmap=cmap, norm=matplotlib.colors.LogNorm(), zorder=10,
-                                   interpolation='none',origin='lower', resample=False, aspect='auto',
+                                   # interpolation='none',
+                                   origin='lower', resample=False, aspect='auto',
                                    extent=(xedges.min(),xedges.max(), yedges.min(), yedges.max()))
                         
                     if sns is not None:
@@ -2073,18 +2091,18 @@ def main():
     # set the root directory where the database files are stored
     # that directory should contain file_info_<quanity>.nc at its root
     # and subfolders with stats_<>.nc/modal_<>.nc for each block length in minutes
-    config.db_root_path = '/home/towermonitoring/analysis/result_db/'
+    config.db_root_path = '/vegas/users/staff/womo1998/Projects/2015_modal_analysis_tower/result_db/'
     
     # define the length of signal blocks to analyse
-    minutes = 10 # in minutes, must be one of 10, 30, 60, 120
+    minutes = 120 # in minutes, must be one of 10, 30, 60, 120
     # define the quantity to use for postprocessing (not all plots)
     quantity = 'accel' # must be one of 'accel', 'wind', 'temp', 'strain_rosettes'
     # define if plots should be saved or shown
-    save_figures=False
+    save_figures=True
     # define the path were figures should be saved
     figpath = '/vegas/users/staff/womo1998/Projects/2023_EVACES/current_figures/'
     # should LaTeX be used to render figure labels and numbers?
-    use_tex = False
+    use_tex = True
     
     # select plots to draw (toogle with 
     its = False# inspect_time_shifts
@@ -2095,7 +2113,9 @@ def main():
     ft = False# frequencies over time
     fT = False#frequencies over temp
     dw = False#damping over wind
-    ic = False#icing
+    modrms=True#modal parameters over rms
+    icov = False#icing overview
+    ic = False#icing events
     fr = False# frequencies over rms
     cd = False# cov_freq over data_quality !!possibly broken code!!
     ck = False# cov_freq over kurtosis !!possibly broken code!!
@@ -2135,8 +2155,10 @@ def main():
     origin = config.origins[quantity]
     logger.info('{}, {}'.format(quantity, origin))
     
-    plot_waterfall(quantity, duration, pd.Timestamp('2023-01-21T01:00').to_datetime64())
-    plt.show()
+    if False:
+        plot_waterfall(quantity, duration, pd.Timestamp('2023-01-21T01:00').to_datetime64())
+        plt.show()
+        
     if pfi:
         plot_file_info(origin, check_errors=1, filter_errors=0)
         plt.show()
@@ -2175,10 +2197,11 @@ def main():
                     with matplotlib.rc_context(rc=print_context_dict):
                         
                         postprocess_modal_results(quantity, duration,
-                                                  filter_errors=False, 
+                                                  filter_errors=True, 
                                                   wind_range=wind_range, 
                                                   temp_range=temp_range, 
-                                                  mode=mode,
+                                                  mode_pair=mode,
+                                                  damp_range=(0,5),
                                                   color=color, 
                                                   hide_ticks=True, 
                                                   scatter=False,
@@ -2198,14 +2221,15 @@ def main():
             fig, axes = plt.subplots(nrows=2, ncols=1, sharex=True, sharey=True)
             plt.subplots_adjust(left=0.09, right=0.97, top=0.95, bottom=0.14, hspace=0.12)
             for i,_quantity in enumerate(['accel','strain_rosettes']):
-                #continue
                 if _quantity == 'accel':
                     color='#006B94'
                 elif _quantity =='strain_rosettes':
                     color='maroon'
                 else:
                     color='black'
-                postprocess_modal_results(_quantity, duration, filter_errors=True, wind_range=0, temp_range=0, mode=mode, q_1=q_1, q_2=q_2, fig=fig, axes=axes[i], color=color, scatter=False)
+                postprocess_modal_results(_quantity, duration, filter_errors=True,
+                                          wind_range=0, temp_range=0, mode_pair=mode, q_1=q_1, q_2=q_2,
+                                          fig=fig, axes=axes[i], color=color, scatter=False)
                 mode_str = ['all','first','second','third', 'fourth', 'fifth'][mode]
                 axes[i].set_ylabel('')
                 plt.subplots_adjust(left=0.09, right=0.97, top=0.95, bottom=0.14, hspace=0.12)
@@ -2243,7 +2267,7 @@ def main():
                 q_1=['frequencies']
                 q_2=['temp']
                 postprocess_modal_results(quantity, duration, filter_errors=False, 
-                                          wind_range=0, temp_range=(-10,35), mode=mode, q_1=q_1, q_2=q_2, 
+                                          wind_range=0, temp_range=(-10,35), mode_pair=mode, q_1=q_1, q_2=q_2, 
                                           fig=fig,axes=axes[i], color=color, scatter=False, )
 
                 mode_str = ['all','first','second','third', 'fourth', 'fifth'][mode]
@@ -2254,6 +2278,8 @@ def main():
             for i in range(5):
                 axes[i].yaxis.set_minor_locator(matplotlib.ticker.LinearLocator(numticks=3))
                 axes[i].yaxis.set_major_locator(matplotlib.ticker.LinearLocator(numticks=3))
+                axes[i].xaxis.grid(True, lw=0.1, zorder=-1)
+                axes[i].yaxis.grid(True, lw=0.1, zorder=-1)
             
             plt.subplots_adjust(left=0.1, right=0.98, top=0.975, bottom=0.115)
             fig.text(0.01, 0.55, 'Frequency [\si{\hertz}]', va='center', rotation='vertical')
@@ -2289,7 +2315,7 @@ def main():
                 q_2=['wind']
                 #continue
                 postprocess_modal_results(quantity, duration, filter_errors=True, damp_range=(0,2.5),
-                                          wind_range=4, temp_range=0, mode=mode, q_1=q_1, q_2=q_2, 
+                                          wind_range=4, temp_range=0, mode_pair=mode, q_1=q_1, q_2=q_2, 
                                           fig=fig,axes=axes[i], color=color,scatter=False, hexbin_extent=[0,20,0,2.5])
                 #plt.show()
                 mode_str = ['all','first','second','third', 'fourth', 'fifth'][mode]
@@ -2317,9 +2343,55 @@ def main():
             else:
                 plt.show()
     
-    # icing
-    if ic:
+    #modal over rms
+    if modrms:
+        # print_context_dict['figure.figsize']=(5.53*0.62,2.96)
         with matplotlib.rc_context(rc=print_context_dict):
+            for mode_pair in range(1,6):
+                fig, axes = plt.subplots(nrows=2, ncols=1, sharex=True, sharey=False, figsize=(5.906/2, 5.906 / 1.618 ))
+                fig.subplots_adjust(left=0.120, right=0.965, top=0.965, bottom=0.115, hspace=0.165)
+                
+                if quantity == 'accel':
+                    color='#006B94'
+                elif quantity =='strain_rosettes':
+                    color='maroon'
+                else:
+                    color='black'
+                
+                q_2=['rms_m']
+                for i, q_1 in enumerate([['damping'],['frequencies']]):
+                    #continue
+                    postprocess_modal_results(quantity, duration, filter_errors=True, rms_range=(0,16),
+                                              damp_range=(0,5), bin_factor=3,
+                                              wind_range=0, temp_range=0, mode_pair=mode_pair, q_1=q_1, q_2=q_2, 
+                                              fig=fig,axes=axes[i], color=color,scatter=False)
+                    #plt.show()
+                    mode_str = ['all','first','second','third', 'fourth', 'fifth'][mode_pair]
+                    
+                    fig.subplots_adjust(left=0.120, right=0.965, top=0.965, bottom=0.115, hspace=0.165)
+                
+                axes[0].set_ylabel('Damping [\si{\percent}]', ha='center',rotation='vertical', labelpad=-10)
+                axes[1].set_ylabel('Frequency [\si{\hertz}]', ha='center',rotation='vertical', labelpad=-10)
+                
+                for i in range(2):
+                    axes[i].yaxis.set_minor_locator(matplotlib.ticker.LinearLocator(numticks=3))
+                    axes[i].yaxis.set_major_locator(matplotlib.ticker.LinearLocator(numticks=2))
+                    axes[i].xaxis.grid(True, lw=0.1, zorder=-1)
+                    axes[i].yaxis.grid(True, 'minor', lw=0.1, zorder=-1)
+                axes[-1].set_xlabel('$\\text{RMS} [\si{\milli\metre\per\square\second}]$')
+
+                    
+                fig.align_ylabels()
+                if save_figures:
+                    plt.gcf().savefig(figpath + f'q_{quantity}-d_{minutes}-d_{mode_pair}-modal_vs_rms.png', dpi=300)
+                    #plt.gcf().savefig('/ismhome/staff/womo1998/Projects/2018_ISMA/paper/figures/three_modes_wind.pdf', dpi=300)
+                    plt.close('all')
+                else:
+                    plt.show()
+    # icing
+    if icov:
+        with matplotlib.rc_context(rc=print_context_dict):
+            
             
             fig = plt.figure()
             spec = fig.add_gridspec(7,2, height_ratios=[1,1,1.14,0.86,1,1,0.28])
@@ -2339,15 +2411,22 @@ def main():
             else:
                 color='black'
             #for color,quantity in zip(['#006b9455','maroon'],['accel','strain_rosettes']):
+            color=matplotlib.colors.to_rgba(color, alpha=0.5)
             
             plt.subplots_adjust(left=0.095, right=0.97, top=0.95, bottom=0.11, hspace=0.12, wspace=0.06)
             postprocess_modal_results(quantity, duration, filter_errors=False, 
-                                      wind_range=0, temp_range=0, mode=0, q_1=['temp'], q_2=['time'], 
+                                      wind_range=0, temp_range=0, mode_pair=0, q_1=['temp'], q_2=['time'], 
                                       fig=fig, axes=axes[0], color=color, scatter=False)
             axes[0].axhline(0,color='black', lw=0.1)
             axes[0].xaxis.set_visible(False)
             
-            
+            #linear regressions of frequencies vs. temp
+            predict_factors = [(1), #dummy
+                               (-2.55343527e-04,  3.57122155e-01), #mode_pair 1
+                               (-2.05728155e-04,  6.24917728e-01),#mode_pair 2
+                               (3.09462067e-05, 1.30772396e+00),
+                               (-1.74891107e-03,  2.07371664e+00),
+                               (-2.88029598e-03,  3.38148568e+00),]
             
             for j,q_2 in enumerate([['time'],['temp']]):
                 for i,mode in enumerate(reversed([1,2])):
@@ -2355,8 +2434,23 @@ def main():
                     ax = axes[j * 2 + i + 1]
                     plt.subplots_adjust(left=0.095, right=0.97, top=0.95, bottom=0.11, hspace=0.12, wspace=0.06)
                     postprocess_modal_results(quantity, duration, filter_errors=False, 
-                                              wind_range=0, temp_range=0, mode=mode, q_1=q_1, q_2=q_2, 
+                                              wind_range=0, temp_range=0, mode_pair=mode, q_1=q_1, q_2=q_2, 
                                               fig=fig,axes=ax, color=color, scatter=False)
+                
+                if 'time' in q_2 and False:
+                    for i,mode in enumerate(reversed([1,2])):
+                        q_1=['frequencies']
+                        ax = axes[j * 2 + i + 1]
+                        '''
+                        when q_2=='time' and q1=='frequencies'
+                        we need to get q_1='temp' and predict 'frequencies' from a linear regression
+                        then overlay it on the actual plot
+                        run the loop once again with a predict switch
+                        '''
+                        plt.subplots_adjust(left=0.095, right=0.97, top=0.95, bottom=0.11, hspace=0.12, wspace=0.06)
+                        postprocess_modal_results(quantity, duration, filter_errors=False, 
+                                                  wind_range=0, temp_range=(-40,5), mode_pair=mode, q_1=['temp'], q_2=q_2, 
+                                                  fig=fig,axes=ax, color=matplotlib.colors.to_rgba('red', alpha=0.5), scatter=True, predict=predict_factors[mode])
 
             months = MonthLocator(range(1, 13, 6), bymonthday=1, interval=1)
             monthsFmt = DateFormatter("%b '%y")
@@ -2431,6 +2525,98 @@ def main():
             else:
                 plt.show()
             
+    # icing
+    if ic:
+        with matplotlib.rc_context(rc=print_context_dict):
+            
+            for n in range(6):
+                icing_events = [
+                    ('2016-11-25' ,   '2016-12-10'),
+                    ('2016-12-27' ,   '2017-01-25'),
+                    ('2017-11-25' ,   '2017-12-17'),
+                    ('2020-12-29' ,   '2021-02-01'),
+                    ('2022-01-03',    '2022-02-16'),
+                    ('2023-01-13' ,   '2023-02-13')]
+                icing_event = [pd.Timestamp(event) for event in icing_events[n]]
+                
+                fig, axes = plt.subplots(3,1, sharex=True)
+                
+                # fig, axes = plt.subplots(nrows=3, ncols=2, sharex='col', sharey='row')
+                
+                if quantity == 'accel':
+                    color='#006B94'
+                elif quantity =='strain_rosettes':
+                    color='maroon'
+                else:
+                    color='black'
+                
+                plt.subplots_adjust(left=0.1, right=0.98, top=0.97, bottom=0.135, hspace=0.12, wspace=0.06)
+                postprocess_modal_results(quantity, duration, filter_errors=False, 
+                                                  time_range = icing_event,
+                                          wind_range=0, temp_range=0, mode_pair=0, q_1=['temp'], q_2=['time'], 
+                                          fig=fig, axes=axes[0], color=color, scatter=True)
+                axes[0].axhline(0,color='black', lw=0.1)
+                # axes[0].xaxis.set_visible(False)
+                
+                #linear regressions of frequencies vs. temp
+                predict_factors = [(1), #dummy
+                                   (-2.55343527e-04,  3.57122155e-01), #mode_pair 1
+                                   (-2.05728155e-04,  6.24917728e-01),#mode_pair 2
+                                   (3.09462067e-05, 1.30772396e+00),
+                                   (-1.74891107e-03,  2.07371664e+00),
+                                   (-2.88029598e-03,  3.38148568e+00),]
+                
+                for i,mode in enumerate(reversed([1,2])):
+                    q_1=['frequencies']
+                    ax = axes[i + 1]
+                    plt.subplots_adjust(left=0.1, right=0.98, top=0.97, bottom=0.135, hspace=0.12, wspace=0.06)
+                    postprocess_modal_results(quantity, duration, filter_errors=False, 
+                                              time_range = icing_event,
+                                              wind_range=0, temp_range=0, mode_pair=mode, q_1=q_1,q_2=['time'], 
+                                              fig=fig,axes=ax, color=color, scatter=True)
+                for ax in axes:
+                    ax.xaxis.grid(True, lw=0.1, zorder=-1)
+                    ax.yaxis.grid(True, lw=0.1, zorder=-1)
+    
+                months = MonthLocator(range(1, 13, 6), bymonthday=1, interval=1)
+                monthsFmt = DateFormatter("%b '%y")
+                # axes[0].xaxis.set_visible(False)
+                # axes[1].xaxis.set_visible(False)
+                axes[2].set_xlabel('Time')
+                axes[2].xaxis.set_visible(True)
+                # axes[2].xaxis.set_major_locator(months)
+                # axes[2].xaxis.set_major_formatter(monthsFmt)
+                rotation=30 
+                ha='right'
+                for label in axes[2].get_xticklabels():
+                    #continue
+                    label.set_ha(ha)
+                    label.set_rotation(rotation)
+                    
+                loc = matplotlib.ticker.MultipleLocator(base=0.01) # this locator puts ticks at regular intervals
+        
+                for i in range(1,3):
+                    axes[i].yaxis.set_minor_locator(matplotlib.ticker.MultipleLocator(base=0.01))
+                    axes[i].yaxis.set_major_locator(matplotlib.ticker.MultipleLocator(base=0.02))
+        #         
+                fig.text(0.01, 0.4, 'Frequency [\si{\hertz}]', va='center', rotation='vertical')
+                
+                axes[0].set_ylabel('Temperature [\si{\celsius}]', va='center', ha='center', rotation='vertical')
+                axes[0].set_ylim((-18,35))
+                axes[1].set_ylabel('')
+                axes[2].set_ylabel('')
+                
+                
+                plt.subplots_adjust(left=0.1, right=0.98, top=0.97, bottom=0.135, hspace=0.12, wspace=0.06)
+                fig.align_xlabels()
+                
+                
+                if save_figures:
+                    plt.gcf().savefig(figpath + f'q_{quantity}-d_{minutes}-icing_event_{n}.png', dpi=300)
+                    plt.close('all')
+                else:
+                    plt.show()
+                    
     # frequencies over rms
     if fr:
         with matplotlib.rc_context(rc=print_context_dict):
@@ -2442,7 +2628,7 @@ def main():
                 q_1=['rms_m']
                 ylim = [(0,24),(0,70)][i]
                 postprocess_modal_results(_quantity, duration, filter_errors=True, rms_range=ylim,
-                                          wind_range=0, temp_range=0, mode=mode, q_1=q_1, q_2=q_2, 
+                                          wind_range=0, temp_range=0, mode_pair=mode, q_1=q_1, q_2=q_2, 
                                           fig=fig,axes=axes[i], color=color, scatter=False)
                 fig.subplots_adjust(left=0.09, right=0.98, top=0.97, bottom=0.12, hspace=0.04)
             
@@ -2477,7 +2663,7 @@ def main():
                 q_2=['data_quality']
 
                 postprocess_modal_results(quantity, duration, filter_errors=False, 
-                                          wind_range=0, temp_range=0, mode=mode, 
+                                          wind_range=0, temp_range=0, mode_pair=mode, 
                                           q_1=q_1, q_2=q_2, 
                                           fig=fig,axes=axes[i], color=color,scatter=False,
                                           hexbin_extent = [11,82,-4.5,0], 
@@ -2536,7 +2722,7 @@ def main():
                 q_2=['kurtosis_m']
 
                 postprocess_modal_results(quantity, duration, filter_errors=False, 
-                                          wind_range=0, temp_range=0, mode=mode, 
+                                          wind_range=0, temp_range=0, mode_pair=mode, 
                                           q_1=q_1, q_2=q_2, 
                                           fig=fig,axes=axes[i], color=color,scatter=False,
                                           hexbin_extent = [-0.5,10,-4.5,0], log_scale='y')

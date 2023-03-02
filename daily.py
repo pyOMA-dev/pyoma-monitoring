@@ -66,7 +66,7 @@ def main(argv):
             plot_dir = os.getcwd()
         else:
             plot_dir = tmp_dir 
-    
+            
     if duration is None or quantity is None:
         print ('daily.py -d <duration in minutes> -q <quantity> --file_info --stats --modal --plot --tmp_dir=<directory path> --dtstart=YYYY-MM-DD hh:mm --loglevel=INFO')
         sys.exit()
