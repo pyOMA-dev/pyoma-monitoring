@@ -361,6 +361,7 @@ def plot_daily(quantity: str, duration: pd.Timedelta, dtstart: np.datetime64):
         plt.scatter(x,y,marker='+',c='grey')
         plt.ylabel('Frequencies [Hz]')
         plt.yticks([0.35,0.62,1.31,2.06,3.36])
+        plt.ylim((0,5))
         plt.grid(True, 'major','y', zorder=0, lw=0.1)
         plt.gcf().autofmt_xdate()
         fig2 = plt.gcf()
