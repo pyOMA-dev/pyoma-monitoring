@@ -2083,7 +2083,24 @@ def assign_modes(time_stamps, frequencies, modeshapes, threshold, damping=None, 
         mac=StabilCalc.calculateMAC(mshs[0], mshs[1])
         plt.matshow(mac, vmin=0, vmax=1)
         plt.show()
-    
+        
+def test():
+    quantity = 'accel'
+    origin = config.origins[quantity]
+    ds =  get_file_info(origin)
+    day = np.datetime64('2024-03-19 03:00')
+    filename = ds.sel(time=day)['file_name'].data.item()
+    yn = input('read and plot {} (y/n)'.format(filename))
+    if yn == 'y':
+        filepath = os.path.join(config.file_root_path, config.subpaths[origin], filename)
+        file_contents = read_file(filepath)
+        if file_contents is None:
+            logger.warning('File unreadable: {}'.format(filepath))
+            return
+        file_time, file_size, headers, units, start_time, sample_rate,measurement = file_contents
+        
+        plot_file(file_time, headers, units, start_time, sample_rate, measurement)
+        
 def main():
     ###################################################################
     # Input the following:                                            #
@@ -2092,29 +2109,30 @@ def main():
     # set the root directory where the database files are stored
     # that directory should contain file_info_<quanity>.nc at its root
     # and subfolders with stats_<>.nc/modal_<>.nc for each block length in minutes
-    config.db_root_path = '/vegas/users/staff/womo1998/Projects/2015_modal_analysis_tower/result_db/'
+    config.db_root_path = '/home/towermonitoring/analysis/result_db/'
     
     # define the length of signal blocks to analyse
     minutes = 120 # in minutes, must be one of 10, 30, 60, 120
     # define the quantity to use for postprocessing (not all plots)
     quantity = 'accel' # must be one of 'accel', 'wind', 'temp', 'strain_rosettes'
     # define if plots should be saved or shown
-    save_figures=True
+    save_figures=False
     # define the path were figures should be saved
     figpath = '/vegas/users/staff/womo1998/Projects/2023_EVACES/current_figures/'
     # should LaTeX be used to render figure labels and numbers?
-    use_tex = True
+    use_tex = False
     
     # select plots to draw (toogle with 
     its = False# inspect_time_shifts
-    pfi = False# plot_file_info
+    pfi = True# plot_file_info
     ps = False# plot_stats
     pld = False# plot_daily
+    day = np.datetime64('2024-03-19 00:00')
     pmr = False# postprocess_modal_results (scatter plot)
     ft = False# frequencies over time
     fT = False#frequencies over temp
     dw = False#damping over wind
-    modrms=True#modal parameters over rms
+    modrms=False#modal parameters over rms
     icov = False#icing overview
     ic = False#icing events
     fr = False# frequencies over rms
@@ -2173,7 +2191,7 @@ def main():
         plt.show()
     
     if pld:
-        plot_daily(quantity, duration, np.datetime64('2022-12-12 00:00'))
+        plot_daily(quantity, duration, day)
         plt.show()
     
     if pmr and quantity in ['accel', 'strain_rosettes']:
@@ -2787,4 +2805,5 @@ def main():
     
                     
 if __name__ == '__main__':
-    main()
+    # main()
+    test()

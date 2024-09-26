@@ -159,12 +159,12 @@ import xarray as xr
 
 from MultiLock import MultiLock
 
-from core.PreProcessingTools import GeometryProcessor,PreProcessSignals
-from core.StabilDiagram import StabilCalc, StabilCluster, StabilPlot
+from pyOMA.core.PreProcessingTools import GeometryProcessor,PreProcessSignals
+from pyOMA.core.StabilDiagram import StabilCalc, StabilCluster, StabilPlot
 # from GUI.StabilGUI import start_stabil_gui
-from core.PlotMSH import ModeShapePlot
+from pyOMA.core.PlotMSH import ModeShapePlot
 # from GUI.PlotMSHGUI import start_msh_gui
-from core.VarSSIRef import VarSSIRef
+from pyOMA.core.VarSSIRef import VarSSIRef
 #from PLSCF import PLSCF
 #from SSIData import SSIDataMC
 
