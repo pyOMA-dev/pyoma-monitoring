@@ -271,7 +271,7 @@ def plot_file(file_time, headers, units, start_time, sample_rate, measurement):
     plt.show()
     
 def plot_waterfall(quantity: str, duration: pd.Timedelta, dtstart: np.datetime64):
-    from core.PreProcessingTools import PreProcessSignals
+    from pyOMA.core.PreProcessingTools import PreProcessSignals
     ds = get_modal_results(quantity, duration)
     minutes = int(duration.total_seconds()/60)
     
