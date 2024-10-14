@@ -19,25 +19,15 @@ for quantity in origins.keys():
         
 pid=str(os.getpid())
 
-if os.uname()[1]=='srv-grk':     
-    subpaths = {'accel':'towerdata',
-           'wind':'towerdata',
-           'temp':'towerdata',
-           'strain':'strain_data'}
-    file_root_path = '/home/towermonitoring/'
-    slice_root_path = '/vegas/scratch/womo1998/towerdata/'
-    db_root_path = '/home/towermonitoring/analysis/result_db/'
-    modal_conf_dir = '/home/towermonitoring/analysis/modal_source_files/'
-else:
-    subpaths = {'accel':'towerdata_bin',
-           'wind':'towerdata_bin',
-           'temp':'towerdata_bin',
-           'strain':'strain_data_bin'}
-    file_root_path = '/vegas/scratch/womo1998/towerdata/'
-    slice_root_path = '/vegas/scratch/womo1998/towerdata/'
-    db_root_path = '/vegas/scratch/womo1998/towerdata/result_db/'
-    modal_conf_dir = '/vegas/scratch/womo1998/towerdata/modal_source_files/'
-
+subpaths = {'accel':'towerdata',
+            'wind':'towerdata',
+            'temp':'towerdata',
+            'strain':'strain_data'}
+file_root_path = '/home/towermonitoring/'
+slice_root_path = '/home/towermonitoring/scratch_data/'
+db_root_path = '/home/towermonitoring/analysis/result_db/'
+modal_conf_dir = '/home/towermonitoring/analysis/modal_source_files/'
+    
 dtstarts = {'accel':datetime.datetime(2015,5,20),
             'wind':datetime.datetime(2015,5,20),
             'temp':datetime.datetime(2015,5,20),
