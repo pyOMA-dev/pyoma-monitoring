@@ -7,7 +7,7 @@ cd /home/towermonitoring/analysis/code/
 
 PATH=/vegas/apps/compiler/intel/intelpython3.7/bin:$PATH
 export PATH
-PYTHONPATH=/vegas/users/staff/womo1998/git/pyOMA
+PYTHONPATH=/home/towermonitoring/analysis/pyOMA
 export PYTHONPATH
 TMPDIR=/dev/shm/geyer_tmp
 rm -rf ${TMPDIR}
