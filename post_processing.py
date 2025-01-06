@@ -326,10 +326,10 @@ def plot_daily(quantity: str, duration: pd.Timedelta, dtstart: np.datetime64):
     # print(ds)
     ds = ds.dropna(dim='channels', how='all')
     #return
-    n_channels = int(len(ds.channels))
+    n_channels = max(1, int(len(ds.channels))) # prevent failure on empty datasets
     # print(n_channels)
     
-    fig, axes = plt.subplots(nrows=n_channels, figsize=(5.906, n_channels), sharex=True, tight_layout=True, dpi=300)
+    fig, axs = plt.subplots(nrows=n_channels, figsize=(5.906, n_channels), sharex=True, tight_layout=True, dpi=300, squeeze=False)
     
     handles = []
     
@@ -338,7 +338,7 @@ def plot_daily(quantity: str, duration: pd.Timedelta, dtstart: np.datetime64):
     for i, channel in enumerate(ds.channels):
         
         # this_range = config.ranges.get(channel.variable.item(),None)
-        ax = axes[i]
+        ax = axs[i,0]
         
         data = ds.sel(channels=channel)
         
@@ -348,7 +348,8 @@ def plot_daily(quantity: str, duration: pd.Timedelta, dtstart: np.datetime64):
         
         # ax.axhline(this_range[0])
         # ax.axhline(this_range[1])
-    ax.set_xlim((data.time.data.min(), data.time.data.max()))
+    # axs[0,0].set_xlim((data.time.data.min(), data.time.data.max()))
+    axs[0,0].set_xlim(xmin=dtstart)
     fig.legend(handles= handles, loc='center right')
     fig.autofmt_xdate()
     fig.suptitle(f"mean / min / max over {minutes} minutes for each channel of type {quantity}")
