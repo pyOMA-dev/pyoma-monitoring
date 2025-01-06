@@ -20,10 +20,10 @@ if test -f "${TMPDIR}/dtstart.tmp"; then
 	python daily.py -d 30 -q temp --stats --tmp_dir=${TMPDIR} --dtstart=${DTSTART} >> ${TMPDIR}/geyer_out.txt
 	python daily.py -d 10 -q temp  --stats --plot --tmp_dir=${TMPDIR} --dtstart=${DTSTART}  >> ${TMPDIR}/geyer_out.txt
 	cat ${TMPDIR}/geyer_out.txt | mail -s "Structural Monitoring Tower: Daily Analysis of Temperature Records" -a ${TMPDIR}/stats_temp_10.png simon.jakob.marwitz@uni-weimar.de
-	cat ${TMPDIR}/geyer_out.txt | mail -s "Structural Monitoring Tower: Daily Analysis of Temperature Records" -a ${TMPDIR}/stats_temp_10.png volkmar.zabel@uni-weimar.de
+	cat ${TMPDIR}/geyer_out.txt | mail -s "Structural Monitoring Tower: Daily Analysis of Temperature Records" -a ${TMPDIR}/stats_temp_10.png volkmar.zabel@uni-rostock.de
 else
 	cat ${TMPDIR}/geyer_out.txt | mail -s "Structural Monitoring Tower: Daily Analysis of Temperature Records" simon.jakob.marwitz@uni-weimar.de
-	cat ${TMPDIR}/geyer_out.txt | mail -s "Structural Monitoring Tower: Daily Analysis of Temperature Records" volkmar.zabel@uni-weimar.de
+	cat ${TMPDIR}/geyer_out.txt | mail -s "Structural Monitoring Tower: Daily Analysis of Temperature Records" volkmar.zabel@uni-rostock.de
 fi
 rm -rf ${TMPDIR}
 
@@ -35,10 +35,10 @@ if test -f "${TMPDIR}/dtstart.tmp"; then
 	python daily.py -d 30 -q wind --stats --tmp_dir=${TMPDIR} --dtstart=${DTSTART} >> ${TMPDIR}/geyer_out.txt
 	python daily.py -d 10 -q wind  --stats --plot --tmp_dir=${TMPDIR} --dtstart=${DTSTART}  >> ${TMPDIR}/geyer_out.txt
 	cat ${TMPDIR}/geyer_out.txt | mail -s "Structural Monitoring Tower: Daily Analysis of Wind Records" -a ${TMPDIR}/stats_wind_10.png simon.jakob.marwitz@uni-weimar.de
-	cat ${TMPDIR}/geyer_out.txt | mail -s "Structural Monitoring Tower: Daily Analysis of Wind Records" -a ${TMPDIR}/stats_wind_10.png volkmar.zabel@uni-weimar.de
+	cat ${TMPDIR}/geyer_out.txt | mail -s "Structural Monitoring Tower: Daily Analysis of Wind Records" -a ${TMPDIR}/stats_wind_10.png volkmar.zabel@uni-rostock.de
 else
 	cat ${TMPDIR}/geyer_out.txt | mail -s "Structural Monitoring Tower: Daily Analysis of Wind Records" simon.jakob.marwitz@uni-weimar.de
-	cat ${TMPDIR}/geyer_out.txt | mail -s "Structural Monitoring Tower: Daily Analysis of Wind Records" volkmar.zabel@uni-weimar.de
+	cat ${TMPDIR}/geyer_out.txt | mail -s "Structural Monitoring Tower: Daily Analysis of Wind Records" volkmar.zabel@uni-rostock.de
 fi
 rm -rf ${TMPDIR}
 
@@ -50,9 +50,9 @@ if test -f "${TMPDIR}/dtstart.tmp"; then
 	python daily.py -d 30 -q accel --stats --modal --tmp_dir=${TMPDIR} --dtstart=${DTSTART} >> ${TMPDIR}/geyer_out.txt
 	python daily.py -d 10 -q accel  --stats --plot --modal --tmp_dir=${TMPDIR} --dtstart=${DTSTART}  >> ${TMPDIR}/geyer_out.txt
 	cat ${TMPDIR}/geyer_out.txt | mail -s "Structural Monitoring Tower: Daily Analysis of Acceleration Records" -a ${TMPDIR}/stats_accel_10.png -a ${TMPDIR}/modal_accel_10.png -a ${TMPDIR}/spec_accel_10.png simon.jakob.marwitz@uni-weimar.de
-	cat ${TMPDIR}/geyer_out.txt | mail -s "Structural Monitoring Tower: Daily Analysis of Acceleration Records" -a ${TMPDIR}/stats_accel_10.png -a ${TMPDIR}/modal_accel_10.png -a ${TMPDIR}/spec_accel_10.png volkmar.zabel@uni-weimar.de
+	cat ${TMPDIR}/geyer_out.txt | mail -s "Structural Monitoring Tower: Daily Analysis of Acceleration Records" -a ${TMPDIR}/stats_accel_10.png -a ${TMPDIR}/modal_accel_10.png -a ${TMPDIR}/spec_accel_10.png volkmar.zabel@uni-rostock.de
 else
 	cat ${TMPDIR}/geyer_out.txt | mail -s "Structural Monitoring Tower: Daily Analysis of Acceleration Records" simon.jakob.marwitz@uni-weimar.de
-	cat ${TMPDIR}/geyer_out.txt | mail -s "Structural Monitoring Tower: Daily Analysis of Acceleration Records" volkmar.zabel@uni-weimar.de
+	cat ${TMPDIR}/geyer_out.txt | mail -s "Structural Monitoring Tower: Daily Analysis of Acceleration Records" volkmar.zabel@uni-rostock.de
 fi
 rm -rf ${TMPDIR}
