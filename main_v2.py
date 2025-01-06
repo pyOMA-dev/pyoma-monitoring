@@ -295,7 +295,7 @@ def read_file(path):
         assert (os.path.exists(path+'strain-1.txt') or os.path.exists(path+'strain-1.txt.bz2'))
     else:
         if not os.path.exists(path):
-            warnings.warn('File {} does not exist'.format(os.path.basename(path)))
+            logger.warning('File {} does not exist'.format(os.path.basename(path)))
             return None
     
     logger.info(f'Reading File: {os.path.basename(path)}')
@@ -340,7 +340,7 @@ def read_file(path):
             zipfile.seek(0,2)
             zipfile.seek(0,0)
         except EOFError:
-            warnings.warn('BZ2File is corrupted: {}'.format(path))
+            logger.warning('BZ2File is corrupted: {}'.format(path))
             return None
         
         file,ext = os.path.splitext(file)
@@ -391,7 +391,7 @@ def read_file(path):
         return None
 
     else:
-        warnings.warn('Extension was neither .dat, .csv, .bin, or None but {}'.format(ext))
+        logger.warning('Extension was neither .dat, .csv, .bin, or None but {}'.format(ext))
         return None
         
     if file_contents is None:
@@ -858,8 +858,8 @@ def create_stats(quantity: str, duration: pd.Timedelta, file_info: xr.Dataset,
         # make 
         start_time = pd.Timestamp(time_, tz = 'Europe/Berlin')
         
-        if not (i+1)%50: print('.',end='', flush=True) 
-        if not (i+1)%2500: print('\n')
+        # if not (i+1)%50: print('.',end='', flush=True) 
+        # if not (i+1)%2500: print('\n')
         
         if close_to_utc_transition(start_time):
             continue
@@ -875,8 +875,11 @@ def create_stats(quantity: str, duration: pd.Timedelta, file_info: xr.Dataset,
                     
                     if  master_ds.sel(time=start_time)['mean'].isnull().all():
                         try:
-                            with open(os.devnull, "w") as f, contextlib.redirect_stdout(f): 
-                                slice = get_slice_corrected(start_time, duration, quantity, file_info, **kwargs)
+                            # with open(os.devnull, "w") as f, contextlib.redirect_stdout(f): 
+                            old_level = logger.getEffectiveLevel()
+                            logger.setLevel(logging.WARNING)
+                            slice = get_slice_corrected(start_time, duration, quantity, file_info, **kwargs)
+                            logger.setLevel(old_level)
                         except Exception as e:
                             logger.exception(e)
                             slice=None
@@ -904,7 +907,10 @@ def create_stats(quantity: str, duration: pd.Timedelta, file_info: xr.Dataset,
         this_ds = xr.Dataset()
         
         try:
+            old_level = logger.getEffectiveLevel()
+            logger.setLevel(logging.WARNING)
             slice = get_slice_corrected(start_time, duration, quantity, file_info, **kwargs)
+            logger.setLevel(old_level)
         except Exception as e:
             logger.exception(e)
             slice=None
@@ -941,7 +947,10 @@ def create_stats(quantity: str, duration: pd.Timedelta, file_info: xr.Dataset,
         # master_ds almost certainly has changed on disk if multiple workers were processing files
             
         master_ds = save_ds(process_ds, master_ds, master_ds_path, reload_current=True, what='stats')
-
+    
+        logger.debug(f'Removing temporary dataset at {process_ds_path}')
+        os.remove(process_ds_path)
+    
     return master_ds
 
 # def get_exclusive_lock(savepath):
@@ -1000,7 +1009,7 @@ def save_ds(new_ds, current_ds, savepath, what='modal', reload_current = False):
             current_ds.close()
             
         if not 'time' in new_ds:
-            logger.debug('Dataset is empty. Skipping!')        
+            logger.debug('Not saving empty new dataset.')        
             return current_ds
         
         logger.info(f'Merging Datasets {os.path.split(savepath)[-1]}')
@@ -1026,7 +1035,7 @@ def save_ds(new_ds, current_ds, savepath, what='modal', reload_current = False):
             logger.info('Dataset length before/after: {}/{}, '.format(old_length, len(current_ds.time)))
     
         else:
-            warnings.warn("'Dataset' object has not attribute 'time'. Overwriting!")
+            logger.warning("'Dataset' object has not attribute 'time'. Overwriting!")
             current_ds = new_ds
     
         logger.info(f'Saving Dataset to {savepath}')
@@ -1387,7 +1396,7 @@ def get_slice_corrected(start_time: pd.Timestamp, duration: pd.Timedelta,
             delta_t = (lend_time-lstart_time).total_seconds()
             
             if not math.isclose(delta_t, duration.total_seconds(), abs_tol = 0.1):
-                warnings.warn('Duration {} does not match given {}'.format((lend_time - lstart_time), duration))
+                logger.warning('Duration {} does not match given {}'.format((lend_time - lstart_time), duration))
             
             return lstart_time, lheaders, lunits, lend_time, lsample_rate, lmeasurement 
         except Exception as e:
@@ -1396,7 +1405,7 @@ def get_slice_corrected(start_time: pd.Timestamp, duration: pd.Timedelta,
         
 
     if not os.path.exists(slice_path) and file_info is None:
-        warnings.warn(slice_path + ' does not exist, file_info needed for creation of new slice!')    
+        logger.warning(slice_path + ' does not exist, file_info needed for creation of new slice!')    
         return None
  
     slice = get_slice(start_time, duration, quantity, file_info)
@@ -1941,8 +1950,8 @@ def create_modal_results(quantity: str, duration: pd.Timedelta,
         logger.debug('')
         start_time = pd.Timestamp(start_time, tz = 'Europe/Berlin')
                 
-        if not (i+1)%50: print('.',end='', flush=True) 
-        if not (i+1)%2500: print('\n')
+        # if not (i+1)%50: print('.',end='', flush=True) 
+        # if not (i+1)%2500: print('\n')
         
         this_stats = stats.sel(time=start_time)
         if this_stats['error'].any():
@@ -1983,8 +1992,8 @@ def create_modal_results(quantity: str, duration: pd.Timedelta,
             with open(os.devnull, 'w') as f, contextlib.redirect_stdout(f):
                 slice = get_slice_preprocessed(start_time, duration, quantity, **kwargs)
         except Exception as e:
-            warnings.warn('Exception while trying to get preprocessed slice: ')
-            warnings.warn(e)
+            logger.warning('Exception while trying to get preprocessed slice: ')
+            logger.warning(e)
             slice=None
             
         if slice is None:
@@ -2069,6 +2078,8 @@ def create_modal_results(quantity: str, duration: pd.Timedelta,
         master_ds = save_ds(process_ds, master_ds, master_ds_path, reload_current = True, what='modal')
     
         # os.rename(process_ds_path, process_ds_path+'.old')
+            
+        logger.debug(f'Removing temporary dataset at {process_ds_path}')
         os.remove(process_ds_path)
         
     return master_ds
@@ -2195,7 +2206,7 @@ def modal_analysis_single(start_time, slice,  quantity, duration):
             stabil_calc= StabilCluster.load_state(fname, modal_data, 
                                              prep_data)  
         except Exception as e:
-            warnings.warn(e)
+            logger.warning(e)
             stabil_calc = StabilCluster(modal_data,prep_data)   
             
     if stabil_calc.state==5:
