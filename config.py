@@ -24,7 +24,7 @@ subpaths = {'accel':'towerdata',
             'temp':'towerdata',
             'strain':'strain_data'}
 file_root_path = '/home/towermonitoring/'
-slice_root_path = '/home/towermonitoring/scratch_data/'
+slice_root_path = '/home/tower_scratch_data/'
 db_root_path = '/home/towermonitoring/analysis/result_db/'
 modal_conf_dir = '/home/towermonitoring/analysis/modal_source_files/'
     

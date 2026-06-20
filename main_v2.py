@@ -339,7 +339,7 @@ def read_file(path):
         try:
             zipfile.seek(0,2)
             zipfile.seek(0,0)
-        except EOFError:
+        except (EOFError, OSError):
             logger.warning('BZ2File is corrupted: {}'.format(path))
             return None
         
@@ -378,20 +378,23 @@ def read_file(path):
         file = zipfile
     else:
         file=path
+    try:
+        if ext == '.dat':
+            file_contents  = udbf2ascii.read_bin(file) # <class 'datetime.datetime'> <class 'datetime.datetime'
+        elif ext == '.csv':
+            file_contents = udbf2ascii.read_csv(file, path)
+        elif ext == '.bin':
+            file_contents = ReadBinary.read_bin(file, path=path)
+        elif ext == '':
+            file_contents = ReadBinary.read_strain_txt(file)
+        elif ext==".filepart":
+            return None
+        else:
+            logger.warning('Extension was neither .dat, .csv, .bin, or None but {}'.format(ext))
+            return None
         
-    if ext == '.dat':
-        file_contents  = udbf2ascii.read_bin(file) # <class 'datetime.datetime'> <class 'datetime.datetime'
-    elif ext == '.csv':
-        file_contents = udbf2ascii.read_csv(file, path)
-    elif ext == '.bin':
-        file_contents = ReadBinary.read_bin(file, path=path)
-    elif ext == '':
-        file_contents = ReadBinary.read_strain_txt(file)
-    elif ext==".filepart":
-        return None
-
-    else:
-        logger.warning('Extension was neither .dat, .csv, .bin, or None but {}'.format(ext))
+    except OSError as e:
+        logger.exception(e)
         return None
         
     if file_contents is None:
@@ -564,7 +567,7 @@ def create_file_info(origin: str, chunksize: int=50, skip_existing: bool=True, *
                     else:
                         logger.info('{} already present in dataset. Updating!'.format(file_name))
                         ds = ds.where(file_name != ds.get('file_name'), drop=True)# drop the entry for this file_name
-                        
+            
             file_contents = read_file(file)
                 
             if file_contents is None:
@@ -2168,13 +2171,13 @@ def modal_analysis_single(start_time, slice,  quantity, duration):
         
         chan_dofs = [[chan]+chan_dofs_dict[header] for chan, header in enumerate(headers)]
         prep_data.add_chan_dofs(chan_dofs)
-        s_vals_psd = prep_data.sv_psd(1444, method='blackman-tukey')
+        s_vals_psd = prep_data.sv_psd(1444, method='blackman-tukey', refs_only=False)
         freqs = prep_data.freqs
         if save_results: 
             prep_data.save_state(fname)
     else:                                
         prep_data = PreProcessSignals.load_state(fname)
-        s_vals_psd = prep_data.sv_psd(1444, method='blackman-tukey')
+        s_vals_psd = prep_data.sv_psd(1444, method='blackman-tukey', refs_only=False)
         freqs = prep_data.freqs
 
     
