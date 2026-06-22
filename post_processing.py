@@ -32,7 +32,7 @@ pd.plotting.register_matplotlib_converters()
 
 import config
 
-from main_v2 import get_file_info, get_stats, get_modal_results,\
+from monitoring import get_file_info, get_stats, get_modal_results,\
     check_and_mark_errors, read_file, get_slice_corrected, get_slice_preprocessed
 
 #global logger

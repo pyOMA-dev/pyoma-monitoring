@@ -437,6 +437,7 @@ def get_file_info(origin: str, create_new: bool=False, **kwargs):
                  config.ds_cache[f'{origin}_file_info']['mtime'] = stat_result.st_mtime
     else:
         ds = create_file_info(origin, **kwargs)
+    ds['duration'].attrs['dtype'] = 'timedelta64[s]' 
     compute_gap_lengths(ds)
     return ds     
    
@@ -814,8 +815,7 @@ def create_stats(quantity: str, duration: pd.Timedelta, file_info: xr.Dataset,
     dtstart = config.dtstarts[origin]
     dtstart = kwargs.pop('dtstart', dtstart)
     dtstart = pd.Timestamp(dtstart).to_pydatetime()
-    
-    fi_time_max = (file_info.time + file_info.duration).max().values
+    fi_time_max = (file_info.time + file_info.duration.astype('timedelta64[s]') ).max().values
     fi_time_max = round_dt(fi_time_max, duration, ceil=True)
     
     fi_time_max = pd.Timestamp(fi_time_max).to_pydatetime()
@@ -1077,7 +1077,8 @@ def compute_gap_lengths(file_info):
     start_time = file_info['start_time'].astype('datetime64[s]') # is timestamp in seconds since the epoch
     # compute the end times of each file and shift it forward in time
     duration = file_info['length']/file_info['sample_rate']
-    previous_end_time = start_time + file_info['duration']
+
+    previous_end_time = start_time + file_info['duration'] * np.timedelta64(1, 's')
     previous_end_time = previous_end_time
     shift_start_time = start_time.shift(time=-1)
     # gap_length refers to the gap after the considered file
@@ -2322,195 +2323,195 @@ def split_modepairs(modal):
     return modal_sorted
 
 
-def find_good_i(path, quantity, wind, zt=False, **kwargs):
+# def find_good_i(path, quantity, wind, zt=False, **kwargs):
     
-    if wind == 'high': start_time = pd.Timestamp('2017-07-12 20:00', tz='Europe/Berlin')# high wind
-    elif wind == 'low': start_time = pd.Timestamp('2017-09-22 04:00', tz='Europe/Berlin')# low wind
-    elif wind == 'med': start_time = pd.Timestamp('2017-06-23 23:00', tz='Europe/Berlin')# low wind
-    else: raise
+#     if wind == 'high': start_time = pd.Timestamp('2017-07-12 20:00', tz='Europe/Berlin')# high wind
+#     elif wind == 'low': start_time = pd.Timestamp('2017-09-22 04:00', tz='Europe/Berlin')# low wind
+#     elif wind == 'med': start_time = pd.Timestamp('2017-06-23 23:00', tz='Europe/Berlin')# low wind
+#     else: raise
 
-    st=start_time
-    duration=pd.Timedelta('1 hour')
-    if zt:
-        result_folder = os.path.join(path, 'i_modal_{}_zt'.format(quantity),'{}'.format(st.year),'{:02d}'.format(st.month))
-    else:
-        result_folder = os.path.join(path, 'i_modal_{}'.format(quantity),'{}'.format(st.year),'{:02d}'.format(st.month))
+#     st=start_time
+#     duration=pd.Timedelta('1 hour')
+#     if zt:
+#         result_folder = os.path.join(path, 'i_modal_{}_zt'.format(quantity),'{}'.format(st.year),'{:02d}'.format(st.month))
+#     else:
+#         result_folder = os.path.join(path, 'i_modal_{}'.format(quantity),'{}'.format(st.year),'{:02d}'.format(st.month))
     
-    slice = get_slice_corrected(path, start_time, duration, quantity, **kwargs)
+#     slice = get_slice_corrected(path, start_time, duration, quantity, **kwargs)
     
-    assert slice is not None # should not happen, as it is included in stats as error free
+#     assert slice is not None # should not happen, as it is included in stats as error free
     
-    actual_start_time, headers, units, end_time, sample_rate, measurement  = slice
-    if 'strain' in quantity:
-        channel_selector = np.array([False for header in headers])
-        strain_channels = ['A_z','A_t','A_zt','B_z','B_t',
-                                   'B_zt','C_z','C_t','C_zt','D_z','D_t','D_zt',]
-        new_heads=[]
-        for ij in range(len(headers)):
-            if headers[ij] in strain_channels:
-                channel_selector[ij]=True
-                new_heads.append(headers[ij])
-        logger.debug(new_heads)
-        measurement=measurement[:,channel_selector]
-        headers=new_heads
+#     actual_start_time, headers, units, end_time, sample_rate, measurement  = slice
+#     if 'strain' in quantity:
+#         channel_selector = np.array([False for header in headers])
+#         strain_channels = ['A_z','A_t','A_zt','B_z','B_t',
+#                                    'B_zt','C_z','C_t','C_zt','D_z','D_t','D_zt',]
+#         new_heads=[]
+#         for ij in range(len(headers)):
+#             if headers[ij] in strain_channels:
+#                 channel_selector[ij]=True
+#                 new_heads.append(headers[ij])
+#         logger.debug(new_heads)
+#         measurement=measurement[:,channel_selector]
+#         headers=new_heads
     
-    highpass = 0.1
-    lowpass = 5
-    nyq = sample_rate/2
-    target_fs = 10
-    dec_fact = round(sample_rate/target_fs)
+#     highpass = 0.1
+#     lowpass = 5
+#     nyq = sample_rate/2
+#     target_fs = 10
+#     dec_fact = round(sample_rate/target_fs)
     
-    b, a = scipy.signal.butter(4, [highpass/nyq, lowpass/nyq], btype='band')        
-    #measurement = scipy.signal.detrend(measurement, axis=0, type='linear' )
+#     b, a = scipy.signal.butter(4, [highpass/nyq, lowpass/nyq], btype='band')        
+#     #measurement = scipy.signal.detrend(measurement, axis=0, type='linear' )
     
-    ftype=scipy.signal.ltisys.dlti(b,a)
-    meas_dec = scipy.signal.decimate(measurement, dec_fact, axis=0,ftype=ftype, zero_phase=True)
+#     ftype=scipy.signal.ltisys.dlti(b,a)
+#     meas_dec = scipy.signal.decimate(measurement, dec_fact, axis=0,ftype=ftype, zero_phase=True)
         
-    measurement = meas_dec
-    sample_rate = sample_rate/dec_fact
+#     measurement = meas_dec
+#     sample_rate = sample_rate/dec_fact
     
-     # prepare modal analysis, config files, geometry, result_folder, etc.
-    PreProcessSignals.load_measurement_file = dummy_load
-    if zt:
-        working_dir = os.path.join('/ismhome/staff/womo1998/Projects/2018_VDI_Baudynamik/modal_source_files/', quantity+'_zt')
-    else:
-        working_dir = os.path.join('/ismhome/staff/womo1998/Projects/2018_VDI_Baudynamik/modal_source_files/', quantity)
+#      # prepare modal analysis, config files, geometry, result_folder, etc.
+#     PreProcessSignals.load_measurement_file = dummy_load
+#     if zt:
+#         working_dir = os.path.join('/ismhome/staff/womo1998/Projects/2018_VDI_Baudynamik/modal_source_files/', quantity+'_zt')
+#     else:
+#         working_dir = os.path.join('/ismhome/staff/womo1998/Projects/2018_VDI_Baudynamik/modal_source_files/', quantity)
     
-    nodes_file = os.path.join(working_dir, 'nodes')
-    lines_file =os.path.join(working_dir, 'lines')
-    master_slaves_file=os.path.join(working_dir, 'master_slaves')
+#     nodes_file = os.path.join(working_dir, 'nodes')
+#     lines_file =os.path.join(working_dir, 'lines')
+#     master_slaves_file=os.path.join(working_dir, 'master_slaves')
 
-    geometry_data = GeometryProcessor.load_geometry(nodes_file, lines_file, master_slaves_file)    
+#     geometry_data = GeometryProcessor.load_geometry(nodes_file, lines_file, master_slaves_file)    
     
-    conf_file = os.path.join(working_dir, 'setup_info')
-    chan_dofs_file = os.path.join(working_dir, 'channel_dofs')
-    ssi_file = os.path.join(working_dir, 'ssi_config')  
+#     conf_file = os.path.join(working_dir, 'setup_info')
+#     chan_dofs_file = os.path.join(working_dir, 'channel_dofs')
+#     ssi_file = os.path.join(working_dir, 'ssi_config')  
     
-    skip_existing = True
-    save_results=True
-    interactive=True
+#     skip_existing = True
+#     save_results=True
+#     interactive=True
     
-    '''
-    create prepdata
-    save prepdata
-    '''
-    this_fname = os.path.join(result_folder,'{:02d}_{:02d}-{:02d}_prep_data.npz'.format(st.year, st.month, st.day, st.hour, st.minute))
-    if not os.path.exists(this_fname) or not skip_existing:            
-        prep_data = PreProcessSignals.init_from_config(conf_file, '', chan_dofs_file,  
-                                                    headers=headers, units=units, start_time=start_time, sample_rate=sample_rate, measurement=measurement)#, skiprows=40)
+#     '''
+#     create prepdata
+#     save prepdata
+#     '''
+#     this_fname = os.path.join(result_folder,'{:02d}_{:02d}-{:02d}_prep_data.npz'.format(st.year, st.month, st.day, st.hour, st.minute))
+#     if not os.path.exists(this_fname) or not skip_existing:            
+#         prep_data = PreProcessSignals.init_from_config(conf_file, '', chan_dofs_file,  
+#                                                     headers=headers, units=units, start_time=start_time, sample_rate=sample_rate, measurement=measurement)#, skiprows=40)
     
-        if save_results: 
-            prep_data.save_state(this_fname)
-    else:                                
-        prep_data = PreProcessSignals.load_state(this_fname)
+#         if save_results: 
+#             prep_data.save_state(this_fname)
+#     else:                                
+#         prep_data = PreProcessSignals.load_state(this_fname)
     
-    '''
-    create modal_data
-    run modal_data
-    save modal_data
-    '''
-    for i in range(23,80):
-        #continue
-        this_fname = os.path.join(result_folder,'{}_{:02d}_{:02d}-{:02d}_modal_data.npz'.format(i, st.year, st.month, st.day, st.hour, st.minute))
-        if not os.path.exists(this_fname) or not skip_existing:
+#     '''
+#     create modal_data
+#     run modal_data
+#     save modal_data
+#     '''
+#     for i in range(23,80):
+#         #continue
+#         this_fname = os.path.join(result_folder,'{}_{:02d}_{:02d}-{:02d}_modal_data.npz'.format(i, st.year, st.month, st.day, st.hour, st.minute))
+#         if not os.path.exists(this_fname) or not skip_existing:
                 
-            #modal_data= SSIDataMC.init_from_config(ssi_file, prep_data)
-            modal_data= SSIDataMC(prep_data)
-            modal_data.build_block_hankel(num_block_rows=i)
-            modal_data.compute_state_matrices(max_model_order=200)
-            modal_data.compute_modal_params(plot_=False)
+#             #modal_data= SSIDataMC.init_from_config(ssi_file, prep_data)
+#             modal_data= SSIDataMC(prep_data)
+#             modal_data.build_block_hankel(num_block_rows=i)
+#             modal_data.compute_state_matrices(max_model_order=200)
+#             modal_data.compute_modal_params(plot_=False)
             
-            if save_results: 
-                modal_data.save_state(this_fname)
-        else:
-            modal_data=SSIDataMC.load_state(this_fname, prep_data)
+#             if save_results: 
+#                 modal_data.save_state(this_fname)
+#         else:
+#             modal_data=SSIDataMC.load_state(this_fname, prep_data)
             
-        #continue
-        '''
-        create stabil_cluster
-        run stabil_cluster
-        '''
+#         #continue
+#         '''
+#         create stabil_cluster
+#         run stabil_cluster
+#         '''
             
-        this_fname = os.path.join(result_folder,'{}_{:02d}_{:02d}-{:02d}_stabil_data.npz'.format(i, st.year, st.month, st.day, st.hour, st.minute))
+#         this_fname = os.path.join(result_folder,'{}_{:02d}_{:02d}-{:02d}_stabil_data.npz'.format(i, st.year, st.month, st.day, st.hour, st.minute))
         
-        #if not os.path.exists(this_fname) or not skip_existing:
-        if True:
-            stabil_calc = StabilCluster(modal_data,prep_data)    
+#         #if not os.path.exists(this_fname) or not skip_existing:
+#         if True:
+#             stabil_calc = StabilCluster(modal_data,prep_data)    
             
-        else:
-            stabil_calc=StabilCluster.load_state(this_fname, modal_data, prep_data)  
+#         else:
+#             stabil_calc=StabilCluster.load_state(this_fname, modal_data, prep_data)  
             
               
         
-        stabil_calc.calculate_soft_critera_matrices()            
-        stabil_calc.calculate_stabilization_masks()
-        stabil_calc.automatic_clearing()
-        stabil_calc.automatic_classification()
-        stabil_calc.automatic_selection()
+#         stabil_calc.calculate_soft_critera_matrices()            
+#         stabil_calc.calculate_stabilization_masks()
+#         stabil_calc.automatic_clearing()
+#         stabil_calc.automatic_classification()
+#         stabil_calc.automatic_selection()
         
-        stabil_calc.save_state(this_fname)
+#         stabil_calc.save_state(this_fname)
         
         
         
-        stabil_plot=StabilPlot(stabil_calc)
-        stabil_plot.plot_stabil(name='plot_pre')
-        stabil_plot.plot_stabil(name='plot_autoclear')
-        stabil_plot.plot_stabil(name='plot_autosel')
-        stabil_plot.plot_fft(b=1)
-        stabil_plot.update_xlim((0.2,4))
-        stabil_plot.save_figure(this_fname+'.png')
+#         stabil_plot=StabilPlot(stabil_calc)
+#         stabil_plot.plot_stabil(name='plot_pre')
+#         stabil_plot.plot_stabil(name='plot_autoclear')
+#         stabil_plot.plot_stabil(name='plot_autosel')
+#         stabil_plot.plot_fft(b=1)
+#         stabil_plot.update_xlim((0.2,4))
+#         stabil_plot.save_figure(this_fname+'.png')
           
-        if interactive: 
-            start_stabil_gui(stabil_plot,modal_data, geometry_data, prep_data=prep_data)
+#         if interactive: 
+#             start_stabil_gui(stabil_plot,modal_data, geometry_data, prep_data=prep_data)
             
-         #save results
-        if save_results: stabil_calc.save_state(this_fname)
+#          #save results
+#         if save_results: stabil_calc.save_state(this_fname)
         
-        this_fname = os.path.join(result_folder,'{}_{:02d}_{:02d}-{:02d}_stabil_data.npz'.format(i, st.year, st.month, st.day, st.hour, st.minute))
-        if save_results: stabil_calc.export_results(this_fname, binary=True)
+#         this_fname = os.path.join(result_folder,'{}_{:02d}_{:02d}-{:02d}_stabil_data.npz'.format(i, st.year, st.month, st.day, st.hour, st.minute))
+#         if save_results: stabil_calc.export_results(this_fname, binary=True)
 
 
     
-    #import numpy as np
-    a=np.zeros((81,100))
-    a[:,:]=np.nan
-    for num_block_rows in range(2,80):
+#     #import numpy as np
+#     a=np.zeros((81,100))
+#     a[:,:]=np.nan
+#     for num_block_rows in range(2,80):
 
-        this_fname = os.path.join(result_folder,'{}_{:02d}_{:02d}-{:02d}_modal_data.npz'.format(num_block_rows, st.year, st.month, st.day, st.hour, st.minute))
-        try:
-            file = np.load(this_fname)
-            modal_contributions = file['self.modal_contributions']
-        except:
-            continue
-        for order in range(1,min(file['self.max_model_order'],100)):            
-            mc = np.sum(modal_contributions[order,:])
-            a[num_block_rows,order] = mc
+#         this_fname = os.path.join(result_folder,'{}_{:02d}_{:02d}-{:02d}_modal_data.npz'.format(num_block_rows, st.year, st.month, st.day, st.hour, st.minute))
+#         try:
+#             file = np.load(this_fname)
+#             modal_contributions = file['self.modal_contributions']
+#         except:
+#             continue
+#         for order in range(1,min(file['self.max_model_order'],100)):            
+#             mc = np.sum(modal_contributions[order,:])
+#             a[num_block_rows,order] = mc
     
-    #import matplotlib.pyplot as plot
-    plt.figure(tight_layout=True, figsize=(4,4))
-    plt.imshow(a.T,cmap='tab20', origin='lower', vmin=0,vmax=1)
+#     #import matplotlib.pyplot as plot
+#     plt.figure(tight_layout=True, figsize=(4,4))
+#     plt.imshow(a.T,cmap='tab20', origin='lower', vmin=0,vmax=1)
 
     
-    plt.ylabel('$n$')
-    plt.xlabel('$p+q$')
-    plt.gca().xaxis.set_ticks_position('bottom')
-    #locs,labels = plt.xticks()
-    logger.debug(locs,labels)
-    #labels = ['${}$'.format(int(loc*5)) for loc in locs[1:]]
-    #plt.xticks(locs[1:],labels)
+#     plt.ylabel('$n$')
+#     plt.xlabel('$p+q$')
+#     plt.gca().xaxis.set_ticks_position('bottom')
+#     #locs,labels = plt.xticks()
+#     logger.debug(locs,labels)
+#     #labels = ['${}$'.format(int(loc*5)) for loc in locs[1:]]
+#     #plt.xticks(locs[1:],labels)
     
-    cbar=plt.colorbar()
-    cbar.set_label('$\delta$')   
+#     cbar=plt.colorbar()
+#     cbar.set_label('$\delta$')   
      
-    #q95 = np.nanpercentile(a, q=95)
-    logger.debug(q95)
-    logger.debug(np.where(a>=q95)[0]*5)
-    #plt.scatter(*np.where(a>=q95), color='red', marker=',',s=1, alpha=.5)
-    plt.xlim((0,80))
-    plt.ylim((0,100))
-    plt.title('{}_{}_{}'.format(quantity, wind, int(zt)))
-    plt.savefig('{}_{}_{}'.format(quantity, wind, int(zt)))
-    #plt.show()        
+#     #q95 = np.nanpercentile(a, q=95)
+#     logger.debug(q95)
+#     logger.debug(np.where(a>=q95)[0]*5)
+#     #plt.scatter(*np.where(a>=q95), color='red', marker=',',s=1, alpha=.5)
+#     plt.xlim((0,80))
+#     plt.ylim((0,100))
+#     plt.title('{}_{}_{}'.format(quantity, wind, int(zt)))
+#     plt.savefig('{}_{}_{}'.format(quantity, wind, int(zt)))
+#     #plt.show()        
 
 
 # def collect_and_plot_results(path, quantity):
@@ -2892,232 +2893,232 @@ def find_good_i(path, quantity, wind, zt=False, **kwargs):
 #         plt.show()
 
     
-def assign_modes(time_stamps, frequencies, modeshapes, threshold, damping=None, modal_contributions=None):
-    #from sklearn.neighbors import kneighbors_graph
-    #from sklearn.cluster import AgglomerativeClustering
-    logger.debug(threshold)
-    plot_ = False
-    cluster_assignments = np.zeros_like(frequencies, dtype=int)
+# def assign_modes(time_stamps, frequencies, modeshapes, threshold, damping=None, modal_contributions=None):
+#     #from sklearn.neighbors import kneighbors_graph
+#     #from sklearn.cluster import AgglomerativeClustering
+#     logger.debug(threshold)
+#     plot_ = False
+#     cluster_assignments = np.zeros_like(frequencies, dtype=int)
     
-    #strain 1-mac
-    # [0.357,        0.34,      0.357,       0.09,      0.45 ],# strain f+mac 
-    #[0.35,        0.2,      0.5,       0.3,      0.2 ],#accel 1-mac
-    #plot_bounds = [(0.305,0.405),(0.575,0.675),(1.155,1.495),(1.915,2.2),(2.845,3.91)][0]
-    cluster=1
-    con = 1
-    c_method='ward'
+#     #strain 1-mac
+#     # [0.357,        0.34,      0.357,       0.09,      0.45 ],# strain f+mac 
+#     #[0.35,        0.2,      0.5,       0.3,      0.2 ],#accel 1-mac
+#     #plot_bounds = [(0.305,0.405),(0.575,0.675),(1.155,1.495),(1.915,2.2),(2.845,3.91)][0]
+#     cluster=1
+#     con = 1
+#     c_method='ward'
     
-    if not cluster:
-        # walk over time and f
-        # assign all values of each unique start time to cluster 0, 1, 2 
-        # 
-        unique, indices, unique_counts = np.unique(time_stamps, return_counts=True, return_index=True)
+#     if not cluster:
+#         # walk over time and f
+#         # assign all values of each unique start time to cluster 0, 1, 2 
+#         # 
+#         unique, indices, unique_counts = np.unique(time_stamps, return_counts=True, return_index=True)
         
         
-        for count, start_time in zip(unique_counts,unique):
-            logger.debug(count, start_time)
-    #                 if count ==1:
-    #                     st=start_time
-    #                     result_folder = os.path.join(path, 'modal_{}'.format(quantity),'{}'.format(st.year),'{:02d}'.format(st.month))
-    #                     figure_name = os.path.join(result_folder, 
-    #                         '{:02d}_{:02d}-{:02d}_{:02d}-{:02d}_stabil.png'.format(
-    #                              st.year, st.month, st.day, st.hour, st.minute))
-    #                     from PIL import Image
-    #                     img = Image.open(figure_name)
-    #                     img.show()
-    #                     input('continue?')
+#         for count, start_time in zip(unique_counts,unique):
+#             logger.debug(count, start_time)
+#     #                 if count ==1:
+#     #                     st=start_time
+#     #                     result_folder = os.path.join(path, 'modal_{}'.format(quantity),'{}'.format(st.year),'{:02d}'.format(st.month))
+#     #                     figure_name = os.path.join(result_folder, 
+#     #                         '{:02d}_{:02d}-{:02d}_{:02d}-{:02d}_stabil.png'.format(
+#     #                              st.year, st.month, st.day, st.hour, st.minute))
+#     #                     from PIL import Image
+#     #                     img = Image.open(figure_name)
+#     #                     img.show()
+#     #                     input('continue?')
                 
-            if count == 1: continue
+#             if count == 1: continue
             
-            inds = time_stamps == start_time
+#             inds = time_stamps == start_time
             
             
             
-            while count > 2:
-                MC = modal_contributions[inds]
-                # remove lowest Modal Contributions
-                ind = np.argmin(MC)
-                #cluster_assignments[inds][ind] = 0
+#             while count > 2:
+#                 MC = modal_contributions[inds]
+#                 # remove lowest Modal Contributions
+#                 ind = np.argmin(MC)
+#                 #cluster_assignments[inds][ind] = 0
                 
-                #set inds corresponding to ind to 0
-                this_inds = inds[inds]
-                this_inds[ind]=False
-                inds[inds]=this_inds
-                count = np.sum(inds)
+#                 #set inds corresponding to ind to 0
+#                 this_inds = inds[inds]
+#                 this_inds[ind]=False
+#                 inds[inds]=this_inds
+#                 count = np.sum(inds)
     
-            if count == 2:
-                f = frequencies[inds]
-                this_cluster_assignments = cluster_assignments[inds]
+#             if count == 2:
+#                 f = frequencies[inds]
+#                 this_cluster_assignments = cluster_assignments[inds]
                 
     
-                ind = np.argmin(f)
-                this_cluster_assignments[ind]=1
-                ind = np.argmax(f)
-                this_cluster_assignments[ind]=2
-                cluster_assignments[inds] = this_cluster_assignments
+#                 ind = np.argmin(f)
+#                 this_cluster_assignments[ind]=1
+#                 ind = np.argmax(f)
+#                 this_cluster_assignments[ind]=2
+#                 cluster_assignments[inds] = this_cluster_assignments
     
-            else:
-                raise
+#             else:
+#                 raise
             
-            select_clusters=[1,0,0]
+#             select_clusters=[1,0,0]
             
-    else:
-        l = frequencies.shape[0]         
+#     else:
+#         l = frequencies.shape[0]         
         
-        #knn_graph = kneighbors_graph(X=time_stamps, n_neighbors, mode, metric, p, metric_params, include_self, n_jobs)
-        time_stamps = np.array(time_stamps)
-        time_proximity_matrix = (time_stamps - time_stamps.reshape((l, 1)))==np.timedelta64(0)
-        logger.debug(np.sum(time_proximity_matrix))
+#         #knn_graph = kneighbors_graph(X=time_stamps, n_neighbors, mode, metric, p, metric_params, include_self, n_jobs)
+#         time_stamps = np.array(time_stamps)
+#         time_proximity_matrix = (time_stamps - time_stamps.reshape((l, 1)))==np.timedelta64(0)
+#         logger.debug(np.sum(time_proximity_matrix))
         
-        mac_proximity_matrix = 1 - \
-            StabilCalc.calculateMAC(modeshapes, modeshapes)
-        #con = 0
-        if con:
-            mac_proximity_matrix[time_proximity_matrix]=1
+#         mac_proximity_matrix = 1 - \
+#             StabilCalc.calculateMAC(modeshapes, modeshapes)
+#         #con = 0
+#         if con:
+#             mac_proximity_matrix[time_proximity_matrix]=1
         
-        proximity_matrix = mac_proximity_matrix
-        
-        
-        proximity_matrix[
-                proximity_matrix < np.finfo(proximity_matrix.dtype).eps] = 0
-        #c_method = 'ward'
-        proximity_matrix_sq = scipy.spatial.distance.squareform(
-            proximity_matrix, checks=False)
-        linkage_matrix = scipy.cluster.hierarchy.linkage(
-            proximity_matrix_sq, method=c_method)
+#         proximity_matrix = mac_proximity_matrix
         
         
-        leaves = scipy.cluster.hierarchy.leaves_list(linkage_matrix)
-        if plot_:
-            fig = plt.figure(tight_layout=1)
-            ax = fig.add_subplot(111)
+#         proximity_matrix[
+#                 proximity_matrix < np.finfo(proximity_matrix.dtype).eps] = 0
+#         #c_method = 'ward'
+#         proximity_matrix_sq = scipy.spatial.distance.squareform(
+#             proximity_matrix, checks=False)
+#         linkage_matrix = scipy.cluster.hierarchy.linkage(
+#             proximity_matrix_sq, method=c_method)
+        
+        
+#         leaves = scipy.cluster.hierarchy.leaves_list(linkage_matrix)
+#         if plot_:
+#             fig = plt.figure(tight_layout=1)
+#             ax = fig.add_subplot(111)
             
-            scipy.cluster.hierarchy.dendrogram(
-                    linkage_matrix, 
-                    #p=150,
-                    #truncate_mode='lastp',
-                    leaf_label_func=lambda x: '', 
-                    color_threshold=threshold, 
-                    leaf_font_size=16, leaf_rotation=40, 
-                    #show_leaf_counts=True
-                    )
-            ax = plt.gca()
-            ax.set_xlabel('Mode number [-]')
-            ax.set_ylabel('Distance [-]')
+#             scipy.cluster.hierarchy.dendrogram(
+#                     linkage_matrix, 
+#                     #p=150,
+#                     #truncate_mode='lastp',
+#                     leaf_label_func=lambda x: '', 
+#                     color_threshold=threshold, 
+#                     leaf_font_size=16, leaf_rotation=40, 
+#                     #show_leaf_counts=True
+#                     )
+#             ax = plt.gca()
+#             ax.set_xlabel('Mode number [-]')
+#             ax.set_ylabel('Distance [-]')
 
-        threshold=2
-        criterion='maxclust'
-        cluster_assignments = scipy.cluster.hierarchy.fcluster(
-            linkage_matrix, 
-            threshold, 
-            criterion)  
+#         threshold=2
+#         criterion='maxclust'
+#         cluster_assignments = scipy.cluster.hierarchy.fcluster(
+#             linkage_matrix, 
+#             threshold, 
+#             criterion)  
         
-        num_clusters =max(cluster_assignments)+1
-        logger.debug(num_clusters)
-        bars= np.array([sum(cluster_assignments==i) for i in range(num_clusters)])
-        _, select_clusters = scipy.cluster.vq.kmeans2(
-                    np.array(bars, dtype=np.float64), 
-                    np.array([max(bars), 1e-12]))
-        if plot_:
-            plt.figure()
-            x=np.array(np.arange(num_clusters))
+#         num_clusters =max(cluster_assignments)+1
+#         logger.debug(num_clusters)
+#         bars= np.array([sum(cluster_assignments==i) for i in range(num_clusters)])
+#         _, select_clusters = scipy.cluster.vq.kmeans2(
+#                     np.array(bars, dtype=np.float64), 
+#                     np.array([max(bars), 1e-12]))
+#         if plot_:
+#             plt.figure()
+#             x=np.array(np.arange(num_clusters))
     
-            plt.bar(x[np.array(select_clusters, dtype=bool)], bars[np.array(select_clusters, dtype=bool)], color='blue')
-            plt.bar(x[np.logical_not(select_clusters)], bars[np.logical_not(select_clusters)], color='red')
+#             plt.bar(x[np.array(select_clusters, dtype=bool)], bars[np.array(select_clusters, dtype=bool)], color='blue')
+#             plt.bar(x[np.logical_not(select_clusters)], bars[np.logical_not(select_clusters)], color='red')
     
     
-    total_modes_clustered=0
-    mshs=[]
-    times=[]
-    fs=[]
-    return_indices = []
-    mean_f = []
-    for i,inout in enumerate(select_clusters):
-        if inout: continue
-        this_cluster = cluster_assignments == i
-        cluster_size = sum(this_cluster)
-        time_stamps_ = time_stamps[this_cluster]
-        frequencies_ = frequencies[this_cluster]
-        damping_ = damping[this_cluster]
-        modal_contributions_ = modal_contributions[this_cluster]
-        modeshapes_ = modeshapes[:,this_cluster]
+#     total_modes_clustered=0
+#     mshs=[]
+#     times=[]
+#     fs=[]
+#     return_indices = []
+#     mean_f = []
+#     for i,inout in enumerate(select_clusters):
+#         if inout: continue
+#         this_cluster = cluster_assignments == i
+#         cluster_size = sum(this_cluster)
+#         time_stamps_ = time_stamps[this_cluster]
+#         frequencies_ = frequencies[this_cluster]
+#         damping_ = damping[this_cluster]
+#         modal_contributions_ = modal_contributions[this_cluster]
+#         modeshapes_ = modeshapes[:,this_cluster]
         
-        # remove multiple values from the same dataset (=start_time)
-        unique, indices, unique_counts = np.unique(time_stamps_, return_counts=True, return_index=True)            
-        inds= indices[unique_counts==1]
+#         # remove multiple values from the same dataset (=start_time)
+#         unique, indices, unique_counts = np.unique(time_stamps_, return_counts=True, return_index=True)            
+#         inds= indices[unique_counts==1]
         
-        full_inds = np.zeros_like(frequencies, dtype=bool)
-        full_inds_2 = full_inds[this_cluster]
-        full_inds_2[inds] = True
-        full_inds[this_cluster]=full_inds_2
+#         full_inds = np.zeros_like(frequencies, dtype=bool)
+#         full_inds_2 = full_inds[this_cluster]
+#         full_inds_2[inds] = True
+#         full_inds[this_cluster]=full_inds_2
         
-        return_indices.append(full_inds)
+#         return_indices.append(full_inds)
         
         
-        logger.info('{} unique time stamps out of {} timestamps total'.format(np.sum(unique_counts==1), len(time_stamps_)))
-        time_stamps_ = time_stamps[full_inds]
-        frequencies_ = frequencies[full_inds]
-        damping_ = damping[full_inds]
-        modal_contributions_ = modal_contributions[full_inds]
-        modeshapes_ = modeshapes[:,full_inds]
-        mshs.append(modeshapes_)
-        times.append(time_stamps_)
-        fs.append(frequencies_)
-        this_mac = StabilCalc.calculateMAC(modeshapes_, modeshapes_)
+#         logger.info('{} unique time stamps out of {} timestamps total'.format(np.sum(unique_counts==1), len(time_stamps_)))
+#         time_stamps_ = time_stamps[full_inds]
+#         frequencies_ = frequencies[full_inds]
+#         damping_ = damping[full_inds]
+#         modal_contributions_ = modal_contributions[full_inds]
+#         modeshapes_ = modeshapes[:,full_inds]
+#         mshs.append(modeshapes_)
+#         times.append(time_stamps_)
+#         fs.append(frequencies_)
+#         this_mac = StabilCalc.calculateMAC(modeshapes_, modeshapes_)
         
-        logger.debug('Frequency: {:1.3f}+-{:1.3f} Hz'.format(frequencies_.mean(), 2*frequencies_.std()))
-        logger.debug('MAC: {:1.3f}+-{:1.3f}'.format(this_mac.mean(), this_mac.std()))
-        mean_f.append(frequencies_.mean())
+#         logger.debug('Frequency: {:1.3f}+-{:1.3f} Hz'.format(frequencies_.mean(), 2*frequencies_.std()))
+#         logger.debug('MAC: {:1.3f}+-{:1.3f}'.format(this_mac.mean(), this_mac.std()))
+#         mean_f.append(frequencies_.mean())
         
-        total_modes_clustered += len(time_stamps_)            
-        if 0:#plot_:
-            fig=plt.figure(figsize=(6,3))
-            fig.suptitle('Clustersize: {}; Frequency: {:1.3f}+-{:1.3f} Hz'.format(len(frequencies_), frequencies_.mean(), 2*frequencies_.std()))
-            ax1 = plt.subplot2grid((2, 2), (0, 0), rowspan=2)
-            ax3 = plt.subplot2grid((2, 2), (0, 1))
-            ax4 = plt.subplot2grid((2, 2), (1, 1), sharex=ax3)            
+#         total_modes_clustered += len(time_stamps_)            
+#         if 0:#plot_:
+#             fig=plt.figure(figsize=(6,3))
+#             fig.suptitle('Clustersize: {}; Frequency: {:1.3f}+-{:1.3f} Hz'.format(len(frequencies_), frequencies_.mean(), 2*frequencies_.std()))
+#             ax1 = plt.subplot2grid((2, 2), (0, 0), rowspan=2)
+#             ax3 = plt.subplot2grid((2, 2), (0, 1))
+#             ax4 = plt.subplot2grid((2, 2), (1, 1), sharex=ax3)            
             
-            ax1.matshow(this_mac, vmin=0, vmax=1)
-            ax3.plot(time_stamps_, frequencies_, ls='none', marker='.', markersize=1)
-            #ax3.set_ylim(plot_bounds)            
-        #             ax4.plot(time_stamps_, damping_, ls='none', marker='.', markersize=1)
-        #             ax4.set_ylim((0,5))
-            ax4.plot(time_stamps_, modal_contributions_, ls='none', marker='.', markersize=1)
-            ax4.set_ylim((0,0.5))
+#             ax1.matshow(this_mac, vmin=0, vmax=1)
+#             ax3.plot(time_stamps_, frequencies_, ls='none', marker='.', markersize=1)
+#             #ax3.set_ylim(plot_bounds)            
+#         #             ax4.plot(time_stamps_, damping_, ls='none', marker='.', markersize=1)
+#         #             ax4.set_ylim((0,5))
+#             ax4.plot(time_stamps_, modal_contributions_, ls='none', marker='.', markersize=1)
+#             ax4.set_ylim((0,0.5))
     
-    #plt.figure()
-    unique, counts = np.unique(time_stamps, return_counts=True)
+#     #plt.figure()
+#     unique, counts = np.unique(time_stamps, return_counts=True)
 
-    logger.info('Clustered {} out of {} ({} %) modes'.format(total_modes_clustered, len(unique)*2, total_modes_clustered/len(unique)/2))
+#     logger.info('Clustered {} out of {} ({} %) modes'.format(total_modes_clustered, len(unique)*2, total_modes_clustered/len(unique)/2))
     
-    if plot_:
-        plt.show()
-    if mean_f[0]>mean_f[1]:
-        return_indices.reverse()
-    return return_indices
+#     if plot_:
+#         plt.show()
+#     if mean_f[0]>mean_f[1]:
+#         return_indices.reverse()
+#     return return_indices
     
         
-    if plot_:
-        unique, counts = np.unique(np.hstack(times), return_counts=True)
+#     if plot_:
+#         unique, counts = np.unique(np.hstack(times), return_counts=True)
     
-        times_=[]
-        dfs=[]
-        for ts, count in zip(unique, counts):
-            ind1=times[0]==ts
-            ind2=times[1]==ts
-            if ind1.any() and ind2.any():
-                f_1=fs[0][ind1]
-                f_2=fs[1][ind2]
+#         times_=[]
+#         dfs=[]
+#         for ts, count in zip(unique, counts):
+#             ind1=times[0]==ts
+#             ind2=times[1]==ts
+#             if ind1.any() and ind2.any():
+#                 f_1=fs[0][ind1]
+#                 f_2=fs[1][ind2]
         
-                times_.append(ts)
-                dfs.append(f_1-f_2)
-        plt.figure()
-        plt.plot(times_,dfs, ls='none', marker='.')
+#                 times_.append(ts)
+#                 dfs.append(f_1-f_2)
+#         plt.figure()
+#         plt.plot(times_,dfs, ls='none', marker='.')
         
         
-        mac=StabilCalc.calculateMAC(mshs[0], mshs[1])
-        plt.matshow(mac, vmin=0, vmax=1)
-        plt.show()
+#         mac=StabilCalc.calculateMAC(mshs[0], mshs[1])
+#         plt.matshow(mac, vmin=0, vmax=1)
+#         plt.show()
     
 def merge_xarrays(path, quantity, what='modal',delete=None):
     
