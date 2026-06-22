@@ -1,0 +1,46 @@
+[build-system]
+requires = ["setuptools>=64", "wheel"]
+build-backend = "setuptools.build_meta"
+
+[project]
+name = "pyOMA-Monitoring"
+version = "0.1.0a1"
+description = "Structural Monitoring with pyOMA"
+readme = "README.md"
+license = { file = "LICENSE" }
+authors = [
+    { name = "Simon Marwitz", email = "simon.jakob.marwitz@uni-weimar.de" },
+    { name = "Volkmar Zabel" },
+]
+keywords = ["structural dynamics", "modal analysis", "OMA", "system identification", "SHM"]
+classifiers = [
+    "Development Status :: 3 - Alpha",
+    "Intended Audience :: Science/Research",
+    "License :: OSI Approved :: MIT License",
+    "Operating System :: OS Independent",
+    "Programming Language :: Python :: 3",
+    "Programming Language :: Python :: 3.9",
+    "Programming Language :: Python :: 3.10",
+    "Programming Language :: Python :: 3.11",
+    "Programming Language :: Python :: 3.12",
+    "Programming Language :: Python :: 3.13",
+    "Programming Language :: Python :: 3.14",
+    "Topic :: Scientific/Engineering",
+    "Topic :: Scientific/Engineering :: Physics",
+]
+requires-python = ">=3.9"
+dependencies = [
+    "numpy",
+    "scipy",
+    "matplotlib",
+    "pandas",
+    "pytz",
+    "tzlocal",
+    "xarray",
+    "python-dateutil",
+    "simpleflock",
+    "h5netcdf",
+    "netcdf4",
+    "h5py",
+    "pyOMA",
+]
