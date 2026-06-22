@@ -1,6 +1,11 @@
 
 # coding: utf-8
+"""Matplotlib visualisation helpers for the Geyer mast monitoring pipeline.
 
+Provides ``plot_daily()`` for time-history overview plots and
+``plot_waterfall()`` for frequency-domain waterfall diagrams, both reading
+from the NetCDF result databases produced by ``monitoring.py``.
+"""
 import os
 import warnings
 import logging

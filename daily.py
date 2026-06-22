@@ -1,3 +1,13 @@
+"""CLI entry-point for the Geyer mast monitoring pipeline.
+
+Run the file-info scan, statistics computation, OMA, and/or plotting for a
+given measurement quantity and look-back duration. Intended to be called from
+the cron wrapper ``daily2.sh`` but can also be invoked directly for ad-hoc
+analysis::
+
+    python daily.py -d 120 -q accel --file_info --stats --modal --plot \\
+        --tmp_dir=/tmp/shm
+"""
 import sys
 import getopt
 import numpy as np

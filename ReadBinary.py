@@ -1,40 +1,11 @@
-"""#####################################################################
+"""Low-level reader for LabVIEW binary files produced by the Geyer mast DAQ.
 
-Python Script zum Einlesen der von Labview 
-geschriebenen Binaerdaten.
+Parses the proprietary binary format written by LabVIEW into numpy arrays,
+detects missing peaks (marked as NaN), and returns per-channel time-series
+data together with header metadata and sample-rate information.
 
---------------------------------------------------
-
- Dateiname: ReadBinary.py 
- 
- Autor:    Heiko Beinersdorf, Simon Marwitz
- Datum :    Feb 2017, Aug 2017
- 
- Vorrausetzungen:
- 1) python 3.x 
- 2) module (pakete): os, datetime, time, struct, itertool, numpy, warnings, sys
-
---------------------------------------------------
-                                             
-       _/_/ _/_/_/_/_/_/_/_/_/_/  _/_/       
-                              _/             
-      _/ _/ _/  _/_/_/  _/_/_/  _/_/_/       
-     _/    _/  _/      _/     _/    _/       
-    _/    _/  _/      _/    _/      _/       
-                                             
-    Materialforschungs- und Pruefanstalt     
-    an der Bauhaus Universitat Weimar        
-                                             
-########################################################################
-
-Version (Kommentar):
-
-Version    | Autor |    Aenderungen/Bemerkungen
--------------------------------------------
- 0.1        HB        Initiale Version 
- 0.2        SM        erweiterte Version, Sammlung aller Kanäle in einem numpy array, erkennung fehlender peaks und markierung als NAN, Statistiken und Header, Abspeichern als asc
- 
-#####################################################################"""
+Authors: Heiko Beinersdorf, Simon Marwitz (Feb 2017, Aug 2017)
+"""
 
 
 import os

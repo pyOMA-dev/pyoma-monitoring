@@ -1,9 +1,12 @@
 #!/usr/bin/python
-######################################################################################
-# Purpose: read universal-file-format raw binary data
-# Version: 0.1
-# Bauhaus University Weimar, Institute of Structural Mechanics
-#######################################################################################
+"""Reader for Universal Data Binary Format (UDBF) files from Gantner Instruments.
+
+Parses the binary `.dat` files written by the Gantner Q.station controller
+and returns channel time-series data as numpy arrays with associated header
+metadata (channel names, units, sample rate, start timestamp).
+
+Version 0.1 — Bauhaus-Universität Weimar, Institute of Structural Mechanics.
+"""
 import matplotlib.pyplot as plot
 
 import datetime

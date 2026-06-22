@@ -1,3 +1,9 @@
+"""File-based advisory lock for safe concurrent NetCDF database access.
+
+Wraps ``simpleflock`` with an additional per-process lock file layer so that
+multiple worker processes can safely read and write the same NetCDF database
+without data corruption.
+"""
 import os
 import glob
 import time
@@ -9,14 +15,15 @@ logger.setLevel(logging.INFO)
 import config
 
 class MultiLock():
-    '''
-    dbpath = '/vegas/scratch/womo1998/locktest.nc'
-    for i in range(3):
-        print(i)
-        with MultiLock(dbpath):
-            with open(f"/vegas/scratch/womo1998/locktest.file",'at') as f:
-                f.write(f'{i}\n')
-    '''
+    """Context manager that provides exclusive access to a file path.
+
+    Usage::
+
+        with MultiLock('/path/to/database.nc'):
+            ds = xr.open_dataset('/path/to/database.nc')
+            # modify ds ...
+            ds.to_netcdf('/path/to/database.nc')
+    """
 
     def __init__(self, path):
         self._path = path

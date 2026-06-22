@@ -1,3 +1,10 @@
+"""Centralised project configuration for the Geyer mast monitoring pipeline.
+
+This module is a singleton state object: it is imported by all pipeline
+modules and holds file-system paths, channel definitions, physical plausibility
+ranges, and shared in-process caches. Edit the path variables and channel lists
+here to adapt the pipeline to a different monitoring project.
+"""
 import os
 import datetime
 from collections import deque
