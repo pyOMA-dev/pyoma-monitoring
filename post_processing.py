@@ -291,6 +291,11 @@ def plot_waterfall(quantity: str, duration: pd.Timedelta, dtstart: np.datetime64
         fname = os.path.join(result_folder,
         '{:02d}_{:02d}-{:02d}_{:02d}-{:02d}_prep_data.npz'.format(
             st.year, st.month, st.day, st.hour, st.minute))
+        if not os.path.exists(fname): 
+            # would fail, if the first file is missing
+            Sxx.append(np.full_like(s_vals_psd, np.nan))
+            freqs = prep_data.freqs
+            continue
         prep_data = PreProcessSignals.load_state(fname)
         s_vals_psd = prep_data.sv_psd()[0,:]
         s_vals_psd = 10 * np.log10(np.abs(s_vals_psd))
