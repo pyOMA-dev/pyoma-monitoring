@@ -162,7 +162,10 @@ from MultiLock import MultiLock
 
 from pyOMA.core.PreProcessingTools import GeometryProcessor,PreProcessSignals
 from pyOMA.core.StabilDiagram import StabilCalc, StabilCluster, StabilPlot
-# from GUI.StabilGUI import start_stabil_gui
+try:
+    from pyOMA.GUI.StabilGUI import start_stabil_gui
+except ImportError:
+    start_stabil_gui = None
 from pyOMA.core.PlotMSH import ModeShapePlot
 # from GUI.PlotMSHGUI import start_msh_gui
 from pyOMA.core.VarSSIRef import VarSSIRef
@@ -1140,7 +1143,9 @@ def get_slice(start_time, duration , quantity, file_info, upsample_fs=None):
     
     
     all_measurements = []
-    
+    new_start = None
+    new_end = None
+
     # loop over all files in the range, load them strip unneeded parts and concatenate them together
     for file_num in range(len(file_info.time)):
         file = file_info.isel(time=file_num)['file_name']
@@ -2079,10 +2084,12 @@ def modal_analysis_single(start_time, slice,  quantity, duration):
         start_time, headers, units, end_time, sample_rate, measurement \
             = slice
         
+        accel_channels = []
+        disp_channels = []
         if quantity == 'accel':
             ref_channels = []
             ref_channels.append(headers.index('Accel_01'))
-            ref_channels.append(headers.index('Accel_02'))    
+            ref_channels.append(headers.index('Accel_02'))
             accel_channels = list(range(len(headers)))
             disp_channels = []
             chan_dofs_dict = {'Accel_01':     [1, 90,  0],
@@ -2162,8 +2169,7 @@ def modal_analysis_single(start_time, slice,  quantity, duration):
         
     else:
         try:
-            stabil_calc= StabilCluster.load_state(fname, modal_data, 
-                                             prep_data)  
+            stabil_calc= StabilCluster.load_state(fname, modal_data)
         except Exception as e:
             logger.warning(e)
             stabil_calc = StabilCluster(modal_data,prep_data)   
@@ -2195,8 +2201,8 @@ def modal_analysis_single(start_time, slice,  quantity, duration):
         stabil_plot.update_xlim((0.2,4))
         stabil_plot.save_figure(figure_name)
       
-    if interactive: 
-        start_stabil_gui(stabil_plot,modal_data, geometry_data, 
+    if interactive and start_stabil_gui is not None:
+        start_stabil_gui(stabil_plot, modal_data, geometry_data,
                          prep_data=prep_data)
         
     if save_results: 
@@ -2255,25 +2261,6 @@ def split_modepairs(modal):
         
         new_modal.coords['channels'] = modal.coords['channels']
         modal_sorted = xr.merge([modal_sorted, new_modal])
-        continue
-        
-        #this_modal = modal.where(f_ind)#.sel(channels=channels)
-        
-        #filter all results with more or less than 2 natural frequencies in this frequency range
-        #exactly_two_modes=np.logical_not(np.isnan(this_modal['frequencies'])).sum(dim='modes')==2       
-        data = this_modal.dropna(dim='time',how='all')
-        
-        for mode, data_func in enumerate([this_modal.frequencies.argmin, this_modal.frequencies.argmax]):
-            ind = data_func(dim='modes')
-            this_data= this_modal.isel(modes=ind).stack(z=('time','modes')).dropna(dim='z',how='all')
-            this_data= this_data.expand_dims(dim='modes')
-            this_data.coords['modes']=('modes',[modepair*2 + mode])
-            #this_data = this_data.assign_coords(modes = this_data.modes*0 + modepair*2 + mode)
-            #this_data.coords['modes'] = ('modes',this_data.modes)
-            if modal_sorted is None:
-                modal_sorted = this_data
-            else:
-                modal_sorted = xr.merge([modal_sorted, this_data])
     logger.debug(modal_sorted)
     return modal_sorted
 
@@ -2341,12 +2328,13 @@ def merge_xarrays(path, quantity, what='modal',delete=None):
         logger.debug('{} {} s'.format(i, time.time()-now))
         ds.close()
     logger.info('Merged {} files.'.format(len(filelist)))
+    load_ds = None
     if what=='modal':
         new_ds.to_netcdf(fpath, engine='h5netcdf')
         load_ds = xr.open_dataset(fpath, engine='h5netcdf').load()
     elif what=='stats' or what=='file_info':
         new_ds.to_netcdf(fpath, format='NETCDF4')
-        load_ds =  xr.open_dataset(fpath).load()
+        load_ds = xr.open_dataset(fpath).load()
     logger.debug(load_ds)
     logger.info('Saved dataset to {}'.format(fpath))
     #delete = input('Merged ds has {} entries, re-loaded dataset has {} entries. Do you want to delete all source files? (y/n)'.format(new_ds.dims.get('time',0),load_ds.dims.get('time',0)))   

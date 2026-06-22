@@ -38,7 +38,11 @@ pd.plotting.register_matplotlib_converters()
 import config
 
 from monitoring import get_file_info, get_stats, get_modal_results,\
-    check_and_mark_errors, read_file, get_slice_corrected, get_slice_preprocessed
+    check_and_mark_errors, read_file, get_slice_corrected, get_slice_preprocessed,\
+    split_modepairs
+
+from pyOMA.core.StabilDiagram import StabilCalc
+from pyOMA.core.Helpers import calculateMAC
 
 #global logger
 logger = logging.getLogger(__name__)
@@ -326,10 +330,10 @@ def plot_daily(quantity: str, duration: pd.Timedelta, dtstart: np.datetime64):
         modal = False
         
     if not modal:
-        ds =  get_stats(quantity, duration)
-    elif modal:
+        ds = get_stats(quantity, duration)
+    else:
         ds = get_modal_results(quantity, duration)
-    
+
     minutes = int(duration.total_seconds()/60)
     
     ds = ds.isel(time=ds.time>dtstart)
@@ -402,11 +406,11 @@ def plot_stats(quantity: str, duration: pd.Timedelta,
     global ds
     
     if not modal:
-        ds =  get_stats(quantity, duration)
+        ds = get_stats(quantity, duration)
     elif modal:
         ds = get_modal_results(quantity, duration)
     else:
-        raise
+        raise ValueError(f"Unexpected value for modal: {modal!r}")
     logger.debug(ds)
     #return
     
@@ -646,6 +650,8 @@ def load_filter_merge(quantity: str, duration: pd.Timedelta,
     ds = xr.merge([ds, temp_arr])
     
     # prepare averaged RMS DataArrays for filtering
+    rms_arr = None
+    kurt_arr = None
     if quantity == 'accel':
         rms_arr = ds['rms'].sel(channels=['Accel_01','Accel_02']).mean(dim='channels').rename('rms_m')
         rms_arr*=1000
@@ -829,9 +835,9 @@ def postprocess_modal_results(quantity: str, duration: pd.Timedelta,
         fig2.show()
         
     # kernel density estimation
-    if 0:
-        import seaborn as sns
-    else:
+    try:
+        import seaborn as sns  # optional dependency
+    except ImportError:
         sns = None
     
     ds, (time_range, rms_range, wind_range, temp_range, f_range, ) = \
@@ -1211,16 +1217,18 @@ def modal_dirs(quantity, duration, update=False, plot_=False):
         dirs[:,:,:]=np.nan
 
         for node in ['1','2','3','4','5','6']:
-            this_az, this_heads = chan_dofs[node] 
-            pos_indexers, new_indexes = xr.core.indexing.remap_label_indexers(modal, {'channels':this_heads})                
-            msh = modal['modeshapes'].data[:,:,pos_indexers['channels']]
+            this_az, this_heads = chan_dofs[node]
+            chan_indices = modal.indexes['channels'].get_indexer(this_heads)
+            msh = modal['modeshapes'].data[:,:,chan_indices]
             if np.all(np.isnan(msh)): continue
+            x = None
+            y = None
             for j,az in enumerate(this_az):
                 if az == 0: x=msh[:,:,j]
                 elif az == 90: y=msh[:,:,j]
                 elif az == 180: x=-1*msh[:,:,j]
                 elif az == 270: y=-1*msh[:,:,j]
-            
+
             ax=np.abs(x)
             ay=np.abs(y)
             
@@ -1241,11 +1249,11 @@ def modal_dirs(quantity, duration, update=False, plot_=False):
             
             alphamax[alphamax<0] += np.pi
 
-            dirs[:,:,pos_indexers['channels'][0]]=alphamax
-            dirs[:,:,pos_indexers['channels'][1]]=rmin/rmax
+            dirs[:,:,chan_indices[0]]=alphamax
+            dirs[:,:,chan_indices[1]]=rmin/rmax
     
         modal['dirs']=(('time','modes','channels'),dirs)
-        modal.to_netcdf(os.path.join(path,'result_db/modal_{}_dirs.nc'.format(quantity)), engine='h5netcdf')    
+        modal.to_netcdf(os.path.join(config.db_root_path,'modal_{}_dirs.nc'.format(quantity)), engine='h5netcdf')    
     
 
     def get_dirs_transformed(modal,chan_dofs, node, modepair):
@@ -1285,7 +1293,7 @@ def modal_dirs(quantity, duration, update=False, plot_=False):
     
     def plot_time(modal, chan_dofs, node='1'):
         
-        colors = list(matplotlib.cm.hsv(np.linspace(0, 1, 10)))
+        colors = list(matplotlib.cm.hsv(np.linspace(0, 1, 10)))  # pylint: disable=no-member
         axes=[]
         
         for i in range(5):
@@ -1317,7 +1325,7 @@ def modal_dirs(quantity, duration, update=False, plot_=False):
             axes[modepair].figure.autofmt_xdate()
     
     def plot_histograms(modal, chan_dofs, node='1', modepair=1, ax1=None, ax2=None,orientation ='horizontal'):    
-        colors = list(matplotlib.cm.hsv(np.linspace(0, 1, 10)))
+        colors = list(matplotlib.cm.hsv(np.linspace(0, 1, 10)))  # pylint: disable=no-member
         
         this_time, (alpha_1, alpha_2), (rratio_1,rratio_2) = get_dirs_transformed(modal, chan_dofs, node, modepair)
         
@@ -1369,8 +1377,8 @@ def modal_dirs(quantity, duration, update=False, plot_=False):
         for node in ['1','4','5','6','3','2']:
             
             this_time, (alpha_1, alpha_2), (rratio_1,rratio_2) = get_dirs_transformed(modal, chan_dofs, node, modepair)
-            alpha_1 = alpha_1[rratio_1<0.25]
-            alpha_2 = alpha_2[rratio_2<0.25]
+            alpha_1 = alpha_1[rratio_1<0.25]  # pylint: disable=unsubscriptable-object
+            alpha_2 = alpha_2[rratio_2<0.25]  # pylint: disable=unsubscriptable-object
             dirs1.append(alpha_1[~np.isnan(alpha_1)])
             dirs2.append(alpha_2[~np.isnan(alpha_2)])
 
@@ -1458,7 +1466,7 @@ def modal_dirs(quantity, duration, update=False, plot_=False):
         logger.debug(wind_ds.dropna(how='any',dim='time'))
         logger.debug(modal_sorted.dropna(how='any',dim='time'))
         import matplotlib.cm
-        colors = list(matplotlib.cm.hsv(np.linspace(0, 1, 10)))
+        colors = list(matplotlib.cm.hsv(np.linspace(0, 1, 10)))  # pylint: disable=no-member
         if not axes:
             for i in range(2):
                 plt.figure(tight_layout=1)
@@ -1572,8 +1580,8 @@ def modal_dirs(quantity, duration, update=False, plot_=False):
         dirs_wind(wind_ds, modal, chan_dofs, node, target ,axes = list(axes[:,0]))
         
         if 'Wg' in target:
-            ax3.set_xlabel('Windgeschwindigkeit [\si{\metre\per\second}]')
-            ax3.set_xlim((0,15))
+            axes[1,0].set_xlabel('Windgeschwindigkeit [\si{\metre\per\second}]')
+            axes[1,0].set_xlim((0,15))
         elif 'Wr' in target:
             axes[1,0].set_xlabel('Wind Direction')
          
@@ -1582,9 +1590,9 @@ def modal_dirs(quantity, duration, update=False, plot_=False):
             
     if 1:# sort modes into pairs while skipping a lot of results
         modal_sorted = split_modepairs(modal)
-        modal_sorted.to_netcdf(os.path.join(path,'result_db/modal_{}_dirs_sorted.nc'.format(quantity)), engine='h5netcdf')
+        modal_sorted.to_netcdf(os.path.join(config.db_root_path,'modal_{}_dirs_sorted.nc'.format(quantity)), engine='h5netcdf')
         
-    modal_sorted = xr.open_dataset(os.path.join(path,'result_db/modal_{}_dirs_sorted.nc'.format(quantity)), engine='h5netcdf')   
+    modal_sorted = xr.open_dataset(os.path.join(config.db_root_path,'modal_{}_dirs_sorted.nc'.format(quantity)), engine='h5netcdf')   
     logger.debug(modal_sorted)
 
     
@@ -1705,20 +1713,23 @@ def strain_vs_accel(duration: pd.Timedelta, mode: int=0):
     both_results = {}
     
     for quantity in ['accel', 'strain_rosettes']:
+        rms_arr = None
+        kurt_arr = None
+        rms_range = None
         if quantity == 'accel':
             rms_range = (1e-4,np.inf)
         elif quantity == 'strain_rosettes':
             rms_range = (3.5e-7,np.inf)
-        
+
         results = get_modal_results(quantity, duration)
-        
+
         results = results.stack(flat_modes=['time','modes'])
-        
+
         if quantity == 'accel':
             rms_arr = results['rms'].sel(channels=['Accel_01','Accel_02']).mean(dim='channels').rename('rms_m')
             kurt_arr = results['kurtosis'].sel(channels=['Accel_01','Accel_02']).mean(dim='channels').rename('kurtosis_m')
         elif quantity == 'strain_rosettes':
-            rms_arr = results['rms'].sel(channels=['A_z','B_z', 'C_z', 'D_z']).mean(dim='channels').rename('rms_m')   
+            rms_arr = results['rms'].sel(channels=['A_z','B_z', 'C_z', 'D_z']).mean(dim='channels').rename('rms_m')
             kurt_arr = results['kurtosis'].sel(channels=['A_z','B_z', 'C_z', 'D_z']).mean(dim='channels').rename('kurtosis_m')
             
         ds = xr.merge([results, rms_arr, kurt_arr])
@@ -1803,6 +1814,7 @@ def strain_vs_accel(duration: pd.Timedelta, mode: int=0):
         frequencies = results['frequencies'].data
         damping =results['damping'].data
         modal_contributions =results['modal_contributions'].data
+        modeshapes = None
         if quantity =='accel':
             modeshapes = results['modeshapes'].data
         elif quantity == 'strain_rosettes':
@@ -1831,8 +1843,11 @@ def strain_vs_accel(duration: pd.Timedelta, mode: int=0):
         
         strain_results, accel_results = xr.align(strain_results, accel_results, exclude=['channels','modes'])
         
-        import seaborn as sns
-        
+        try:
+            import seaborn as sns  # optional dependency
+        except ImportError:
+            sns = None
+
         strain_results
         for fignum,modal_result in enumerate(modal_results):
             plt.figure(fignum)
@@ -1933,8 +1948,8 @@ def assign_modes(time_stamps, frequencies, modeshapes, threshold, damping=None, 
                 cluster_assignments[inds] = this_cluster_assignments
     
             else:
-                raise
-            
+                raise RuntimeError(f"Expected cluster count of 2, got {count}")
+
             select_clusters=[1,0,0]
             
     else:
@@ -1946,7 +1961,7 @@ def assign_modes(time_stamps, frequencies, modeshapes, threshold, damping=None, 
         logger.debug(np.sum(time_proximity_matrix))
         
         mac_proximity_matrix = 1 - \
-            StabilCalc.calculateMAC(modeshapes, modeshapes)
+            calculateMAC(modeshapes, modeshapes)
         #con = 0
         if con:
             mac_proximity_matrix[time_proximity_matrix]=1
@@ -1955,7 +1970,7 @@ def assign_modes(time_stamps, frequencies, modeshapes, threshold, damping=None, 
         
         
         proximity_matrix[
-                proximity_matrix < np.finfo(proximity_matrix.dtype).eps] = 0
+                proximity_matrix < np.finfo(proximity_matrix.dtype).eps] = 0  # pylint: disable=no-member
         #c_method = 'ward'
         proximity_matrix_sq = scipy.spatial.distance.squareform(
             proximity_matrix, checks=False)
@@ -2039,7 +2054,7 @@ def assign_modes(time_stamps, frequencies, modeshapes, threshold, damping=None, 
         mshs.append(modeshapes_)
         times.append(time_stamps_)
         fs.append(frequencies_)
-        this_mac = StabilCalc.calculateMAC(modeshapes_, modeshapes_)
+        this_mac = calculateMAC(modeshapes_, modeshapes_)
         
         logger.debug('Frequency: {:1.3f}+-{:1.3f} Hz'.format(frequencies_.mean(), 2*frequencies_.std()))
         logger.debug('MAC: {:1.3f}+-{:1.3f}'.format(this_mac.mean(), this_mac.std()))
@@ -2091,7 +2106,7 @@ def assign_modes(time_stamps, frequencies, modeshapes, threshold, damping=None, 
         plt.plot(times_,dfs, ls='none', marker='.')
         
         
-        mac=StabilCalc.calculateMAC(mshs[0], mshs[1])
+        mac=calculateMAC(mshs[0], mshs[1])
         plt.matshow(mac, vmin=0, vmax=1)
         plt.show()
         
@@ -2784,7 +2799,7 @@ def main():
     if dd and quantity == 'accel':
         # print_context_dict['figure.figsize']=(5.53*0.62,2.96)
         with matplotlib.rc_context(rc=print_context_dict):
-            fig,axes = modal_dirs(path, quantity, update=True)
+            fig,axes = modal_dirs(quantity, pd.Timedelta(minutes=minutes), update=True)
             #plt.figure(fig)
             fig.subplots_adjust(left=0.14, right=0.97, top=0.97, bottom=0.14, hspace=0.04, wspace=0.04)
             fig.text(0.01, 0.55, 'Modeshape Direction [\si{\degree}]', va='center', rotation='vertical')

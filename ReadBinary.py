@@ -86,9 +86,10 @@ def read_bin(inFileName, stats_only=False, wavepower=False, indices_only=False, 
         return [], [], localize(startTimestamp), samples/4, np.zeros((0,0))
     
     # SET IDs & counter
-    lastIndex = None   
+    lastIndex = None
     firstIndex = None
-     
+    firstChannel = None
+
     lastChannel = -1
     
     channelData = [[],[],[],[]]
@@ -225,7 +226,7 @@ def read_bin(inFileName, stats_only=False, wavepower=False, indices_only=False, 
             channelDataPow[iChannel].append(b_)
             
     if indices_only:
-        return localize(startTimestamp), utc.localize(endTimestamp), firstChannel, iChannel, firstIndex, iIndex  
+        return localize(startTimestamp), utc.localize(endTimestamp), firstChannel, iChannel, firstIndex, iIndex  # pylint: disable=no-value-for-parameter
       
     # if file ends with another channel than the last, fill up with nans
     iChannel += 1
@@ -285,14 +286,14 @@ def localize(startTimestamp):
     '''
     assert not startTimestamp.tzinfo
     if startTimestamp < datetime.datetime(2018,1,15): # labview recording
-        return utc.localize(startTimestamp)
+        return utc.localize(startTimestamp)  # pylint: disable=no-value-for-parameter
     else: # illumisense recording
         if startTimestamp <= datetime.datetime(2017,10,29,1,59,59): # just the instant before clock change
-            return berlin_dst.localize(startTimestamp) #Europe/Berlin with DST (CET/CEST)
+            return berlin_dst.localize(startTimestamp)  # pylint: disable=no-value-for-parameter
         elif startTimestamp < datetime.datetime(2019,4,25):
-            return cet.localize(startTimestamp) # CET
+            return cet.localize(startTimestamp)  # pylint: disable=no-value-for-parameter
         else:
-            return utc.localize(startTimestamp) # UTC
+            return utc.localize(startTimestamp)  # pylint: disable=no-value-for-parameter
     
 def manipulate_data(measurement, start_time, sample_rate, previous_a=None, previous_delta=None, previous_start_time=None):
     
@@ -890,7 +891,7 @@ def manipulate_data(measurement, start_time, sample_rate, previous_a=None, previ
 #                             if not np.abs(diff+this_previous_delta)<np.abs(diff):
 #                                 break
                             
-                            logger.debug('{}\t transition zone to previous (multiple, w/o clustering) \t{}\t{}',i, diff, previous_deltas)
+                            logger.debug('%s\t transition zone to previous (multiple, w/o clustering) \t%s\t%s', i, diff, previous_deltas)
                             measurement[:,i] += this_previous_delta                            
                             
                             deltas[i].insert(0,this_previous_delta)
@@ -932,7 +933,7 @@ def manipulate_data(measurement, start_time, sample_rate, previous_a=None, previ
                     deltas[i] = 0   
             if plt2:
                 plot.show()
-                while plot.fignum_exists(fig.number):
+                while plot.fignum_exists(fig.number):  # pylint: disable=possibly-used-before-assignment
                     plot.pause(2)
 
         if plt:
@@ -1018,7 +1019,7 @@ def manipulate_data(measurement, start_time, sample_rate, previous_a=None, previ
     num_channels = measurement.shape[1]
     
     deltas=[0 for i in range(num_channels)]
-    
+
     for i in range(0,num_channels):
         
                 
@@ -1335,6 +1336,7 @@ def read_strain_txt(path):
         logger.debug(this_path)
         # iterate over first section of file (information about acquisition system and settings)
         # continue until empty line is encountered
+        sampling_rate = None
         line = f.readline()
         while line.strip():
             if 'Sample Speed' in line:

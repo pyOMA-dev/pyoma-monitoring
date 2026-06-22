@@ -61,7 +61,7 @@ def main(argv):
                 raise ValueError(f'Modal analysis can only be performed on vibration data ("accel", "strain_rosettes"')
         if opt=='--loglevel':
             logger.setLevel(arg)
-            for name in logging.root.manager.loggerDict:
+            for name in logging.root.manager.loggerDict:  # pylint: disable=no-member
                 logging.getLogger(name).setLevel(arg)
         if opt == '--plot':
             plot = True
