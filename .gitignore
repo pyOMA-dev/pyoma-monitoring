@@ -1,2 +1,34 @@
-/__pycache__/
-/.settings/
+# Python
+__pycache__/
+*.py[cod]
+*.pyo
+
+# Data files (never commit raw measurement data or results)
+*.nc
+*.npz
+*.bz2
+*.dat
+*.csv.bz2
+*.bin
+*.lock
+*.tmp
+
+# IDE
+.settings/
+.project
+.pydevproject
+.idea/
+*.swp
+
+# OS
+.DS_Store
+Thumbs.db
+
+# Logs / temp
+*.log
+*.out
+*.tmp
+geyer_tmp/
+
+# Briefing
+PYOMA_MONITORING_CLAUDE_CODE_BRIEFING.md
