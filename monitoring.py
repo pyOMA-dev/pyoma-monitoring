@@ -612,7 +612,7 @@ def create_file_info(origin: str, chunksize: int=50, skip_existing: bool=True, *
             dst.coords['channels'] = np.array(headers,dtype=str)
             # TODO: time is not a unique identifier
             # if two files of the same quantity and origin were started at the same time (highly unlikely), results will get overwritten 
-            dst.coords['time'] = [np.asarray(sync_time.astimezone(pytz.utc), dtype='datetime64[ns]')]
+            dst.coords['time'] = [pd.Timestamp(sync_time).tz_convert('UTC').tz_localize(None).to_datetime64()]
 
             ds=ds.combine_first(dst)
             changed=True
@@ -1434,7 +1434,7 @@ def get_slice_corrected(start_time: pd.Timestamp, duration: pd.Timedelta,
     if not os.path.exists(slice_root):
         os.makedirs(slice_root)
     
-    #np.savez_compressed(slice_path, **out_dict)
+    np.savez_compressed(slice_path, **out_dict)
     
     ustrain=np.array(units)=='µstrain'
     measurement[:,ustrain] *= 1e-6

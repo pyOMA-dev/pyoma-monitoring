@@ -279,12 +279,24 @@ def plot_file(file_time, headers, units, start_time, sample_rate, measurement):
         
     plt.show()
     
+def _dtstart_to_stored_utc(dtstart: np.datetime64) -> np.datetime64:
+    """Convert a naive Berlin-local dtstart to the UTC convention used in the databases.
+
+    create_stats converts rrule Berlin-aware datetimes to UTC-naive, then re-applies
+    tz_localize('Europe/Berlin') before storing via to_datetime64(). This function
+    mirrors that double-step so that plot filter thresholds match the stored coords.
+    """
+    utc_naive = pd.Timestamp(dtstart, tz='Europe/Berlin').tz_convert('UTC').tz_localize(None)
+    return pd.Timestamp(utc_naive).tz_localize('Europe/Berlin').to_datetime64()
+
+
 def plot_waterfall(quantity: str, duration: pd.Timedelta, dtstart: np.datetime64):
     from pyOMA.core.PreProcessingTools import PreProcessSignals
     ds = get_modal_results(quantity, duration)
     minutes = int(duration.total_seconds()/60)
+    dtstart_stored = _dtstart_to_stored_utc(dtstart)
 
-    ds = ds.isel(time=ds.time>dtstart)
+    ds = ds.isel(time=ds.time>=dtstart_stored)
     if 'channels' in ds.dims:
         ds = ds.dropna(dim='channels', how='all')
     plt.figure(tight_layout=True)
@@ -339,7 +351,8 @@ def plot_daily(quantity: str, duration: pd.Timedelta, dtstart: np.datetime64):
 
     minutes = int(duration.total_seconds()/60)
     
-    ds = ds.isel(time=ds.time>dtstart)
+    dtstart_stored = _dtstart_to_stored_utc(dtstart)
+    ds = ds.isel(time=ds.time>=dtstart_stored)
     # print(ds)
     if 'channels' in ds.dims:
         ds = ds.dropna(dim='channels', how='all')
@@ -369,7 +382,7 @@ def plot_daily(quantity: str, duration: pd.Timedelta, dtstart: np.datetime64):
             # ax.axhline(this_range[0])
             # ax.axhline(this_range[1])
         # axs[0,0].set_xlim((data.time.data.min(), data.time.data.max()))
-    axs[0,0].set_xlim(xmin=dtstart)
+    axs[0,0].set_xlim(xmin=dtstart_stored)
     fig.legend(handles=handles, loc='center right')
     fig.autofmt_xdate()
     fig.suptitle(f"mean / min / max over {minutes} minutes for each channel of type {quantity}")
