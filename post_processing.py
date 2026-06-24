@@ -283,16 +283,18 @@ def plot_waterfall(quantity: str, duration: pd.Timedelta, dtstart: np.datetime64
     from pyOMA.core.PreProcessingTools import PreProcessSignals
     ds = get_modal_results(quantity, duration)
     minutes = int(duration.total_seconds()/60)
-    
+
     ds = ds.isel(time=ds.time>dtstart)
-    ds = ds.dropna(dim='channels', how='all')
+    if 'channels' in ds.dims:
+        ds = ds.dropna(dim='channels', how='all')
     plt.figure(tight_layout=True)
     Sxx = []
+    times_with_data = []
     time_iterator = ds.time.values
     for start_time in time_iterator:
-        
-        st = pd.Timestamp(start_time, tz = 'Europe/Berlin')
-        result_folder = os.path.join(config.slice_root_path, 
+
+        st = pd.Timestamp(start_time, tz='Europe/Berlin')
+        result_folder = os.path.join(config.slice_root_path,
                              f'{minutes}-minutes',
                              'modal_{}'.format(quantity),
                              '{}'.format(st.year),
@@ -300,24 +302,25 @@ def plot_waterfall(quantity: str, duration: pd.Timedelta, dtstart: np.datetime64
         fname = os.path.join(result_folder,
         '{:02d}_{:02d}-{:02d}_{:02d}-{:02d}_prep_data.npz'.format(
             st.year, st.month, st.day, st.hour, st.minute))
-        if not os.path.exists(fname): 
-            # would fail, if the first file is missing
-            Sxx.append(np.full_like(s_vals_psd, np.nan))
-            freqs = prep_data.freqs
+        if not os.path.exists(fname):
             continue
         prep_data = PreProcessSignals.load_state(fname)
         s_vals_psd = prep_data.sv_psd()[0,:]
         s_vals_psd = 10 * np.log10(np.abs(s_vals_psd))
         Sxx.append(s_vals_psd)
         freqs = prep_data.freqs
+        times_with_data.append(start_time)
+
+    if not Sxx:
+        return plt.gcf()
+
     Sxx = np.vstack(Sxx)
-    plt.pcolormesh(time_iterator, freqs, Sxx.T, shading='gouraud')#, norm=matplotlib.colors.LogNorm())
+    plt.pcolormesh(times_with_data, freqs, Sxx.T, shading='gouraud')#, norm=matplotlib.colors.LogNorm())
     plt.gcf().autofmt_xdate()
-    cbar = plt.colorbar(label='$\sigma_1(|PSD|)$ [dB]')
-    # cbar.set_label('')
+    plt.colorbar(label='$\sigma_1(|PSD|)$ [dB]')
     plt.ylabel('Frequency [Hz]')
     # plt.xlabel('Time [sec]')
-    
+
     return plt.gcf()
     
         
@@ -338,37 +341,40 @@ def plot_daily(quantity: str, duration: pd.Timedelta, dtstart: np.datetime64):
     
     ds = ds.isel(time=ds.time>dtstart)
     # print(ds)
-    ds = ds.dropna(dim='channels', how='all')
+    if 'channels' in ds.dims:
+        ds = ds.dropna(dim='channels', how='all')
+        n_channels = max(1, int(len(ds.channels)))
+    else:
+        n_channels = 0
     #return
-    n_channels = max(1, int(len(ds.channels))) # prevent failure on empty datasets
-    # print(n_channels)
-    
-    fig, axs = plt.subplots(nrows=n_channels, figsize=(5.906, n_channels), sharex=True, tight_layout=True, dpi=300, squeeze=False)
-    
+
+    fig, axs = plt.subplots(nrows=max(n_channels, 1), figsize=(5.906, max(n_channels, 1)), sharex=True, tight_layout=True, dpi=300, squeeze=False)
+
     handles = []
-    
+
     prop_cycle = plt.rcParams['axes.prop_cycle']
     colors = prop_cycle.by_key()['color']
-    for i, channel in enumerate(ds.channels):
-        
-        # this_range = config.ranges.get(channel.variable.item(),None)
-        ax = axs[i,0]
-        
-        data = ds.sel(channels=channel)
-        
-        l2d = ax.plot('time', 'mean', data=data, label=channel.data, color=colors[i])[0]
-        handles.append(l2d)
-        ax.fill_between(data['time'].data, data['min'].data, data['max'].data, data=data, alpha=0.5, color=colors[i])
-        
-        # ax.axhline(this_range[0])
-        # ax.axhline(this_range[1])
-    # axs[0,0].set_xlim((data.time.data.min(), data.time.data.max()))
+    if n_channels > 0:
+        for i, channel in enumerate(ds.channels):
+
+            # this_range = config.ranges.get(channel.variable.item(),None)
+            ax = axs[i,0]
+
+            data = ds.sel(channels=channel)
+
+            l2d = ax.plot('time', 'mean', data=data, label=channel.data, color=colors[i])[0]
+            handles.append(l2d)
+            ax.fill_between(data['time'].data, data['min'].data, data['max'].data, data=data, alpha=0.5, color=colors[i])
+
+            # ax.axhline(this_range[0])
+            # ax.axhline(this_range[1])
+        # axs[0,0].set_xlim((data.time.data.min(), data.time.data.max()))
     axs[0,0].set_xlim(xmin=dtstart)
-    fig.legend(handles= handles, loc='center right')
+    fig.legend(handles=handles, loc='center right')
     fig.autofmt_xdate()
     fig.suptitle(f"mean / min / max over {minutes} minutes for each channel of type {quantity}")
-    
-    if modal:
+
+    if modal and 'frequencies' in ds:
         y = ds['frequencies'].data
         x = ds['time'].data
         x = np.repeat(np.expand_dims(x, axis=1), repeats=y.shape[1], axis=1)

@@ -168,7 +168,7 @@ def main(argv):
     if plot:
         fig1, fig2 = plot_daily(quantity, duration, dtstart)
         fig1.savefig(os.path.join(plot_dir,f'stats_{quantity}_{minutes}.png'))
-        if modal:
+        if modal and fig2 is not None:
             fig2.savefig(os.path.join(plot_dir,f'modal_{quantity}_{minutes}.png'))
             fig3 = plot_waterfall(quantity, duration, dtstart)
             fig3.savefig(os.path.join(plot_dir,f'spec_{quantity}_{minutes}.png'))

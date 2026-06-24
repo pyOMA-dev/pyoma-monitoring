@@ -973,7 +973,7 @@ def save_ds(new_ds, current_ds, savepath, what='modal', reload_current = False):
     
     with MultiLock(savepath):
         
-        if reload_current:
+        if reload_current and os.path.exists(savepath):
             if what=='modal':
                 current_ds = xr.open_dataset(savepath, engine='h5netcdf')
             else:
@@ -1799,7 +1799,7 @@ def get_modal_results(quantity: str, duration: pd.Timedelta,
     ds_path = os.path.join(config.db_root_path, f'{minutes}-minutes/', 'modal_{}.nc'.format(quantity))
     
     if not os.path.exists(ds_path):
-        raise RuntimeError(f'Path for modal does not exist {ds_path}.')
+        logger.warning(f'Path for modal does not exist {ds_path}.')
 
         
     if stats is None and create_new:
@@ -1890,7 +1890,7 @@ def create_modal_results(quantity: str, duration: pd.Timedelta,
         time_iterator = stats.time[stats.time>=dtstart]
         if until is not None:
             time_iterator = time_iterator[time_iterator<=until]
-    elif missing:
+    elif missing and 'time' in master_ds.dims:
         distributed_processing =False
         # drop nan from both ds
         # compute the set difference
@@ -1918,15 +1918,17 @@ def create_modal_results(quantity: str, duration: pd.Timedelta,
          
     logger.debug(jobsize)
     i=1
-    for start_time in time_iterator[start*jobsize:(start+1)*jobsize]:   
+    for start_time in time_iterator[start*jobsize:(start+1)*jobsize]:
 
         logger.debug('')
-        start_time = pd.Timestamp(start_time)
-        start_time = start_time.tz_localize('Europe/Berlin', nonexistent='NaT')        
-        # if not (i+1)%50: print('.',end='', flush=True) 
+        start_time_naive = pd.Timestamp(start_time)
+        start_time = start_time_naive.tz_localize('Europe/Berlin', nonexistent='NaT')
+        if pd.isnull(start_time):
+            continue
+        # if not (i+1)%50: print('.',end='', flush=True)
         # if not (i+1)%2500: print('\n')
-        
-        this_stats = stats.sel(time=start_time)
+
+        this_stats = stats.sel(time=start_time_naive)
         if this_stats['error'].any():
             logger.warning('Error in slice {}: {}'.format(start_time, this_stats['error'].data))
             continue
@@ -1970,7 +1972,7 @@ def create_modal_results(quantity: str, duration: pd.Timedelta,
             slice=None
             
         if slice is None:
-            this_ds.coords['time'] = [np.asarray(start_time, dtype='datetime64[ns]')]
+            this_ds.coords['time'] = [start_time.to_datetime64()]
         else:
             actual_start_time, headers, units, end_time, sample_rate, measurement = slice
             
@@ -1992,7 +1994,7 @@ def create_modal_results(quantity: str, duration: pd.Timedelta,
                     logger.warning('error')
                     
             this_ds.coords['channels'] = np.array(headers,dtype=str)
-            this_ds.coords['time'] = [np.asarray(start_time, dtype='datetime64[ns]')]
+            this_ds.coords['time'] = [start_time.to_datetime64()]
             
             try:
                 #remove errorneous channels
