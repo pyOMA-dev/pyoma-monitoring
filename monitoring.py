@@ -184,7 +184,8 @@ def get_file_list(origin, reduced=False, file_info = None):
     '''
     path = os.path.join(config.file_root_path, config.subpaths[origin])
     path = os.path.normpath(path)
-    assert os.path.exists(path)
+    if not os.path.exists(path):
+        raise RuntimeError(f"{path} does not exist.")
     
     if origin =='accel':
         file_list = glob.glob(os.path.join(path,'Accel_continuously__*'))
@@ -420,10 +421,11 @@ def read_file(path):
     
 
 def get_file_info(origin: str, create_new: bool=False, **kwargs):
-    
+    # ds = create_file_info(origin, **kwargs)
     ds_path = os.path.join(config.db_root_path, f'file_info_{origin}.nc')
     if not os.path.exists(ds_path):
-        raise RuntimeError(f'Path for file_info does not exist {ds_path}.')
+        ds = create_file_info(origin, **kwargs)
+        # raise RuntimeError(f'Path for file_info does not exist {ds_path}.')
 
     
     if not create_new:
@@ -530,10 +532,11 @@ def create_file_info(origin: str, chunksize: int=50, skip_existing: bool=True, *
         ds.load()
         ds.close()
     else:
-        raise RuntimeError(f"DB Path {ds_path} does not exist.")
-        # ds = xr.Dataset() 
-        # ds.to_netcdf(os.path.join(db_path, 'file_info_{}.nc'.format(origin)), format='NETCDF4')
-        # ds.close()
+        ds = xr.Dataset() 
+        ds.to_netcdf(ds_path, format='NETCDF4')
+        ds.close()
+        logger.warn(f"DB Path {ds_path} was recreated.")
+        
     
     reduced = kwargs.pop('reduced',True)
     filtered_list = kwargs.pop('filtered_list',False)
@@ -596,7 +599,7 @@ def create_file_info(origin: str, chunksize: int=50, skip_existing: bool=True, *
             dst['num_channels'] = (['time'], [measurement.shape[1]])
             dst['units'] = (['channels'], np.array(units,dtype=str))
             dst['sample_rate'] = (['time'], [sample_rate])
-            dst['duration']=(['time'],[np.asarray(duration, dtype='timedelta64')])
+            dst['duration']=(['time'],[np.asarray(duration, dtype='timedelta64').astype(np.float64)])
             dst['length']= (['time'], [measurement.shape[0]])
             
             this_dict=describe_stats(measurement, headers)
@@ -610,7 +613,7 @@ def create_file_info(origin: str, chunksize: int=50, skip_existing: bool=True, *
             # TODO: time is not a unique identifier
             # if two files of the same quantity and origin were started at the same time (highly unlikely), results will get overwritten 
             dst.coords['time'] = [np.asarray(sync_time.astimezone(pytz.utc), dtype='datetime64[ns]')]
-            
+
             ds=ds.combine_first(dst)
             changed=True
             logger.debug(f'Success: , {(file_name==ds["file_name"]).any().item()}, Length: , {len(ds.time)},:, {len(ds.channels)},  Loading Time: , {time.time()-now}, s')
@@ -635,7 +638,7 @@ def describe_stats(measurement, headers=None, quantity=None):
     
     this_dict = {}         
     for key in ['mean','min','max','var','skewness','kurtosis','q05','q50','q95','rms','error']:
-        this_dict[key]=np.array([np.NAN for channel in headers])
+        this_dict[key]=np.array([np.nan for channel in headers])
          
     for channel, header in enumerate(headers):
         
@@ -743,7 +746,7 @@ def get_stats(quantity: str, duration: pd.Timedelta,
     ds_path = os.path.join(config.db_root_path, f'{minutes}-minutes/', 'stats_{}.nc'.format(quantity))
     
     if not os.path.exists(ds_path):
-        raise RuntimeError(f'Path for stats does not exist {ds_path}.')
+        logger.warning(f'Path for stats does not exist {ds_path}.')
         
         
     if file_info is None and create_new:
@@ -788,6 +791,7 @@ def create_stats(quantity: str, duration: pd.Timedelta, file_info: xr.Dataset,
         process_ds.close()
     else:
        process_ds = xr.Dataset() 
+       os.makedirs(os.path.join(config.db_root_path, f'{minutes}-minutes/', ), exist_ok=True)
        process_ds.to_netcdf(process_ds_path, format='NETCDF4')
        process_ds.close()
        
@@ -802,7 +806,7 @@ def create_stats(quantity: str, duration: pd.Timedelta, file_info: xr.Dataset,
     dtstart = config.dtstarts[origin]
     dtstart = kwargs.pop('dtstart', dtstart)
     dtstart = pd.Timestamp(dtstart).to_pydatetime()
-    fi_time_max = (file_info.time + file_info.duration.astype('timedelta64[s]') ).max().values
+    fi_time_max = (file_info.time + file_info.duration * np.timedelta64(1, 'us')).max().values
     fi_time_max = round_dt(fi_time_max, duration, ceil=True)
     
     fi_time_max = pd.Timestamp(fi_time_max).to_pydatetime()
@@ -824,17 +828,22 @@ def create_stats(quantity: str, duration: pd.Timedelta, file_info: xr.Dataset,
     time_iterator = dateutil.rrule.rrule(dateutil.rrule.MINUTELY, interval=minutes, dtstart=dtstart, until=until, cache=True)
     # time_iterator = list(time_iterator)
     time_iterator = [pd.Timestamp(ts, tz='Europe/Berlin') for ts in time_iterator]
+    time_iter_naive = np.array(
+            [ts.tz_convert('UTC').tz_localize(None) for ts in time_iterator],
+            dtype='datetime64[ns]')
     
     validate_slices = kwargs.pop('validate_slices', False)
     
-    if skip_existing and not validate_slices:
+    if skip_existing and not validate_slices and 'time' in master_ds.dims:
         # drop all time instances without results to try them again, in case previous runs failed before proceeding them
         stats_ds = master_ds.dropna(dim='time', how='all')
         # filter out errorneous files to not do them again every time
         stats_ds = stats_ds.time[~np.logical_or(stats_ds['error'].any(dim='channels'), stats_ds.length.isnull())]
         
-        time_iterator = np.setdiff1d(np.asarray(time_iterator, dtype='datetime64'), stats_ds.time.data, assume_unique=True)
-    
+        time_iterator = np.setdiff1d(time_iter_naive, stats_ds.time.data, assume_unique=True)
+    else:
+        time_iterator = time_iter_naive
+
     num_workers = kwargs.get('num_workers',1)
     this_worker = kwargs.get('this_worker',1)
     jobsize=int(np.ceil(len(time_iterator)/num_workers))
@@ -846,8 +855,8 @@ def create_stats(quantity: str, duration: pd.Timedelta, file_info: xr.Dataset,
     for i, time_ in enumerate(time_iterator[start*jobsize:(start+1)*jobsize]):
         logger.debug(time_)
         # make 
-        start_time = pd.Timestamp(time_, tz = 'Europe/Berlin')
-        
+        start_time = pd.Timestamp(time_)
+        start_time = start_time.tz_localize('Europe/Berlin', nonexistent='NaT')
         # if not (i+1)%50: print('.',end='', flush=True) 
         # if not (i+1)%2500: print('\n')
         
@@ -1039,7 +1048,7 @@ def compute_gap_lengths(file_info):
     # compute the end times of each file and shift it forward in time
     duration = file_info['length']/file_info['sample_rate']
 
-    previous_end_time = start_time + file_info['duration'] * np.timedelta64(1, 's')
+    previous_end_time = start_time + file_info['duration'] * np.timedelta64(1, 'us')
     previous_end_time = previous_end_time
     shift_start_time = start_time.shift(time=-1)
     # gap_length refers to the gap after the considered file
@@ -1066,7 +1075,7 @@ def get_slice(start_time, duration , quantity, file_info, upsample_fs=None):
     file_start_time = file_info.time
     #duration = file_info.duration
     #duration = ((file_info['length']+1)/file_info['sample_rate']).astype('timedelta64[s]') #duration.astype('float64')*(5/3)*1e-11 #duration in minutes
-    file_end_time = file_info.time + file_info.duration
+    file_end_time = file_info.time + file_info.duration * np.timedelta64(1, 'us')
     
     # first select all files that end in time_range i.e 'time' is within time_range
     b1 = file_end_time>=np.datetime64(time_range[0])
@@ -1134,7 +1143,7 @@ def get_slice(start_time, duration , quantity, file_info, upsample_fs=None):
     
     # ensure time_range is fully covered by the selected files
     
-    last_end = (file_info.time+file_info['duration']).data[-1]
+    last_end = (file_info.time + file_info['duration'] * np.timedelta64(1, 'us')).data[-1]
     first_start = file_info.time.data[0]
     
     if first_start > np.datetime64(time_range[0]) or last_end < np.datetime64(time_range[1]):
@@ -1226,7 +1235,7 @@ def get_slice(start_time, duration , quantity, file_info, upsample_fs=None):
                 return None
         # only one file that starts later than time_range 
         elif len(file_info.time) == 1:
-            logger.warning('This should not have happened!')
+            logger.warning('Bug: only one file that starts later than time_range ')
             new_start = sync_start_time.item()
         
         # if current file ends later than time_range[1] truncate some samples at the end
@@ -1239,12 +1248,12 @@ def get_slice(start_time, duration , quantity, file_info, upsample_fs=None):
         
         # only one file that ends earlier than time_range
         elif len(file_info.time) ==1:
-            logger.warning('This should not have happened! Possibly there is a bug in the script!')
+            logger.warning('Bug: only one file that ends earlier than time_range.')
             new_end =sync_end_time.item()
         
         # if last file ends earlier than time_range
         elif file_num == len(file_info.time)-1:
-            logger.warning('This should not have happened! Possibly there is a bug in the script!')
+            logger.warning('Bug: last file ends earlier than time_range')
             new_end =sync_end_time.item()
             
         
@@ -1425,7 +1434,7 @@ def get_slice_corrected(start_time: pd.Timestamp, duration: pd.Timedelta,
     if not os.path.exists(slice_root):
         os.makedirs(slice_root)
     
-    np.savez_compressed(slice_path, **out_dict)
+    #np.savez_compressed(slice_path, **out_dict)
     
     ustrain=np.array(units)=='µstrain'
     measurement[:,ustrain] *= 1e-6
@@ -1912,8 +1921,8 @@ def create_modal_results(quantity: str, duration: pd.Timedelta,
     for start_time in time_iterator[start*jobsize:(start+1)*jobsize]:   
 
         logger.debug('')
-        start_time = pd.Timestamp(start_time, tz = 'Europe/Berlin')
-                
+        start_time = pd.Timestamp(start_time)
+        start_time = start_time.tz_localize('Europe/Berlin', nonexistent='NaT')        
         # if not (i+1)%50: print('.',end='', flush=True) 
         # if not (i+1)%2500: print('\n')
         

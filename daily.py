@@ -120,6 +120,7 @@ def main(argv):
         raise RuntimeError('dtstart must be provided if file_info shall not be updated')
     
     if file_info:
+        
         fi_ds = get_file_info(origin, create_new=False)
         
         filtered_list = get_file_list(origin, True, fi_ds)
