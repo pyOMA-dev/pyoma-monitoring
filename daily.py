@@ -125,7 +125,7 @@ def main(argv):
         
         filtered_list = get_file_list(origin, True, fi_ds)
         # empty list -> no new files arrived
-        if not filtered_list:
+        if not filtered_list and dtstart is None:
             logger.warning("No new files have arrived since the last run. Check that the monitoring system is online and working!")
             return
         

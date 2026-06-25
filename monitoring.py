@@ -151,8 +151,8 @@ import scipy.signal.ltisys
 import scipy.interpolate
 
 import bz2
-import ReadBinary
-import udbf2ascii
+import fbg_strain_reader
+import gantner_reader
 
 
 import pandas as pd
@@ -358,7 +358,7 @@ def read_file(path):
         units = list(in_dict['units'])
         start_time=in_dict['startTimestamp'].item()
         if isinstance(start_time, pd.Timestamp): start_time = start_time.to_pydatetime()# if from txt:  <class 'datetime.datetime'> <class 'pandas._libs.tslibs.timestamps.Timestamp'>
-        if (ext == '.bin' or ext == '') and not start_time.tzinfo: start_time = ReadBinary.localize(start_time)
+        if (ext == '.bin' or ext == '') and not start_time.tzinfo: start_time = fbg_strain_reader.localize(start_time)
         sample_rate=in_dict['sample_rate'].item()
         measurement=in_dict['measurement']
         
@@ -385,13 +385,13 @@ def read_file(path):
         file=path
     try:
         if ext == '.dat':
-            file_contents  = udbf2ascii.read_bin(file) # <class 'datetime.datetime'> <class 'datetime.datetime'
+            file_contents  = gantner_reader.read_bin(file) # <class 'datetime.datetime'> <class 'datetime.datetime'
         elif ext == '.csv':
-            file_contents = udbf2ascii.read_csv(file, path)
+            file_contents = gantner_reader.read_csv(file, path)
         elif ext == '.bin':
-            file_contents = ReadBinary.read_bin(file, path=path)
+            file_contents = fbg_strain_reader.read_bin(file, path=path)
         elif ext == '':
-            file_contents = ReadBinary.read_strain_txt(file)
+            file_contents = fbg_strain_reader.read_strain_txt(file)
         elif ext==".filepart":
             return None
         else:
@@ -424,8 +424,12 @@ def get_file_info(origin: str, create_new: bool=False, **kwargs):
     # ds = create_file_info(origin, **kwargs)
     ds_path = os.path.join(config.db_root_path, f'file_info_{origin}.nc')
     if not os.path.exists(ds_path):
-        ds = create_file_info(origin, **kwargs)
+        ds = xr.Dataset() 
+        ds.to_netcdf(ds_path, format='NETCDF4')
+        ds.close()
+        logger.warning(f"DB Path {ds_path} was recreated.")
         # raise RuntimeError(f'Path for file_info does not exist {ds_path}.')
+        return None
 
     
     if not create_new:
@@ -443,7 +447,6 @@ def get_file_info(origin: str, create_new: bool=False, **kwargs):
                  config.ds_cache[f'{origin}_file_info']['mtime'] = stat_result.st_mtime
     else:
         ds = create_file_info(origin, **kwargs)
-    ds['duration'].attrs['dtype'] = 'timedelta64[s]' 
     compute_gap_lengths(ds)
     return ds     
    
@@ -510,7 +513,7 @@ def get_synchronized_time(start_time, file_time, duration):
     elif start_time < berlin_dst.localize(datetime.datetime(2019,4,30)):# or maybe 2019,4,25
         # before PC was set to UTC it was running two hours ahead of the controller
         # daylight savings were disabled before, last change happened on 2017-10-29 03:00 to 01:00
-        # this is already covered in ReadBinary.localize()
+        # this is already covered in fbg_strain_reader.localize()
         return start_time
     else:
         return start_time
@@ -541,7 +544,7 @@ def create_file_info(origin: str, chunksize: int=50, skip_existing: bool=True, *
     reduced = kwargs.pop('reduced',True)
     filtered_list = kwargs.pop('filtered_list',False)
     
-    if filtered_list and reduced:
+    if filtered_list and reduced and len(ds.dims)>0:
         filelist = get_file_list(origin, reduced, ds)
     else:
         filelist = get_file_list(origin, reduced)
@@ -599,7 +602,8 @@ def create_file_info(origin: str, chunksize: int=50, skip_existing: bool=True, *
             dst['num_channels'] = (['time'], [measurement.shape[1]])
             dst['units'] = (['channels'], np.array(units,dtype=str))
             dst['sample_rate'] = (['time'], [sample_rate])
-            dst['duration']=(['time'],[np.asarray(duration, dtype='timedelta64').astype(np.float64)])
+            dst['duration']=(['time'],[np.asarray(duration, dtype='timedelta64[s]').astype(np.float64)])
+            dst['duration'].attrs['units'] = 'seconds'
             dst['length']= (['time'], [measurement.shape[0]])
             
             this_dict=describe_stats(measurement, headers)
@@ -1048,7 +1052,7 @@ def compute_gap_lengths(file_info):
     # compute the end times of each file and shift it forward in time
     duration = file_info['length']/file_info['sample_rate']
 
-    previous_end_time = start_time + file_info['duration'] * np.timedelta64(1, 'us')
+    previous_end_time = start_time + file_info['duration'] * np.timedelta64(1, 's')
     previous_end_time = previous_end_time
     shift_start_time = start_time.shift(time=-1)
     # gap_length refers to the gap after the considered file
@@ -1143,7 +1147,7 @@ def get_slice(start_time, duration , quantity, file_info, upsample_fs=None):
     
     # ensure time_range is fully covered by the selected files
     
-    last_end = (file_info.time + file_info['duration'] * np.timedelta64(1, 'us')).data[-1]
+    last_end = (file_info.time + file_info['duration'] * np.timedelta64(1, 's')).data[-1]
     first_start = file_info.time.data[0]
     
     if first_start > np.datetime64(time_range[0]) or last_end < np.datetime64(time_range[1]):
@@ -1184,7 +1188,7 @@ def get_slice(start_time, duration , quantity, file_info, upsample_fs=None):
         # then one (or more) more line is needed from the end
         # start_time/end_time is the time instant between the first/last sample
         if  'strain' in quantity and time_range[0] < pd.Timestamp('2018-01-12', tz='Europe/Berlin').to_datetime64():
-            startTimestamp, endTimestamp, firstChannel, lastChannel, firstIndex, lastIndex = ReadBinary.read_bin(file_path, indices_only=True)
+            startTimestamp, endTimestamp, firstChannel, lastChannel, firstIndex, lastIndex = fbg_strain_reader.read_bin(file_path, indices_only=True)
             num_full_lines = (lastIndex+1-firstIndex)/4
             assert num_full_lines == end_index-(firstChannel+(3-lastChannel))/4
             logger.debug('(lastIndex+1-firstIndex)/4 {}'.format( (lastIndex+1-firstIndex)/4))
@@ -1198,7 +1202,7 @@ def get_slice(start_time, duration , quantity, file_info, upsample_fs=None):
             endTimestamp = endTimestamp + datetime.timedelta(seconds=(3-lastChannel)/(4*curr_sample_rate))
             
             # in some cases labview stopped writing data to the file
-            # in cases of early file ends, the end timestamp is computed from the linenumber and sample rate in ReadBinary
+            # in cases of early file ends, the end timestamp is computed from the linenumber and sample rate in fbg_strain_reader
             # however the file timestamp is still at the regular end of the file
             # so there is a large amount of data missing
             # in these cases we should not rely on the file time stamp
@@ -1700,7 +1704,7 @@ def orthogonal_lsq(azr=None, xy=None, rad = False):
 
 def strain_manipulate_transform(start_time, headers, units, end_time, sample_rate, measurement, quantity, temp_slice=None):
     
-    measurement, deltas = ReadBinary.manipulate_data(measurement, start_time, sample_rate, 
+    measurement, deltas = fbg_strain_reader.manipulate_data(measurement, start_time, sample_rate, 
                                           previous_a=None, previous_delta=None, previous_start_time=None)
     
     # strain conversion
