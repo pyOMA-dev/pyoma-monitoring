@@ -34,7 +34,7 @@ server via SFTP.
 Gantner Q.station controller
         │  (Gantner UDBF .dat / Labview .bin, daily SFTP transfer)
         ▼
-ReadBinary.py / udbf2ascii.py      ← low-level binary readers
+fbg_strain_reader.py / gantner_reader.py      ← low-level binary readers
         │
         ▼
 main_v2.py  (core pipeline)
@@ -133,7 +133,7 @@ file_root_path/
     └── YYYY/MM/DD/
 ```
 
-Files are read by `ReadBinary.py` (Labview binary) and `udbf2ascii.py`
+Files are read by `fbg_strain_reader.py` (Labview binary) and `gantner_reader.py`
 (Gantner UDBF `.dat`).
 
 ---
