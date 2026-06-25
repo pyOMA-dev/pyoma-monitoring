@@ -32,3 +32,9 @@ geyer_tmp/
 
 # Briefing
 PYOMA_MONITORING_CLAUDE_CODE_BRIEFING.md
+.ipynb_checkpoints/demo_notebook-checkpoint.ipynb
+daily.sh
+
+# Test fixtures (override the data-file exclusion rules above)
+!tests/data/
+!tests/data/**

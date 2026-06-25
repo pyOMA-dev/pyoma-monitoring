@@ -30,8 +30,8 @@ subpaths = {'accel':'towerdata',
             'wind':'towerdata',
             'temp':'towerdata',
             'strain':'strain_data'}
-file_root_path = '/home/towermonitoring'
-slice_root_path = '/home/tower_scratch_data/'
+file_root_path = '/home/womo1998/Projects/grkgeyer/'
+slice_root_path = '/home/womo1998/Projects/grkgeyer/tower_scratch_data/'
 db_root_path = '/home/womo1998/Projects/grkgeyer/analysis/result_db/'
 modal_conf_dir = '/home/womo1998/Projects/grkgeyer/analysis/modal_source_files/'
     
