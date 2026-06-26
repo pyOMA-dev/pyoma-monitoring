@@ -40,6 +40,7 @@ import config
 from monitoring import get_file_info, get_stats, get_modal_results,\
     check_and_mark_errors, read_file, get_slice_corrected, get_slice_preprocessed,\
     split_modepairs
+from time_convention import TC
 
 from pyOMA.core.StabilDiagram import StabilCalc
 from pyOMA.core.Helpers import calculateMAC
@@ -286,8 +287,8 @@ def _dtstart_to_stored_utc(dtstart: np.datetime64) -> np.datetime64:
     tz_localize('Europe/Berlin') before storing via to_datetime64(). This function
     mirrors that double-step so that plot filter thresholds match the stored coords.
     """
-    utc_naive = pd.Timestamp(dtstart, tz='Europe/Berlin').tz_convert('UTC').tz_localize(None)
-    return pd.Timestamp(utc_naive).tz_localize('Europe/Berlin').to_datetime64()
+    utc_naive = TC.to_storage_coord(pd.Timestamp(dtstart, tz='Europe/Berlin'))
+    return TC.to_local(utc_naive).to_datetime64()
 
 
 def plot_waterfall(quantity: str, duration: pd.Timedelta, dtstart: np.datetime64):

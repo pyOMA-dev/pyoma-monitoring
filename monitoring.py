@@ -143,6 +143,8 @@ import tzlocal
 
 berlin_dst=pytz.timezone('Europe/Berlin') # cet/cest
 
+from time_convention import TC
+
 import math
 import numpy as np
 import scipy.stats
@@ -451,14 +453,10 @@ def get_file_info(origin: str, create_new: bool=False, **kwargs):
     return ds     
    
 def close_to_utc_transition(file_time, close_hours=3):
-    
-    for utc_transition_time in berlin_dst._utc_transition_times[100:106]: # skip files within dst transition periods
-        #file_time within +- 3 hours of transition_time
-        if utc_transition_time+datetime.timedelta(hours=close_hours)>file_time.replace(tzinfo=None) and file_time.replace(tzinfo=None)>utc_transition_time-datetime.timedelta(hours=close_hours):
-            logger.info('Timestamp is within +- 3 hours of daylight saving transition time: {}. Time is: {}. Skipping!'.format(utc_transition_time, file_time))
-            return True
-    else:
-        return False
+    result = TC.is_near_dst_transition(file_time, hours=close_hours)
+    if result:
+        logger.info('Timestamp is within +- {} hours of daylight saving transition time: {}'.format(close_hours, file_time))
+    return result
 
 def round_dt(dt: np.datetime64, duration: np.timedelta64,
              ceil: bool=True, floor: bool=False):
@@ -596,8 +594,8 @@ def create_file_info(origin: str, chunksize: int=50, skip_existing: bool=True, *
             
             dst['file_name'] = (('time'), np.array([file_name],dtype=str))
             dst['file_size'] = (('time'), [file_size])
-            dst['file_time'] = (['time'], [file_time.timestamp()])#returns seconds since the epoch as float64 (i.e. milliseconds are preserved)
-            dst['start_time'] = (['time'], [start_time.timestamp()])#returns seconds since the epoch as float64 (i.e. milliseconds are preserved)
+            dst['file_time'] = (['time'], [TC.to_posix(file_time)])
+            dst['start_time'] = (['time'], [TC.to_posix(start_time)])
             # convert back using dst['start_time'].astype('datetime64[s]')
             dst['num_channels'] = (['time'], [measurement.shape[1]])
             dst['units'] = (['channels'], np.array(units,dtype=str))
@@ -616,7 +614,7 @@ def create_file_info(origin: str, chunksize: int=50, skip_existing: bool=True, *
             dst.coords['channels'] = np.array(headers,dtype=str)
             # TODO: time is not a unique identifier
             # if two files of the same quantity and origin were started at the same time (highly unlikely), results will get overwritten 
-            dst.coords['time'] = [pd.Timestamp(sync_time).tz_convert('UTC').tz_localize(None).to_datetime64()]
+            dst.coords['time'] = [TC.to_storage_coord(sync_time)]
 
             ds=ds.combine_first(dst)
             changed=True
@@ -810,7 +808,7 @@ def create_stats(quantity: str, duration: pd.Timedelta, file_info: xr.Dataset,
     dtstart = config.dtstarts[origin]
     dtstart = kwargs.pop('dtstart', dtstart)
     dtstart = pd.Timestamp(dtstart).to_pydatetime()
-    fi_time_max = (file_info.time + file_info.duration * np.timedelta64(1, 'us')).max().values
+    fi_time_max = (file_info.time + file_info.duration * np.timedelta64(1, 's')).max().values
     fi_time_max = round_dt(fi_time_max, duration, ceil=True)
     
     fi_time_max = pd.Timestamp(fi_time_max).to_pydatetime()
@@ -828,13 +826,8 @@ def create_stats(quantity: str, duration: pd.Timedelta, file_info: xr.Dataset,
     # the only place, were timezone native times are used get_slice_corrected to generate the filename (=even hours year round)
     # file_info['start_time'/'file_time'] is using timestamps (which are UTC by definition = seconds since 1.1.1970 (UTC))
     # file_info['time'] is derived from tz-aware start_time and file_time in get_synchronized_time and converted to UTC
-     
-    time_iterator = dateutil.rrule.rrule(dateutil.rrule.MINUTELY, interval=minutes, dtstart=dtstart, until=until, cache=True)
-    # time_iterator = list(time_iterator)
-    time_iterator = [pd.Timestamp(ts, tz='Europe/Berlin') for ts in time_iterator]
-    time_iter_naive = np.array(
-            [ts.tz_convert('UTC').tz_localize(None) for ts in time_iterator],
-            dtype='datetime64[ns]')
+
+    _aware_iter, time_iter_naive = TC.make_index(dtstart, until, minutes)
     
     validate_slices = kwargs.pop('validate_slices', False)
     
@@ -858,9 +851,7 @@ def create_stats(quantity: str, duration: pd.Timedelta, file_info: xr.Dataset,
     
     for i, time_ in enumerate(time_iterator[start*jobsize:(start+1)*jobsize]):
         logger.debug(time_)
-        # make 
-        start_time = pd.Timestamp(time_)
-        start_time = start_time.tz_localize('Europe/Berlin', nonexistent='NaT')
+        start_time = TC.to_local(time_)
         # if not (i+1)%50: print('.',end='', flush=True) 
         # if not (i+1)%2500: print('\n')
         
@@ -1037,33 +1028,18 @@ def compute_gap_lengths(file_info):
     '''
     check file_gaps (assumes files are sorted in time)
     this function only works reliably if all files have been read in before,
-    therefore it can not be pre-computed and is re-computep every time the script is run
-    
+    therefore it can not be pre-computed and is re-computed every time the script is run
+
     in Peaks_*, when the file compression script starts, all data written afterwards to the currently active file was lost
     therefore we have a gap of some minutes every night around 1 AM CET/CEST
     other gaps may be due to pc restarts, controller restarts, ...
-    
+
     Peaks_* files have to be interleaved sometime, when the recording stopped eg in channel 2 and continued in the next file in channel 3
     then there is a gap of (-1) sample which is removed during interleaving
     '''
-    #files do not need to by synchronized, from the two measurement systems  
-    #therefore, internal timestamp is used which is possibly more accurate
-    start_time = file_info['start_time'].astype('datetime64[s]') # is timestamp in seconds since the epoch
-    # compute the end times of each file and shift it forward in time
-    duration = file_info['length']/file_info['sample_rate']
-
-    previous_end_time = start_time + file_info['duration'] * np.timedelta64(1, 's')
-    previous_end_time = previous_end_time
-    shift_start_time = start_time.shift(time=-1)
-    # gap_length refers to the gap after the considered file
-    gap_length = shift_start_time - previous_end_time
-    # xarray does not allow conversion to other timedelta representations than [ns]
-    # therefore we have to extract the raw int64 convert to s by multiplying by nano (=1e-9)
-    gap_length = gap_length.values.astype('int64')*1e-9
-    # compute the number of samples in the gap
-    gap_length *= file_info['sample_rate']
-    # put gap_length back into file_info 
-    file_info['gap_length'] = gap_length
+    file_info['gap_length'] = TC.gap_lengths(
+        file_info['start_time'], file_info['duration'], file_info['sample_rate']
+    )
 
 def get_slice(start_time, duration , quantity, file_info, upsample_fs=None):
     '''
@@ -1079,7 +1055,7 @@ def get_slice(start_time, duration , quantity, file_info, upsample_fs=None):
     file_start_time = file_info.time
     #duration = file_info.duration
     #duration = ((file_info['length']+1)/file_info['sample_rate']).astype('timedelta64[s]') #duration.astype('float64')*(5/3)*1e-11 #duration in minutes
-    file_end_time = file_info.time + file_info.duration * np.timedelta64(1, 'us')
+    file_end_time = file_info.time + file_info.duration * np.timedelta64(1, 's')
     
     # first select all files that end in time_range i.e 'time' is within time_range
     b1 = file_end_time>=np.datetime64(time_range[0])
@@ -1222,8 +1198,8 @@ def get_slice(start_time, duration , quantity, file_info, upsample_fs=None):
             
             sync_end_time = sync_start_time + curr_duration
             
-        sync_start_time = np.datetime64(sync_start_time.astimezone(pytz.UTC).replace(tzinfo=None))
-        sync_end_time = np.datetime64(sync_end_time.astimezone(pytz.UTC).replace(tzinfo=None))
+        sync_start_time = np.datetime64(TC.to_storage_coord(sync_start_time))
+        sync_end_time = np.datetime64(TC.to_storage_coord(sync_end_time))
         
         # if current file starts earlier than time_range[0] truncate some samples at the start
         if sync_start_time <= time_range[0]:
@@ -1925,8 +1901,7 @@ def create_modal_results(quantity: str, duration: pd.Timedelta,
     for start_time in time_iterator[start*jobsize:(start+1)*jobsize]:
 
         logger.debug('')
-        start_time_naive = pd.Timestamp(start_time)
-        start_time = start_time_naive.tz_localize('Europe/Berlin', nonexistent='NaT')
+        start_time = TC.to_local(start_time)
         if pd.isnull(start_time):
             continue
         # if not (i+1)%50: print('.',end='', flush=True)
