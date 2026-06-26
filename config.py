@@ -81,6 +81,20 @@ ranges={'Accel_01':(-5,5), 'Accel_01_top':(-1,1), 'Accel_02':(-5,5),
         'C_z':(-0.0003,0.0001), 'C_t':(-0.0002,0.0002), 'C_zt':(-0.0004,0.0000),
         'D_z':(-0.0002,0.0002), 'D_t':(-0.0002,0.0002), 'D_zt':(-0.0003,0.0000)
         }
+strain_t = {
+    'strain_rosettes': {
+        'A_z': 'A_Temp',  'A_t': 'A_Temp',  'A_zt': 'A_Temp',
+        'B_z': 'B_Temp',  'B_t': 'B_Temp',  'B_zt': 'B_Temp',
+        'C_z': 'C_Temp',  'C_t': 'C_Temp',  'C_zt': 'C_Temp',
+        'D_z': 'D_Temp_2', 'D_t': 'D_Temp_2', 'D_zt': 'D_Temp_2',
+    },
+    'strain_bolts': {
+        '10_z1': '10_Temp', '10_z2': '10_Temp',
+        '8_z1': '8_Temp', '8_z2': '8_Temp', '8_z3': '8_Temp',
+        '9_z1': '9_Temp', '9_z2': '9_Temp', '9_z3': '9_Temp',
+    },
+}
+
 initial_wl ={
         '10_Temp':1520.1, '10_z1':1527.59, '10_z2':1535.07,
         '8_z1':1565.06, '8_z2':1572.44, '8_z3':1579.84,

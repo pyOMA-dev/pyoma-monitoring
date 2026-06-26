@@ -138,10 +138,52 @@ import pytz
 import datetime
 import time
 import tzlocal
+from dataclasses import dataclass
+from typing import Callable, Dict, List, Optional
 
-berlin_dst=pytz.timezone('Europe/Berlin') # cet/cest
+berlin_dst = pytz.timezone('Europe/Berlin')  # cet/cest
 
 from time_convention import TC
+
+# ---------------------------------------------------------------------------
+# Site registry — must be defined before any site module is imported
+# ---------------------------------------------------------------------------
+
+@dataclass
+class Site:
+    """Contract between the generic engine and a site-specific implementation.
+
+    All callables are pure functions with no side-effects on the engine state.
+    """
+    name: str
+    transforms: Dict[str, Callable]   # quantity -> callable(*Slice, quantity, **kw) -> Slice | None
+    setup_prep: Dict[str, Callable]   # quantity -> callable(headers) -> (ref_ch, accel_ch, disp_ch, chan_dofs)
+    error_rules: Dict[str, dict]      # quantity -> {kurtosis_max, kurtosis_min}
+    sync_policy: Callable             # (start_time, file_time, duration) -> datetime
+    modal_bands: List[tuple]          # [(f_lo, f_hi), …] for split_modepairs
+    file_list_fn: Callable            # (origin, reduced, file_info) -> list[str]
+    channel_mean_fn: Optional[Callable]  # (header, measurement, headers) -> float | None
+    preproc_channels: Dict[str, list]    # quantity -> [channel names to keep for OMA pre-processing]
+
+_SITES: Dict[str, Site] = {}
+_active_site: Optional[Site] = None
+
+
+def register_site(site: Site) -> None:
+    _SITES[site.name] = site
+
+
+def get_site(name: str) -> Site:
+    return _SITES[name]
+
+
+def set_active_site(site: Site) -> None:
+    global _active_site
+    _active_site = site
+
+
+def get_active_site() -> Optional[Site]:
+    return _active_site
 
 import math
 import numpy as np
@@ -175,94 +217,14 @@ import config
 reader_tz = tzlocal.get_localzone()
         
         
-def get_file_list(origin, reduced=False, file_info = None):
-    '''
-    read in all files from path
-    origin may be 'q_station' or 'labview'
-    return list of files, creation dates, file sizes
-    '''
-    path = os.path.join(config.file_root_path, config.subpaths[origin])
-    path = os.path.normpath(path)
-    if not os.path.exists(path):
-        raise RuntimeError(f"{path} does not exist.")
-    
-    if origin =='accel':
-        file_list = glob.glob(os.path.join(path,'Accel_continuously__*'))
-        if not reduced:
-            file_list += glob.glob(os.path.join(path,'Alle_3h_00_00__1_2015-04-*'))
-            file_list += glob.glob(os.path.join(path,'Alle_3h_00_00__1_2015-05-0*'))
-            file_list += glob.glob(os.path.join(path,'Alle_3h_00_00__3_2015-04-*'))
-            file_list += glob.glob(os.path.join(path,'Alle_3h_00_00__3_2015-05-0*'))
-            file_list += glob.glob(os.path.join(path,'Alle_3h_03_00__2_2015-04-*'))
-            file_list += glob.glob(os.path.join(path,'Alle_3h_03_00__2_2015-05-0*'))
-            file_list += glob.glob(os.path.join(path,'Alle_3h_03_00__4_2015-04-*'))
-            file_list += glob.glob(os.path.join(path,'Alle_3h_03_00__4_2015-05-0*'))
-            file_list += glob.glob(os.path.join(path,'Alle_3h_06_00__3_2015-04-*'))
-            file_list += glob.glob(os.path.join(path,'Alle_3h_06_00__3_2015-05-0*'))
-            file_list += glob.glob(os.path.join(path,'Alle_3h_06_00__5_2015-04-*'))
-            file_list += glob.glob(os.path.join(path,'Alle_3h_06_00__5_2015-05-0*'))
-            file_list += glob.glob(os.path.join(path,'Alle_3h_09_00__4_2015-04-*'))
-            file_list += glob.glob(os.path.join(path,'Alle_3h_09_00__4_2015-05-0*'))
-            file_list += glob.glob(os.path.join(path,'Alle_3h_09_00__6_2015-04-*'))
-            file_list += glob.glob(os.path.join(path,'Alle_3h_09_00__6_2015-05-0*'))
-            file_list += glob.glob(os.path.join(path,'Alle_3h_12_00__5_2015-04-*'))
-            file_list += glob.glob(os.path.join(path,'Alle_3h_12_00__5_2015-05-0*'))
-            file_list += glob.glob(os.path.join(path,'Alle_3h_12_00__7_2015-04-*'))
-            file_list += glob.glob(os.path.join(path,'Alle_3h_12_00__7_2015-05-0*'))
-            file_list += glob.glob(os.path.join(path,'Alle_3h_15_00__6_2015-04-*'))
-            file_list += glob.glob(os.path.join(path,'Alle_3h_15_00__6_2015-05-0*'))
-            file_list += glob.glob(os.path.join(path,'Alle_3h_15_00__8_2015-04-*'))
-            file_list += glob.glob(os.path.join(path,'Alle_3h_15_00__8_2015-05-0*'))
-            file_list += glob.glob(os.path.join(path,'Alle_3h_18_00__7_2015-04-*'))
-            file_list += glob.glob(os.path.join(path,'Alle_3h_18_00__7_2015-05-0*'))
-            file_list += glob.glob(os.path.join(path,'Alle_3h_18_00__9_2015-04-*'))
-            file_list += glob.glob(os.path.join(path,'Alle_3h_18_00__9_2015-05-0*'))
-            file_list += glob.glob(os.path.join(path,'Alle_3h_21_00__8_2015-04-*'))
-            file_list += glob.glob(os.path.join(path,'Alle_3h_21_00__8_2015-05-0*'))
-            file_list += glob.glob(os.path.join(path,'Alle_3h_21_00__10_2015-04-*'))
-            file_list += glob.glob(os.path.join(path,'Alle_3h_21_00__10_2015-05-0*'))
-            file_list += glob.glob(os.path.join(path,'Wind_kontinuierlich__*'))
-    elif origin =='wind':
-        file_list = glob.glob(os.path.join(path,'Wind_continuously__*'))
-        if not reduced:
-            file_list += glob.glob(os.path.join(path,'Wind_kontinuierlich__*'))
-    elif origin=='temp':
-        file_list = glob.glob(os.path.join(path,'Temp_continuously__*'))
-        if not reduced:
-            file_list += glob.glob(os.path.join(path,'Temp_konti_*'))
-    elif origin=='strain':
-        file_list = []
-        paths = [path]
-        if not reduced: paths.append(os.path.join(path,'binary_files_unusable'))
-        for path_2 in paths:
-            for filename in os.listdir(path_2):
-                file,ext = os.path.splitext(filename)
-                if ext == '.npz': continue
-                if ext == '.bz2': file, ext = os.path.splitext(file)
-                
-                if file.endswith('spec'): continue
-                
-                if ext =='.txt':
-                    file = re.sub(r"strain-[1-4]","",file)
-                    if not file.endswith('_'): continue
-                    if os.path.join(path_2,file) in file_list:
-                        continue
-                    file_list.append(os.path.join(path_2,file))
-                elif ext == '.bin':
-                    file_list.append(os.path.join(path_2,filename))
-                
-    else:
-        RuntimeWarning('origin was neither accel nor wind nor strain nor temp. filelist is empty')
-        file_list = []
-        
-    if reduced and file_info is not None:
-        
-        filename_list = [os.path.basename(file) for file in file_list]
-        dset = set(filename_list).difference(file_info['file_name'].variable.data)
-        logger.debug('{} {}'.format(len(dset), dset))
-        file_list = [os.path.join(path, filename) for filename in dset]
-        
-    return  file_list
+def get_file_list(origin, reduced=False, file_info=None):
+    """Return a list of data file paths for the given origin and site."""
+    site = _active_site
+    if site is None or site.file_list_fn is None:
+        raise RuntimeError(
+            "No file_list_fn registered. Import the appropriate site module first."
+        )
+    return site.file_list_fn(origin, reduced, file_info)
 
 def read_file(path):
     '''
@@ -470,48 +432,11 @@ def round_dt(dt: np.datetime64, duration: np.timedelta64,
     return dt
     
 def get_synchronized_time(start_time, file_time, duration):
-    '''
-    checks the provided time stamps and returns synchronized starting time
-    
-    
-    local time: time of the measurement device (Q.Station, Labview/Illumisense PC)
-    remote time: time of the storage device (Q.Station, PC)
-    
-    differences in local and remote time:
-     - clock not set
-     - different time zones (UTC, MEZ, MESZ)
-     - day light savings
-     - clock drifts
-     
-     Over the operating period, the settings have changed multiple times, therefore 
-     time differences are varying
-     
-    start time is local time with local time zone
-    file_time is when the last bit was written, it is local or remote time, with daylight saving
-    
-    duration is num_samples/sample_rate
-    ideally: start_time + duration = file_time
-    
-    due to the time difference this does not hold true
-    
-    for a visual reference run the function 'inspect_time_shifts()'
-    
-     '''
-    
-    if start_time < berlin_dst.localize(datetime.datetime(2016,12,15)):
-        # before Strain recordings were started no synchronization is needed
-        return start_time
-    elif start_time < berlin_dst.localize(datetime.datetime(2018,1,25)): # actually 8:25 o'clock
-        # before NTC was set up, only reliable time information is the file's timestamp
-        # time stamp covers daylight saving changes
-        return file_time - duration
-    elif start_time < berlin_dst.localize(datetime.datetime(2019,4,30)):# or maybe 2019,4,25
-        # before PC was set to UTC it was running two hours ahead of the controller
-        # daylight savings were disabled before, last change happened on 2017-10-29 03:00 to 01:00
-        # this is already covered in fbg_strain_reader.localize()
-        return start_time
-    else:
-        return start_time
+    """Return the synchronised start time via the active site's sync policy."""
+    site = _active_site
+    if site is not None:
+        return site.sync_policy(start_time, file_time, duration)
+    return start_time
 
 
     
@@ -646,23 +571,20 @@ def describe_stats(measurement, headers=None, quantity=None):
                 this_dict['error'][channel]=True
                 continue
             this_range = config.ranges.get(header, None)
-            
-            suffix = header.replace('Wr','')
-             
-            if 'Wx'+suffix in headers and 'Wy'+suffix in headers:
-                Wx = measurement[:,headers.index('Wx'+suffix)]
-                Wy = measurement[:,headers.index('Wy'+suffix)]
-                
-                mean = orthogonal_lsq(xy=(Wx,Wy))
-                
-                Wr = np.copy(measurement[:,channel])
-                Wr -= mean                    
-                Wr[Wr<-180] += 360
-                Wr[Wr>180] -= 360        
+
+            site_mean_fn = _active_site.channel_mean_fn if _active_site is not None else None
+            circular_mean = site_mean_fn(header, measurement, headers) if site_mean_fn is not None else None
+
+            if circular_mean is not None:
+                mean = circular_mean
+                Wr = np.copy(measurement[:, channel])
+                Wr -= mean
+                Wr[Wr < -180] += 360
+                Wr[Wr > 180] -= 360
                 Wr += mean
-                
-                _nobs, (min_,max_), _, variance, skewness, kurtosis = scipy.stats.describe(Wr,nan_policy='omit')
-                q05,q50,q95 = np.nanpercentile(Wr, q=[5,50,95])
+
+                _nobs, (min_, max_), _, variance, skewness, kurtosis = scipy.stats.describe(Wr, nan_policy='omit')
+                q05, q50, q95 = np.nanpercentile(Wr, q=[5, 50, 95])
                 rms = np.sqrt(np.nanmean(np.square(Wr)))
 
             else:
@@ -688,11 +610,12 @@ def describe_stats(measurement, headers=None, quantity=None):
                     this_dict['error'][channel]=True
                 if min_ < this_range[0]:
                     this_dict['error'][channel]=True
-            if quantity in ['accel','strain_rosettes']:
-                if kurtosis>5:
-                    this_dict['error'][channel]=True
-                if kurtosis<-2:
-                    this_dict['error'][channel]=True
+            if quantity is not None and _active_site is not None:
+                rules = _active_site.error_rules.get(quantity, {})
+                if rules.get('kurtosis_max') is not None and kurtosis > rules['kurtosis_max']:
+                    this_dict['error'][channel] = True
+                if rules.get('kurtosis_min') is not None and kurtosis < rules['kurtosis_min']:
+                    this_dict['error'][channel] = True
                     
                     
                     
@@ -1361,38 +1284,19 @@ def get_slice_corrected(start_time: pd.Timestamp, duration: pd.Timedelta,
     if data_slice is None:
         return None
 
-    if quantity == 'wind':
-        data_slice = wind_transform(*data_slice)
-    elif 'strain' in quantity and start_time < pd.Timestamp('2018-01-12',tz='Europe/Berlin'):
-        file_info_temp = kwargs.get('file_info_temp',None)
-        strain_start = data_slice[0]
-        strain_end = data_slice[3]
-        strain_fs = data_slice[4]
-        logger.debug((strain_end-strain_start).total_seconds()*strain_fs)
-        
-        if file_info_temp is not None:
-            with open(os.devnull, "w") as f, contextlib.redirect_stdout(f): 
-                # suppress printout from getting the temp slice to not confuse user when inspecting logs
-                # if temp slice could not be read, a warning is printed 6 lines down
-                temp_slice = get_slice(strain_start, strain_end-strain_start, quantity='temp', file_info=file_info_temp, upsample_fs=strain_fs)
-        else:
-            temp_slice = None
-        
-        if temp_slice is None:
-            logger.warning("Can't read measurement file for temperature compensation {}:{}. Skipping!".format(start_time, quantity))
-            return None
-        
-        Pt_ind = ['Pt100' in head for head in temp_slice[1]]
-        Pt_mean = np.nanmean(temp_slice[5][:,Pt_ind], axis=1)
-        for ind,head in enumerate(temp_slice[1]):
-            if not 'Pt100' in head:
-                continue
-            if np.nanmax(temp_slice[5][:,ind])>80 or np.nanmin(temp_slice[5][:,ind])<-40:
-                logger.info('Channel {} out of bounds. Max: {}, Min: {}'.format(head,np.nanmax(temp_slice[5][:,ind]), np.nanmin(temp_slice[5][:,ind])))
-                temp_slice[5][:,ind]=Pt_mean
-
-        #check out of bounds measurements
-        data_slice = strain_manipulate_transform(*data_slice, quantity, temp_slice)
+    site = _active_site
+    if site is not None:
+        transform = site.transforms.get(quantity)
+        if transform is not None:
+            data_slice = transform(
+                *data_slice,
+                quantity=quantity,
+                start_time_local=start_time,
+                duration=duration,
+                **kwargs,
+            )
+            if data_slice is None:
+                return None
 
     start_time, headers, units, end_time, sample_rate, measurement = data_slice
     
@@ -1438,16 +1342,11 @@ def get_slice_preprocessed(start_time: pd.Timestamp, duration, quantity, file_in
 
 
     if 'strain' in quantity:
-        channel_selector = np.array([False for header in headers])
-        strain_channels = ['A_z','A_t','A_zt','B_z','B_t',
-                                   'B_zt','C_z','C_t','C_zt','D_z','D_t','D_zt',]
-        new_heads=[]
-        for ij in range(len(headers)):
-            if headers[ij] in strain_channels:
-                channel_selector[ij]=True
-                new_heads.append(headers[ij])
-        measurement=measurement[:,channel_selector]
-        headers=new_heads
+        site = _active_site
+        keep = site.preproc_channels.get(quantity, []) if site is not None else []
+        channel_selector = np.array([h in keep for h in headers])
+        headers = [h for h in headers if h in keep]
+        measurement = measurement[:, channel_selector]
 
     b, a = scipy.signal.butter(4, [highpass/nyq, lowpass/nyq], btype='band')
     
@@ -1459,311 +1358,6 @@ def get_slice_preprocessed(start_time: pd.Timestamp, duration, quantity, file_in
     
     return actual_start_time, headers, units, end_time, sample_rate, measurement   
 
-def wind_transform(file_time, headers, units, start_time, sample_rate, measurement):
-    '''
-    input: Wg, Wr
-    output: Wg, Wr, Wx, Wy
-    '''  
-    
-    new_headers = []
-    new_meas = []
-    new_units = []
-    for pair in [('Wg','Wr'),('Wg_top', 'Wr_top')]:
-        inds = []
-        for header in pair:
-            try:
-                index = headers.index(header)
-            except ValueError:
-                break
-            if index is None:
-                break
-            inds.append(index)
-        else:
-            Wg=measurement[:,inds[0]]
-            Wr=measurement[:,inds[1]]
-            
-            Wx,Wy = compensate_wind_jumps(Wr, Wg)
-            
-            Wr_,Wg = calc_ar(Wx, Wy)
-            Wr_=np.degrees(Wr_)
-            Wr_[Wr_<0]+=360
-            
-            new_meas.append(Wg)
-            new_meas.append(Wr_)
-            new_meas.append(Wx)
-            new_meas.append(Wy)
-            
-            new_headers.append(pair[0])
-            new_headers.append(pair[1])            
-            if 'top' in pair[0]:
-                new_headers.append('Wx_top')
-                new_headers.append('Wy_top')
-            else:
-                new_headers.append('Wx')
-                new_headers.append('Wy')
-                
-            new_units.append(units[inds[0]])
-            new_units.append(units[inds[1]])
-            new_units.append(units[inds[0]])
-            new_units.append(units[inds[0]])
-    
-    measurement = np.vstack(new_meas).T
-            
-    return file_time, new_headers, new_units, start_time, sample_rate, measurement
-
-
-def compensate_wind_jumps(Wr, Wg):
-    '''
-    compensate for averaged jumps of wind direction between 0° and 360° caused by digitization of the wind signal at a lower sampling rate
-    
-    find main wind direction (alpha) by orthogonal least squares in cartesian coordinates
-    transform a into range (alpha+-180°)
-    while derivative of a contains values <-35 or >35
-        substitute previous/following values of a forward and backward
-        
-    filter a in cartesian coords with a lowpass filter
-        
-    find main wind direction and compare with previous
-    
-    return a 
-    '''
-
-    def running_mean(y, box_pts):
-        box = np.ones(box_pts)/box_pts
-        y_smooth = np.convolve(y, box, mode='same')
-        return y_smooth
-
-    Wr = np.copy(Wr)
-    
-    angle = orthogonal_lsq(azr= [Wr, Wg])
-
-    Wr -=angle
-    Wr[Wr>180] -= 360
-    Wr[Wr<-180] += 360
-    d_Wr=Wr[1:]-Wr[:-1]   
-    
-    d_allow = 30
-    
-    intp_inds = np.logical_or(d_Wr<-d_allow,d_Wr>d_allow)
-    intp_inds = np.hstack((intp_inds,np.array([0])))
-    intp_inds = np.array(intp_inds, dtype=bool)
-        
-    eps=0.00001
-    std = 0
-    new_std = np.std(d_Wr)
-    counter=0    
-    interpol_length = 1000
-    overlap = 0.25
-
-    while True:
-        if new_std == 0:
-            break
-        if np.abs((new_std-std)/(new_std+std)/2)<eps:
-            break
-        
-        counter+=1
-        
-        if counter >15:
-            break
-
-        step = int(interpol_length*(1-overlap))
-        for i in range(0,len(Wr),step):
-            imin,imax = (i - step,i + step)
-            if imin<0:
-                imin=0
-            if imax> len(Wr):
-                imax = len(Wr)
-                
-            this_intp_inds = intp_inds[imin:imax]
-            this_t = np.linspace(0,len(this_intp_inds)-1, len(this_intp_inds))
-
-            this_Wr = np.copy(Wr[imin:imax])
-
-            ql,qml,qmu,qu = np.percentile(this_Wr, [10,40,60,90])
-
-            if np.abs(qu-ql)>60:
-                this_intp_inds = np.logical_or(np.logical_or(this_Wr>qu, this_Wr<ql), this_intp_inds)
-            this_intp_inds = np.logical_and(np.logical_not(np.logical_and(this_Wr<qmu, this_Wr>qml)), this_intp_inds)
-
-            knot_inds =np.logical_not(this_intp_inds)
-            interp_y = this_Wr[knot_inds]
-            interp_x = this_t[knot_inds]
-                      
-            interp_x_new = this_t[this_intp_inds]
-            
-            if not len(interp_x): 
-                continue
-            if len(interp_x_new)/len(interp_x)>1:
-                continue
-
-            _k = min (len(interp_x),5)
-            spl = scipy.interpolate.InterpolatedUnivariateSpline(interp_x, interp_y, k=5, ext=0, check_finite=False)
-
-            interp_y_new = spl(interp_x_new)
-
-            this_Wr[this_intp_inds] = interp_y_new         
-
-            Wr[imin:imax] = this_Wr
-  
-        Wr +=angle
-        angle = orthogonal_lsq(azr= [Wr, Wg])
-
-        Wr -=angle
-        Wr[Wr>180] -= 360
-        Wr[Wr<-180] += 360
-
-        d_Wr=np.diff(Wr)
-
-        intp_inds = np.logical_or(d_Wr<-d_allow,d_Wr>d_allow)
-        intp_inds = np.hstack((intp_inds,np.array([0])))
-        intp_inds = np.array(intp_inds, dtype=bool)
-
-        std=new_std
-        new_std = np.std(d_Wr)
-
-    Wr +=angle
-    
-    x,y = calc_xy(az=np.radians(Wr), r=Wg)
-
-    x = running_mean(x,10)
-    y = running_mean(y,10)
-
-    return x,y
-
-     
-def calc_xy(az, r=1):
-    x=r*np.cos(az) # for elevation angle defined from XY-plane up
-    #x=r*np.sin(elev)*np.cos(az) # for elevation angle defined from Z-axis down
-    y=r*np.sin(az) # for elevation angle defined from XY-plane up
-    #y=r*np.sin(elev)*np.sin(az)# for elevation angle defined from Z-axis down
-    return x,y
-
-def calc_ar(x,y):
-    xy = x**2 + y**2
-    r = np.sqrt(xy)
-    az = np.arctan2(y, x)
-    return az, r  
-
-def orthogonal_lsq(azr=None, xy=None, rad = False):
-    
-    assert azr is not None or xy is not None
-    
-    if azr is not None:
-        assert len(azr) == 2
-        az,r = azr
-        if not rad:
-            az = np.radians(az)
-        x,y = calc_xy(az, r)
-    else:
-        x,y = xy
-        az,r = calc_ar(x, y)
-        
-        
-    vector = np.array([x,y]).T       
-    _U, _S, V_T = np.linalg.svd(vector, full_matrices=False)
-    
-    angle = np.arctan2(-V_T[1,0],V_T[1,1])
-    
-    x_, _ = calc_xy((az - angle),r)
-    if np.sum(x_<0)>len(x_)/2:
-        angle += np.pi
-    if not rad:
-        angle = np.degrees(angle)
-    return angle
-
-def strain_manipulate_transform(start_time, headers, units, end_time, sample_rate, measurement, quantity, temp_slice=None):
-    
-    measurement, _deltas = fbg_strain_reader.manipulate_data(measurement, start_time, sample_rate,
-                                          previous_a=None, previous_delta=None, previous_start_time=None)
-    
-    # strain conversion
-    
-    # define strain channels 
-    # per strain channel define temp_compensation channel -> may have to use qstation moni data (->f)
-    # per strain channel define initial wavelength iwl/rwl/iw
-
-    _st=start_time
-
-    S1 = 6.37E-06
-    S2 = 7.46E-09
-    k = 0.772
-    alpha_steel = 12e-6
-    alpha_glass = 0.55e-6
-
-    #T=-S1/2/S2+np.sqrt((S1**2+4*S2*np.log(wl/iwl))/4/S2**2)+22.5
-    if quantity == 'strain_rosettes':
-        strain_t={
-            'A_z':'A_Temp',  'A_t':'A_Temp',  'A_zt':'A_Temp',
-            'B_z':'B_Temp', 'B_t':'B_Temp', 'B_zt':'B_Temp',
-            'C_z':'C_Temp', 'C_t':'C_Temp', 'C_zt':'C_Temp',
-            'D_z':'D_Temp_2', 'D_t':'D_Temp_2', 'D_zt':'D_Temp_2',
-            }
-    elif quantity == 'strain_bolts':
-        strain_t={
-            '10_z1':'10_Temp', '10_z2':'10_Temp',
-            '8_z1':'8_Temp', '8_z2':'8_Temp', '8_z3':'8_Temp',
-            '9_z1':'9_Temp', '9_z2':'9_Temp', '9_z3':'9_Temp',
-            }
-    else:
-        raise RuntimeError
-        
-    
-    # convert wl to strains and temperatures
-    new_measurement = np.zeros_like(measurement)
-    
-    for ind, header in enumerate(headers):
-        if header in config.temp_channels:
-            
-   # for temp_channel in config.temp_channels:
-    #    try:
-    #        ind = headers.index(temp_channel)
-            T=-S1/2/S2+np.sqrt((S1**2+4*S2*np.log(measurement[:,ind]/config.initial_wl[header]))/4/S2**2)+22.5
-            new_measurement[:,ind]=T
-    #    except Exception as e:
-    #        logger.warning(e)
-    #        pass
-
-        
-    if temp_slice is not None:
-        _start_t, hds_t, _, _dur_t, _sample_rate_temp, meas_temp = temp_slice
-        if quantity == 'strain_rosettes':
-            temp_comp={
-                'A_Temp'  :0.5*meas_temp[:,hds_t.index('Pt100_01')]+0.5*meas_temp[:,hds_t.index('Pt100_04')],
-                'B_Temp'  :meas_temp[:,hds_t.index('Pt100_04')],
-                'C_Temp'  :0.25*meas_temp[:,hds_t.index('Pt100_04')]+0.75*meas_temp[:,hds_t.index('Pt100_03')],
-                'D_Temp_2':0.33*meas_temp[:,hds_t.index('Pt100_03')]+0.67*meas_temp[:,hds_t.index('Pt100_02')]}
-        elif quantity == 'strain_bolts':
-            temp_comp={
-                '8_Temp'  :0.54*meas_temp[:,hds_t.index("Pt100_01")]+0.46*meas_temp[:,hds_t.index("Pt100_04")],
-                '9_Temp'  :0.63*meas_temp[:,hds_t.index("Pt100_01")]+0.37**meas_temp[:,hds_t.index("Pt100_04")],
-                '10_Temp' :0.72*meas_temp[:,hds_t.index("Pt100_01")]+0.28*meas_temp[:,hds_t.index("Pt100_04")]}
-        
-    else:
-        temp_comp = {}
-        for ind, header in enumerate(headers):
-            if header in config.temp_channels:
-#         for channel in config.temp_channels:
-#             try:
-#                 ind=headers.index(channel)
-                temp_comp[header]=new_measurement[:,ind]
-#             except:
-#                 pass
-        
-    for channel,header in enumerate(headers):
-        
-        if header in config.temp_channels:
-            pass
-        else:
-            comp_chan = strain_t[header]
-            t = temp_comp[comp_chan]
-            strain= 1/k*(np.log(measurement[:,channel]/config.initial_wl[header])-S1*(t-22.5)-S2*(t-22.5)**2)-(alpha_steel-alpha_glass)*(t-22.5)
-            new_measurement[:,channel]=strain
-            units[channel]='m/m'
-            
-    mean_ = np.nanmean(new_measurement, axis=0)
-    _new_measurement_2 = new_measurement - mean_
-
-    return start_time, headers, units, end_time, sample_rate, new_measurement
 
 def get_modal_results(quantity: str, duration: pd.Timedelta, 
                       stats: xr.Dataset=None, create_new: bool=False, **kwargs):
@@ -1905,10 +1499,6 @@ def create_modal_results(quantity: str, duration: pd.Timedelta,
         if this_stats['error'].any():
             logger.warning('Error in slice {}: {}'.format(start_time, this_stats['error'].data))
             continue
-        
-        #if quantity == 'accel' and start_time> pd.Timestamp('2017-11-01 00:00', tz = 'Europe/Berlin'):
-            #Accel_01 failed silently and current statistical methods don't mark it as error
-        #    continue
         
         if 'time' in master_ds.coords:
             if (start_time.to_datetime64()==master_ds.coords['time']).any():
@@ -2065,49 +1655,15 @@ def modal_analysis_single(start_time, data_slice, quantity, duration):
     if not os.path.exists(fname) or not skip_existing:
         start_time, headers, _units, _end_time, sample_rate, measurement \
             = data_slice
-        
-        accel_channels = []
-        disp_channels = []
-        if quantity == 'accel':
-            ref_channels = []
-            ref_channels.append(headers.index('Accel_01'))
-            ref_channels.append(headers.index('Accel_02'))
-            accel_channels = list(range(len(headers)))
-            disp_channels = []
-            chan_dofs_dict = {'Accel_01':     [1, 90,  0],
-                              'Accel_02':     [1, 180, 0],
-                              'Accel_03':     [4, 180, 0],
-                              'Accel_04':     [4, 90,  0],
-                              'Accel_05':     [5, 180, 0],
-                              'Accel_06':     [5, 90,  0],
-                              'Accel_07':     [6, 180, 0],
-                              'Accel_08':     [6, 90,  0],
-                              'Accel_01_top': [3, 270, 0],
-                              'Accel_02_top': [3, 180, 0],
-                              'Accel_03_top': [2, 270, 0],
-                              'Accel_04_top': [2, 0,   0]} 
-            
-            
-        elif quantity == 'strain_rosettes':
-            ref_channels = []
-            ref_channels.append(headers.index('A_zt'))
-            ref_channels.append(headers.index('B_zt'))  
-            ref_channels.append(headers.index('C_zt'))
-            ref_channels.append(headers.index('D_zt'))
-            accel_channels = []
-            disp_channels = list(range(len(headers)))
-            chan_dofs_dict = {'A_z' : ['A_z_1',  0, 90],
-                              'A_t' : ['A_t_1',  0, 0 ],
-                              'A_zt': ['A_zt_1', 0, 45],
-                              'B_z' : ['B_z_1',  0, 90],
-                              'B_t' : ['B_t_1',  0, 0 ],
-                              'B_zt': ['B_zt_1', 0, 45],
-                              'C_z' : ['C_z_1',  0, 90],
-                              'C_t' : ['C_t_1',  0, 0 ],
-                              'C_zt': ['C_zt_1', 0, 45],
-                              'D_z' : ['D_z_1',  0, 90],
-                              'D_t' : ['D_t_1',  0, 0 ],
-                              'D_zt': ['D_zt_1', 0, 45]}
+
+        site = _active_site
+        if site is None or quantity not in site.setup_prep:
+            raise RuntimeError(
+                f"No setup_prep registered for quantity '{quantity}'. "
+                "Import the appropriate site module before running modal analysis."
+            )
+        ref_channels, accel_channels, disp_channels, chan_dofs_dict = \
+            site.setup_prep[quantity](headers)
             
         prep_data = PreProcessSignals(measurement, sample_rate, 
                         ref_channels=ref_channels, accel_channels=accel_channels,
@@ -2207,10 +1763,12 @@ def split_modepairs(modal):
     takes all frequencies, that occur in pairs in a given frequency range
     reorders and assigns all other variables correspondingly
     '''
+    site = _active_site
+    modal_bands = site.modal_bands if site is not None else []
+
     modal_sorted = xr.Dataset()
-    
-    for modepair in range(5):
-        f_range = [(0.34,0.38),(0.6,0.65),(1.2,1.4),(2.0,2.15),(3.2,3.55)][modepair]
+
+    for modepair, f_range in enumerate(modal_bands):
         new_modal = xr.Dataset()
         
         # filter frequency range

@@ -16,6 +16,10 @@ PACKAGE_DIR = os.path.abspath(os.path.join(os.path.dirname(__file__), ".."))
 if PACKAGE_DIR not in sys.path:
     sys.path.insert(0, PACKAGE_DIR)
 
+# Register the Geyer site so engine functions that look up the active site
+# behave correctly in the test suite (all test data is Geyer data).
+import site_geyer  # noqa: F401, E402
+
 # ---------------------------------------------------------------------------
 # Paths to test data (read-only)
 # Falls back to the developer's external data directory if the in-repo

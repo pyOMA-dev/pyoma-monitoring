@@ -12,7 +12,8 @@ import sys
 import getopt
 import numpy as np
 import pandas as pd
-from monitoring import get_file_info, get_file_list,round_dt, get_stats,get_modal_results
+import site_geyer  # registers and activates the Geyer site in the monitoring engine  # noqa: F401
+from monitoring import get_file_info, get_file_list, round_dt, get_stats, get_modal_results
 import config
 from post_processing import plot_daily, plot_waterfall
 import os
