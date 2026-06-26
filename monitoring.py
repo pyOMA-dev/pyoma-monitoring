@@ -154,19 +154,41 @@ class Site:
     """Contract between the generic engine and a site-specific implementation.
 
     All callables are pure functions with no side-effects on the engine state.
+    Path / channel / range fields carry site-specific configuration that was
+    previously read directly from config.py by the engine.
     """
     name: str
-    transforms: Dict[str, Callable]   # quantity -> callable(*Slice, quantity, **kw) -> Slice | None
-    setup_prep: Dict[str, Callable]   # quantity -> callable(headers) -> (ref_ch, accel_ch, disp_ch, chan_dofs)
-    error_rules: Dict[str, dict]      # quantity -> {kurtosis_max, kurtosis_min}
-    sync_policy: Callable             # (start_time, file_time, duration) -> datetime
-    modal_bands: List[tuple]          # [(f_lo, f_hi), …] for split_modepairs
-    file_list_fn: Callable            # (origin, reduced, file_info) -> list[str]
+    # --- processing callbacks ---
+    transforms: Dict[str, Callable]      # quantity -> callable(*Slice, quantity, **kw) -> Slice | None
+    setup_prep: Dict[str, Callable]      # quantity -> callable(headers) -> (ref_ch, accel_ch, disp_ch, chan_dofs)
+    error_rules: Dict[str, dict]         # quantity -> {kurtosis_max, kurtosis_min}
+    sync_policy: Callable                # (start_time, file_time, duration) -> datetime
+    modal_bands: List[tuple]             # [(f_lo, f_hi), …] for split_modepairs
+    file_list_fn: Callable               # (origin, reduced, file_info) -> list[str]
     channel_mean_fn: Optional[Callable]  # (header, measurement, headers) -> float | None
-    preproc_channels: Dict[str, list]    # quantity -> [channel names to keep for OMA pre-processing]
+    preproc_channels: Dict[str, list]    # quantity -> [channel names for OMA pre-processing]
+    # --- site configuration (formerly in config.py) ---
+    db_root_path: str
+    slice_root_path: str
+    modal_conf_dir: str
+    file_root_path: str
+    origins: Dict[str, str]              # quantity -> origin tag
+    subpaths: Dict[str, str]             # origin tag -> relative filesystem path
+    all_channels: Dict[str, list]        # quantity -> required channel list
+    optional_channels: Dict[str, list]   # quantity -> optional channel list
+    dtstarts: Dict[str, object]          # origin -> earliest datetime
+    ranges: Dict[str, tuple]             # channel name -> (min, max) plausibility range
 
 _SITES: Dict[str, Site] = {}
 _active_site: Optional[Site] = None
+
+# ---------------------------------------------------------------------------
+# Mutable process-level state (not site-specific)
+# ---------------------------------------------------------------------------
+from collections import deque as _deque
+_file_cache: _deque = _deque(maxlen=25)
+_ds_cache: dict = {}
+_pid: str = str(os.getpid())
 
 
 def register_site(site: Site) -> None:
@@ -213,7 +235,6 @@ from pyOMA.core.VarSSIRef import VarSSIRef
 #from PLSCF import PLSCF
 #from SSIData import SSIDataMC
 
-import config
 reader_tz = tzlocal.get_localzone()
         
         
@@ -266,8 +287,8 @@ def read_file(path):
     
     logger.info(f'Reading File: {os.path.basename(path)}')
     
-    for f_dict in config.file_cache:
-        if f_dict.get('path','')==path:
+    for f_dict in _file_cache:
+        if f_dict.get('path', '') == path:
             logger.debug('Returning File from cache ')
             file_time = f_dict['file_time']
             file_size = f_dict['file_size']
@@ -276,7 +297,7 @@ def read_file(path):
             start_time = f_dict['start_time']
             sample_rate = f_dict['sample_rate']
             measurement = f_dict['measurement']
-            
+
             return file_time, file_size, headers, units, start_time, sample_rate, measurement
     
     if path.endswith('_'):
@@ -323,7 +344,7 @@ def read_file(path):
         sample_rate=in_dict['sample_rate'].item()
         measurement=in_dict['measurement']
         
-        config.file_cache.append({'path':path,
+        _file_cache.append({'path': path,
                            'file_time':file_time,
                            'file_size':file_size,
                            'headers':headers,
@@ -368,7 +389,7 @@ def read_file(path):
     
     headers, units, start_time, sample_rate, measurement = file_contents 
      
-    config.file_cache.append({'path':path,
+    _file_cache.append({'path': path,
                        'file_time':file_time,
                        'file_size':file_size,
                        'headers':headers,
@@ -382,30 +403,28 @@ def read_file(path):
     
 
 def get_file_info(origin: str, create_new: bool=False, **kwargs):
-    # ds = create_file_info(origin, **kwargs)
-    ds_path = os.path.join(config.db_root_path, f'file_info_{origin}.nc')
+    site = _active_site
+    ds_path = os.path.join(site.db_root_path, f'file_info_{origin}.nc')
     if not os.path.exists(ds_path):
-        ds = xr.Dataset() 
+        ds = xr.Dataset()
         ds.to_netcdf(ds_path, format='NETCDF4')
         ds.close()
         logger.warning(f"DB Path {ds_path} was recreated.")
-        # raise RuntimeError(f'Path for file_info does not exist {ds_path}.')
         return None
 
-    
     if not create_new:
         stat_result = os.stat(ds_path, follow_symlinks=True)
-        if config.ds_cache is not None and config.ds_cache[f'{origin}_file_info']['mtime']==stat_result.st_mtime:
+        cache_key = f'{origin}_file_info'
+        cached = _ds_cache.get(cache_key)
+        if cached is not None and cached['mtime'] == stat_result.st_mtime:
             logger.info('Getting file info for {} (cached)'.format(origin))
-            ds = config.ds_cache[f'{origin}_file_info']['ds']
+            ds = cached['ds']
         else:
             logger.info('Getting file info for {}'.format(origin))
-            ds =  xr.open_dataset(ds_path)
+            ds = xr.open_dataset(ds_path)
             ds.load()
             ds.close()
-            if config.ds_cache is not None:
-                 config.ds_cache[f'{origin}_file_info']['ds'] =  ds
-                 config.ds_cache[f'{origin}_file_info']['mtime'] = stat_result.st_mtime
+            _ds_cache[cache_key] = {'ds': ds, 'mtime': stat_result.st_mtime}
     else:
         ds = create_file_info(origin, **kwargs)
     compute_gap_lengths(ds)
@@ -448,7 +467,7 @@ def create_file_info(origin: str, chunksize: int=50, skip_existing: bool=True, *
     '''
     
     logger.info('Creating file info for {}'.format(origin))   
-    ds_path = os.path.join(config.db_root_path, 'file_info_{}.nc'.format(origin))
+    ds_path = os.path.join(_active_site.db_root_path, 'file_info_{}.nc'.format(origin))
     
     if os.path.exists(ds_path):
         ds =  xr.open_dataset(ds_path)
@@ -570,9 +589,10 @@ def describe_stats(measurement, headers=None, quantity=None):
             if np.isnan(measurement[:,channel]).all():
                 this_dict['error'][channel]=True
                 continue
-            this_range = config.ranges.get(header, None)
+            site = _active_site
+            this_range = site.ranges.get(header, None) if site is not None else None
 
-            site_mean_fn = _active_site.channel_mean_fn if _active_site is not None else None
+            site_mean_fn = site.channel_mean_fn if site is not None else None
             circular_mean = site_mean_fn(header, measurement, headers) if site_mean_fn is not None else None
 
             if circular_mean is not None:
@@ -637,7 +657,7 @@ def check_and_mark_errors(ds, new = True, check_kurtosis = False):
     '''
     
     for channel in ds.channels:
-        this_range = config.ranges.get(channel.variable.item(),None)
+        this_range = _active_site.ranges.get(channel.variable.item(), None) if _active_site is not None else None
         this_range = None
                     
         error=ds.sel(channels=channel).get('error')
@@ -662,33 +682,32 @@ def get_stats(quantity: str, duration: pd.Timedelta,
               file_info: xr.Dataset=None, create_new: bool=False, 
               **kwargs):
     
+    site = _active_site
     minutes = int(duration.total_seconds()/60)
-    ds_path = os.path.join(config.db_root_path, f'{minutes}-minutes/', 'stats_{}.nc'.format(quantity))
-    
+    ds_path = os.path.join(site.db_root_path, f'{minutes}-minutes/', 'stats_{}.nc'.format(quantity))
+
     if not os.path.exists(ds_path):
         logger.warning(f'Path for stats does not exist {ds_path}.')
-        
-        
+
     if file_info is None and create_new:
         raise RuntimeError('File info xarray has to be provided to create a statistical description')
-        
+
     if not create_new:
         stat_result = os.stat(ds_path, follow_symlinks=True)
-        if config.ds_cache is not None and config.ds_cache[f'{quantity}_stats']['mtime']==stat_result.st_mtime:
+        cache_key = f'{quantity}_stats'
+        cached = _ds_cache.get(cache_key)
+        if cached is not None and cached['mtime'] == stat_result.st_mtime:
             logger.info('Getting statistics for {} (cached)'.format(quantity))
-            ds = config.ds_cache[f'{quantity}_stats']['ds']
+            ds = cached['ds']
         else:
-            
             logger.info('Getting statistics for {}'.format(quantity))
-            ds =  xr.open_dataset(ds_path)
+            ds = xr.open_dataset(ds_path)
             ds.load()
             ds.close()
-            if config.ds_cache is not None:
-                 config.ds_cache[f'{quantity}_stats']['ds'] =  ds
-                 config.ds_cache[f'{quantity}_stats']['mtime'] = stat_result.st_mtime
+            _ds_cache[cache_key] = {'ds': ds, 'mtime': stat_result.st_mtime}
     else:
         ds = create_stats(quantity, duration, file_info, **kwargs)
-    
+
     return ds
     
     
@@ -702,28 +721,29 @@ def create_stats(quantity: str, duration: pd.Timedelta, file_info: xr.Dataset,
     
     minutes = int(duration.total_seconds()/60)
     
-    process_ds_path = os.path.join(config.db_root_path, f'{minutes}-minutes/', 'stats_{}.{}.nc'.format(quantity,config.pid))
-    master_ds_path = os.path.join(config.db_root_path, f'{minutes}-minutes/', 'stats_{}.nc'.format(quantity))
-    
+    site = _active_site
+    process_ds_path = os.path.join(site.db_root_path, f'{minutes}-minutes/', f'stats_{quantity}.{_pid}.nc')
+    master_ds_path = os.path.join(site.db_root_path, f'{minutes}-minutes/', 'stats_{}.nc'.format(quantity))
+
     if os.path.exists(process_ds_path):
-        process_ds =  xr.open_dataset(process_ds_path)
+        process_ds = xr.open_dataset(process_ds_path)
         process_ds.load()
         process_ds.close()
     else:
-       process_ds = xr.Dataset() 
-       os.makedirs(os.path.join(config.db_root_path, f'{minutes}-minutes/', ), exist_ok=True)
-       process_ds.to_netcdf(process_ds_path, format='NETCDF4')
-       process_ds.close()
-       
+        process_ds = xr.Dataset()
+        os.makedirs(os.path.join(site.db_root_path, f'{minutes}-minutes/'), exist_ok=True)
+        process_ds.to_netcdf(process_ds_path, format='NETCDF4')
+        process_ds.close()
+
     if os.path.exists(master_ds_path):
         master_ds = xr.open_dataset(master_ds_path)
         master_ds.load()
         master_ds.close()
     else:
         master_ds = xr.Dataset()
-        
-    origin= config.origins[quantity]
-    dtstart = config.dtstarts[origin]
+
+    origin = site.origins[quantity]
+    dtstart = site.dtstarts[origin]
     dtstart = kwargs.pop('dtstart', dtstart)
     dtstart = pd.Timestamp(dtstart).to_pydatetime()
     fi_time_max = (file_info.time + file_info.duration * np.timedelta64(1, 's')).max().values
@@ -964,9 +984,10 @@ def get_slice(start_time, duration , quantity, file_info, upsample_fs=None):
     
     time_range = (start_time.to_datetime64(), (start_time + duration).to_datetime64())
     
-    channels_required = config.all_channels[quantity]
-    origin = config.origins[quantity]
-    _subpath = config.subpaths[origin]
+    site = _active_site
+    channels_required = site.all_channels[quantity]
+    origin = site.origins[quantity]
+    _subpath = site.subpaths[origin]
 #
     file_start_time = file_info.time
     #duration = file_info.duration
@@ -1015,7 +1036,7 @@ def get_slice(start_time, duration , quantity, file_info, upsample_fs=None):
     
     if channels_required is not None:
         channels_in_file = set(file_info.channels.data.astype(str))
-        channels_to_drop = list(channels_in_file.difference(channels_required + config.optional_channels.get(quantity,[])))
+        channels_to_drop = list(channels_in_file.difference(channels_required + site.optional_channels.get(quantity, [])))
         # file_info = file_info.drop(channels_to_drop,'channels')
         file_info = file_info.drop_sel(channels=channels_to_drop)
     # logger.debug(all_channels)  
@@ -1063,7 +1084,7 @@ def get_slice(start_time, duration , quantity, file_info, upsample_fs=None):
         filename = file.item()
         if 'Peaks' in filename: filename= os.path.join('binary_files_unusable',filename)
         
-        file_path = os.path.join(config.file_root_path, config.subpaths[origin], filename)
+        file_path = os.path.join(site.file_root_path, site.subpaths[origin], filename)
         
         with open(os.devnull, "w") as f, contextlib.redirect_stdout(f): 
             file_contents = read_file(file_path)
@@ -1239,9 +1260,9 @@ def get_slice_corrected(start_time: pd.Timestamp, duration: pd.Timedelta,
     
     minutes = int(duration.total_seconds()/60)
     
-    slice_root = os.path.join(config.slice_root_path, f'{minutes}-minutes',
+    slice_root = os.path.join(_active_site.slice_root_path, f'{minutes}-minutes',
                               'slices_{}'.format(quantity),
-                              '{}'.format(st.year),'{:02d}'.format(st.month))
+                              '{}'.format(st.year), '{:02d}'.format(st.month))
     
     slice_path = os.path.join(slice_root, slice_name)
     
@@ -1362,34 +1383,32 @@ def get_slice_preprocessed(start_time: pd.Timestamp, duration, quantity, file_in
 def get_modal_results(quantity: str, duration: pd.Timedelta, 
                       stats: xr.Dataset=None, create_new: bool=False, **kwargs):
     
+    site = _active_site
     minutes = int(duration.total_seconds()/60)
-    ds_path = os.path.join(config.db_root_path, f'{minutes}-minutes/', 'modal_{}.nc'.format(quantity))
-    
+    ds_path = os.path.join(site.db_root_path, f'{minutes}-minutes/', 'modal_{}.nc'.format(quantity))
+
     if not os.path.exists(ds_path):
         logger.warning(f'Path for modal does not exist {ds_path}.')
 
-        
     if stats is None and create_new:
         raise RuntimeError('Statistics xarray has to be provided to run modal analysis.')
-        
+
     if not create_new:
         stat_result = os.stat(ds_path, follow_symlinks=True)
-        if config.ds_cache is not None and config.ds_cache[f'{quantity}_modal']['mtime']==stat_result.st_mtime:
+        cache_key = f'{quantity}_modal'
+        cached = _ds_cache.get(cache_key)
+        if cached is not None and cached['mtime'] == stat_result.st_mtime:
             logger.info('Getting modal results for {} (cached)'.format(quantity))
-            ds = config.ds_cache[f'{quantity}_modal']['ds']
+            ds = cached['ds']
         else:
-            
             logger.info('Getting modal results for {}'.format(quantity))
-            
-            ds =  xr.open_dataset(ds_path, engine='h5netcdf')
+            ds = xr.open_dataset(ds_path, engine='h5netcdf')
             ds.load()
             ds.close()
-            if config.ds_cache is not None:
-                 config.ds_cache[f'{quantity}_modal']['ds'] =  ds
-                 config.ds_cache[f'{quantity}_modal']['mtime'] = stat_result.st_mtime
+            _ds_cache[cache_key] = {'ds': ds, 'mtime': stat_result.st_mtime}
     else:
         ds = create_modal_results(quantity, duration, stats, **kwargs)
-    
+
     return ds
 
 def create_modal_results(quantity: str, duration: pd.Timedelta, 
@@ -1410,16 +1429,17 @@ def create_modal_results(quantity: str, duration: pd.Timedelta,
     logger.info('Creating modal results for {}'.format(quantity))
 
     # prepare modal analysis, config files, geometry, result_folder, etc.
+    site = _active_site
     PreProcessSignals.load_measurement_file = dummy_load
-    _conf_dir = os.path.join(config.modal_conf_dir, quantity)
+    _conf_dir = os.path.join(site.modal_conf_dir, quantity)
 
     if check_errors:
         stats = check_and_mark_errors(stats)
-    
+
     minutes = int(duration.total_seconds()/60)
-    
-    process_ds_path = os.path.join(config.db_root_path, f'{minutes}-minutes/', 'modal_{}.{}.nc'.format(quantity,config.pid))
-    master_ds_path = os.path.join(config.db_root_path, f'{minutes}-minutes/','modal_{}.nc'.format(quantity))
+
+    process_ds_path = os.path.join(site.db_root_path, f'{minutes}-minutes/', f'modal_{quantity}.{_pid}.nc')
+    master_ds_path = os.path.join(site.db_root_path, f'{minutes}-minutes/', 'modal_{}.nc'.format(quantity))
     
     if os.path.exists(process_ds_path):
         process_ds =  xr.open_dataset(process_ds_path, engine='h5netcdf')
@@ -1622,16 +1642,17 @@ def create_modal_results(quantity: str, duration: pd.Timedelta,
 
 def modal_analysis_single(start_time, data_slice, quantity, duration):
     
-    conf_dir = os.path.join(config.modal_conf_dir, quantity)
+    site = _active_site
+    conf_dir = os.path.join(site.modal_conf_dir, quantity)
     st = start_time
-    
+
     skip_existing = True
     save_results = True
     interactive = False
-    
+
     minutes = int(duration.total_seconds()/60)
-    
-    result_folder = os.path.join(config.slice_root_path, 
+
+    result_folder = os.path.join(site.slice_root_path,
                                  f'{minutes}-minutes',
                                  'modal_{}'.format(quantity),
                                  '{}'.format(st.year),
@@ -1902,65 +1923,64 @@ def main():
         
     duration = pd.Timedelta(minutes=[10,30,60,120][duration_selector])
     minutes = int(duration.total_seconds()/60)
-    _db_path = os.path.join(config.db_root_path, f'{minutes}-minutes/')
-    
-    if len(sys.argv) > 4: q_selector=int(sys.argv[4])
+    site = _active_site
+    _db_path = os.path.join(site.db_root_path, f'{minutes}-minutes/')
+
+    if len(sys.argv) > 4: q_selector = int(sys.argv[4])
     else: q_selector = 1
-    
+
     quantities = [
-        'accel', #0
-        'wind', #1
-        'temp',#2
-        'strain_rosettes',#3 
-        #'strain_bolts'    
+        'accel',          #0
+        'wind',           #1
+        'temp',           #2
+        'strain_rosettes',#3
+        #'strain_bolts'
         ][q_selector:q_selector+1]
 
     for quantity in quantities:
-    
-        
-        origin = config.origins[quantity]
-        _subpath = config.subpaths[origin]
+
+        origin = site.origins[quantity]
+        _subpath = site.subpaths[origin]
         logger.info('Quantity: {}, Duration: {}'.format(quantity, minutes))
-        
+
         if 0:
-            file_contents = read_file(os.path.join(config.file_root_path, subpath, 'Wind_kontinuierlich__1_2018-06-13_15-00-00_000000.csv.bz2'))
+            file_contents = read_file(os.path.join(site.file_root_path, site.subpaths[origin], 'Wind_kontinuierlich__1_2018-06-13_15-00-00_000000.csv.bz2'))
             logger.debug(file_contents)
             meas = file_contents[-1]
             logger.debug(meas.shape)
-            ts = meas[:,0]
+            ts = meas[:, 0]
             logger.debug(ts[-1]-ts[0])
             for i in range(meas.shape[0]):
                 print(ts[i+1]-ts[i])
-                if (ts[i+1]-ts[i])!=1:
+                if (ts[i+1]-ts[i]) != 1:
                     print(i)
                     break
             return
-        
+
         if 0: # create
             file_info = get_file_info(origin, create_new=True, skip_existing=True, reduced=False)
             return
-        else: # get    
+        else: # get
             file_info = get_file_info(origin, create_new=False)
-        
-        
+
         if 0:
-            data_slice = get_slice_corrected(pd.Timestamp('2018-02-27 20:00',tz='Europe/Berlin'),
+            data_slice = get_slice_corrected(pd.Timestamp('2018-02-27 20:00', tz='Europe/Berlin'),
                                         duration,
                                         quantity,
                                         file_info,
-                                        file_info_temp = get_file_info(config.origins['temp']))
+                                        file_info_temp=get_file_info(site.origins['temp']))
             print(data_slice[:-1])
             print(data_slice[-1].shape)
             print(np.mean(data_slice[-1], axis=0))
             _actual_start_time, headers, _units, _end_time, _sample_rate, measurement = data_slice
-            
+
             this_dict = describe_stats(measurement, headers, quantity)
             print(this_dict)
             return
-        
+
         if 1:
             if 'strain' in quantity:
-                file_info_temp = get_file_info(config.origins['temp'])
+                file_info_temp = get_file_info(site.origins['temp'])
                 
                 stats = get_stats(quantity, duration,file_info, 
                                   create_new=True, skip_existing=True, chunksize=500, 

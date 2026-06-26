@@ -54,23 +54,20 @@ skip_if_no_data = pytest.mark.skipif(
 
 @pytest.fixture()
 def short_db(monkeypatch):
-    """Redirect config.db_root_path to the short (read-only) result database.
+    """Redirect the active site's db_root_path to the short (read-only) result database.
 
-    Also clears the ds_cache so stale cached datasets from the production
+    Also clears _ds_cache so stale cached datasets from the production
     db_root_path cannot bleed into integration tests.
     """
-    import config
+    import monitoring
 
-    monkeypatch.setattr(config, "db_root_path", RESULT_DB_SHORT)
+    monkeypatch.setattr(monitoring._active_site, "db_root_path", RESULT_DB_SHORT)
+    # Drop all cached datasets so the next access reloads from the test db path.
+    monkeypatch.setattr(monitoring, "_ds_cache", {})
 
-    # Invalidate any cached datasets (mtime-keyed dicts in config.ds_cache)
-    for key in config.ds_cache:
-        config.ds_cache[key]["ds"] = None
-        config.ds_cache[key]["mtime"] = None
+    yield monitoring._active_site
 
-    yield config
-
-    # monkeypatch restores db_root_path automatically on teardown
+    # monkeypatch restores both attributes automatically on teardown
 
 
 @pytest.fixture()

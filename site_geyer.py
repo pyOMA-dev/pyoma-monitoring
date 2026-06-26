@@ -601,6 +601,17 @@ def register_geyer_site():
         file_list_fn=_geyer_get_file_list,
         channel_mean_fn=_geyer_channel_mean_fn,
         preproc_channels=_GEYER_PREPROC_CHANNELS,
+        # Site-specific configuration (previously imported directly from config.py by the engine)
+        db_root_path=config.db_root_path,
+        slice_root_path=config.slice_root_path,
+        modal_conf_dir=config.modal_conf_dir,
+        file_root_path=config.file_root_path,
+        origins=config.origins,
+        subpaths=config.subpaths,
+        all_channels=config.all_channels,
+        optional_channels=config.optional_channels,
+        dtstarts=config.dtstarts,
+        ranges=config.ranges,
     )
 
     _m.register_site(geyer_site)
