@@ -19,15 +19,13 @@ import os
 import logging
 logger = logging.getLogger(__name__)
 logger.setLevel(logging.INFO)
-'''
-TODO:
- - store output of file_info, stats, modal, etc. as a log file and attach it to mail
- - only log exit status and other relevant information, e.g. num_file, num_slices, dtstart, runtimes, statistics, etc. to stdout
-'''
+# TODO:
+# - store output of file_info, stats, modal, etc. as a log file and attach it to mail
+# - only log exit status and other relevant information, e.g. num_file, num_slices, dtstart, runtimes, statistics, etc. to stdout
 
 def main(argv):
     
-    opts, args = getopt.getopt(argv,'hd:q:v',['file_info', 'stats', 'modal', 'plot','tmp_dir=', 'dtstart=','loglevel='])
+    opts, _args = getopt.getopt(argv,'hd:q:v',['file_info', 'stats', 'modal', 'plot','tmp_dir=', 'dtstart=','loglevel='])
     
     duration = None
     quantity = None
@@ -84,7 +82,7 @@ def main(argv):
     db_path = os.path.join(config.db_root_path, f'{minutes}-minutes/')
     # path='/vegas/scratch/womo1998/towerdata/{}-minutes/'.format(duration)
         
-    subpath = config.subpaths[quantity]
+    _subpath = config.subpaths[quantity]
     origin = config.origins[quantity]
     
     start_up_str = 'Geyer Monitoring System - Commandline Tool\n\n'
@@ -160,7 +158,7 @@ def main(argv):
         stats_ds = get_stats(quantity, duration)
     
     if modal: 
-        modal_ds = get_modal_results(quantity, duration, stats_ds, 
+        _modal_ds = get_modal_results(quantity, duration, stats_ds,
                                   skip_existing=True, create_new=True, 
                                   filter_errors=False, 
                                   chunksize=50, missing=True)

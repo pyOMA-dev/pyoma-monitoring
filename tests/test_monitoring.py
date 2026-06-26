@@ -24,9 +24,8 @@ import pytz
 import xarray as xr
 
 # conftest adds the package dir to sys.path
-from conftest import FILE_INFO_DIR, RESULT_DB_SHORT, TOWERDATA_DIR, skip_if_no_data
+from conftest import FILE_INFO_DIR, skip_if_no_data
 
-import config
 from monitoring import (
     calc_ar,
     calc_xy,
@@ -40,7 +39,6 @@ from monitoring import (
     get_stats,
     get_modal_results,
     compute_gap_lengths,
-    get_file_info,
 )
 
 

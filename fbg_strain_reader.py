@@ -16,7 +16,7 @@ logger.setLevel(logging.INFO)
 import bz2
 
 
-import datetime,time, pytz
+import datetime, pytz
 import struct
 import numpy as np
 
@@ -959,12 +959,10 @@ def manipulate_data(measurement, start_time, sample_rate, previous_a=None, previ
             # list(enumerate(data)) --> [(0, 3599), (1, 4402), (2, 4403), (3, 8916)]
             # [k for k, g in groupby('AAAABBBCCDAABBB')] --> A B C D A B
             # [k for k, g in groupby(enumerate(data), lambda i_x:i_x[0] - i_x[1]) -> [-3599, -4401, -8913]
-            for k, g in groupby(enumerate(data), lambda i_x:i_x[0] - i_x[1]):
+            for _, g in groupby(enumerate(data), lambda i_x:i_x[0] - i_x[1]):
                 # interpolate using 2 adjacent datapoints on each side
                 # interpolate missing datapoints and fit into quantization scheme
                 missing = list(map(itemgetter(1), g)) # returns the items from data for the group k
-                
-                len_m = len(missing)
                 
                 interp_x = []
                 interp_y = []
@@ -1035,7 +1033,7 @@ def manipulate_data(measurement, start_time, sample_rate, previous_a=None, previ
             
         if plt:
             fig,axes=plot.subplots(nrows=1, ncols=2, sharex=False, sharey=True,gridspec_kw={'width_ratios':[.8,.2]},tight_layout=1)#plot.figure()
-            fig2,axes2=plot.subplots(nrows=1, ncols=2, sharex=False, sharey=True,gridspec_kw={'width_ratios':[.8,.2]},tight_layout=1)
+            _fig2,axes2=plot.subplots(nrows=1, ncols=2, sharex=False, sharey=True,gridspec_kw={'width_ratios':[.8,.2]},tight_layout=1)
             
 
         manipulate_jumps()
@@ -1443,9 +1441,7 @@ def read_strain_txt(path):
         
         f.close()
     for df in comb_df[1:]:
-        comb_df[0]['System status'] | df['System status']
         df.drop(labels=['Date','System status'],axis=1, inplace=True)
-        pass
     df = pd.concat(comb_df, axis=1)
     
     if df.empty:
@@ -1468,10 +1464,10 @@ def read_strain_txt(path):
 def read_spec(file):
     data = pd.read_table(file, skiprows=40, decimal=',')
     mat = data.iloc[:,3:515].as_matrix()
-    pow = mat[slice(0,None,2),:]
+    pow_val = mat[slice(0,None,2),:]
     wl = mat[slice(1,None,2),:]
     wl1 = wl[0,:]
-    pow1 = pow[0,:]
+    pow1 = pow_val[0,:]
     plot.plot(wl1,pow1)
     plot.scatter(wl1[pow1>4.9],pow1[pow1>4.9], color='red', marker='x', alpha=.5)
     plot.xlim((wl1.min(),wl1.max()))

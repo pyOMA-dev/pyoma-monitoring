@@ -128,7 +128,6 @@ _____________________________________________________________________
 import os
 import glob
 import sys
-import warnings
 import contextlib
 import logging
 logger = logging.getLogger(__name__)
@@ -137,7 +136,6 @@ logger.setLevel(logging.INFO)
 import re
 import pytz
 import datetime
-import dateutil
 import time
 import tzlocal
 
@@ -163,12 +161,11 @@ import xarray as xr
 from MultiLock import MultiLock
 
 from pyOMA.core.PreProcessingTools import GeometryProcessor,PreProcessSignals
-from pyOMA.core.StabilDiagram import StabilCalc, StabilCluster, StabilPlot
+from pyOMA.core.StabilDiagram import StabilCluster, StabilPlot
 try:
     from pyOMA.GUI.StabilGUI import start_stabil_gui
 except ImportError:
     start_stabil_gui = None
-from pyOMA.core.PlotMSH import ModeShapePlot
 # from GUI.PlotMSHGUI import start_msh_gui
 from pyOMA.core.VarSSIRef import VarSSIRef
 #from PLSCF import PLSCF
@@ -606,7 +603,7 @@ def create_file_info(origin: str, chunksize: int=50, skip_existing: bool=True, *
             
             this_dict=describe_stats(measurement, headers)
             
-            for var_name, value in this_dict.items():
+            for var_name, _value in this_dict.items():
                 dst[var_name] = (['time','channels'], [this_dict[var_name]])
             
             sync_time = get_synchronized_time(start_time, file_time, duration)
@@ -664,12 +661,12 @@ def describe_stats(measurement, headers=None, quantity=None):
                 Wr[Wr>180] -= 360        
                 Wr += mean
                 
-                nobs, (min_,max_), _, variance, skewness, kurtosis = scipy.stats.describe(Wr,nan_policy='omit')
+                _nobs, (min_,max_), _, variance, skewness, kurtosis = scipy.stats.describe(Wr,nan_policy='omit')
                 q05,q50,q95 = np.nanpercentile(Wr, q=[5,50,95])
                 rms = np.sqrt(np.nanmean(np.square(Wr)))
 
             else:
-                nobs, (min_,max_), mean, variance, skewness, kurtosis = scipy.stats.describe(measurement[:,channel],nan_policy='omit')
+                _nobs, (min_,max_), mean, variance, skewness, kurtosis = scipy.stats.describe(measurement[:,channel],nan_policy='omit')
                 q05,q50,q95 = np.nanpercentile(measurement[:,channel], q=[5,50,95])
                 rms = np.sqrt(np.nanmean(np.square(measurement[:,channel]-mean)))
                 
@@ -701,10 +698,8 @@ def describe_stats(measurement, headers=None, quantity=None):
                     
                     
             
-        except Exception as e:
+        except Exception:
             raise
-            logger.warning(e)
-            this_dict['error'][channel]=True   
     
     return this_dict
 
@@ -872,12 +867,12 @@ def create_stats(quantity: str, duration: pd.Timedelta, file_info: xr.Dataset,
                             # with open(os.devnull, "w") as f, contextlib.redirect_stdout(f): 
                             old_level = logger.getEffectiveLevel()
                             logger.setLevel(logging.WARNING)
-                            slice = get_slice_corrected(start_time, duration, quantity, file_info, **kwargs)
+                            data_slice = get_slice_corrected(start_time, duration, quantity, file_info, **kwargs)
                             logger.setLevel(old_level)
                         except Exception as e:
                             logger.exception(e)
-                            slice=None
-                        if slice is not None:
+                            data_slice=None
+                        if data_slice is not None:
                             logger.info(f'{str(start_time)} empty in master dataset, but slice available. Updating!')
                         else:
                             logger.debug(f'{str(start_time)} empty but present in master dataset. Skipping!')
@@ -903,24 +898,24 @@ def create_stats(quantity: str, duration: pd.Timedelta, file_info: xr.Dataset,
         try:
             old_level = logger.getEffectiveLevel()
             logger.setLevel(logging.WARNING)
-            slice = get_slice_corrected(start_time, duration, quantity, file_info, **kwargs)
+            data_slice = get_slice_corrected(start_time, duration, quantity, file_info, **kwargs)
             logger.setLevel(old_level)
         except Exception as e:
             logger.exception(e)
-            slice=None
-            
-        if slice is None:
+            data_slice=None
+
+        if data_slice is None:
             logger.debug('Returned Slice is empty. Skipping!')
-            
+
         else:
-            actual_start_time, headers, units, end_time, sample_rate, measurement = slice
-            
-            this_ds['num_channels'] = (['time'], [measurement.shape[1]])#:len(headers), 
+            _actual_start_time, headers, _units, _end_time, sample_rate, measurement = data_slice
+
+            this_ds['num_channels'] = (['time'], [measurement.shape[1]])#:len(headers),
             this_ds['sample_rate'] = (['time'], [sample_rate])#:sample_rate,
             this_ds['length']= (['time'], [measurement.shape[0]])
             this_dict = describe_stats(measurement, headers, quantity)
 
-            for var_name, value in this_dict.items():
+            for var_name, _value in this_dict.items():
                 this_ds[var_name] = (['time','channels'], [this_dict[var_name]])
 
             this_ds.coords['channels'] = np.array(headers,dtype=str)
@@ -934,17 +929,16 @@ def create_stats(quantity: str, duration: pd.Timedelta, file_info: xr.Dataset,
         if i>0 and not i%chunksize:
             # process_ds should not have changed on disk during processing
             process_ds = save_ds(process_ds, process_ds, process_ds_path, what='stats')
-    else:
-        # process_ds should not have changed on disk during processing
-        process_ds = save_ds(process_ds, process_ds, process_ds_path, what='stats')
-        
-        # master_ds almost certainly has changed on disk if multiple workers were processing files
-            
-        master_ds = save_ds(process_ds, master_ds, master_ds_path, reload_current=True, what='stats')
-    
-        logger.debug(f'Removing temporary dataset at {process_ds_path}')
-        os.remove(process_ds_path)
-    
+
+    # process_ds should not have changed on disk during processing
+    process_ds = save_ds(process_ds, process_ds, process_ds_path, what='stats')
+
+    # master_ds almost certainly has changed on disk if multiple workers were processing files
+    master_ds = save_ds(process_ds, master_ds, master_ds_path, reload_current=True, what='stats')
+
+    logger.debug(f'Removing temporary dataset at {process_ds_path}')
+    os.remove(process_ds_path)
+
     return master_ds
 
 
@@ -990,16 +984,14 @@ def save_ds(new_ds, current_ds, savepath, what='modal', reload_current = False):
     #         for start_time in new_ds.time:
     #             print('.',end='', flush=True)
     #             current_ds = current_ds.where((start_time!=current_ds.coords['time']), drop=True)
-            dupes, ind_new, ind_current = np.intersect1d(new_ds.time, current_ds.time, assume_unique=True, return_indices=True)
+            dupes, _ind_new, _ind_current = np.intersect1d(new_ds.time, current_ds.time, assume_unique=True, return_indices=True)
             len_before = len(current_ds.time)
             current_ds = current_ds.drop_sel(time=dupes)
             logger.debug(f'dropped {len_before - len(current_ds.time)} results that were already present in the db.')
             current_ds = current_ds.combine_first(new_ds)
-            '''
-            For datasets, ds0.combine_first(ds1) works similarly to xr.merge([ds0, ds1]), 
-            except that xr.merge raises MergeError when there are conflicting values in 
-            variables to be merged, whereas .combine_first defaults to the calling object's values.
-            '''
+            # For datasets, ds0.combine_first(ds1) works similarly to xr.merge([ds0, ds1]),
+            # except that xr.merge raises MergeError when there are conflicting values in
+            # variables to be merged, whereas .combine_first defaults to the calling object's values.
             logger.info('Dataset length before/after: {}/{}, '.format(old_length, len(current_ds.time)))
     
         else:
@@ -1037,8 +1029,9 @@ def compute_gap_lengths(file_info):
     Peaks_* files have to be interleaved sometime, when the recording stopped eg in channel 2 and continued in the next file in channel 3
     then there is a gap of (-1) sample which is removed during interleaving
     '''
-    file_info['gap_length'] = TC.gap_lengths(
-        file_info['start_time'], file_info['duration'], file_info['sample_rate']
+    file_info['gap_length'] = xr.DataArray(
+        TC.gap_lengths(file_info['start_time'], file_info['duration'], file_info['sample_rate']),
+        dims=['time'],
     )
 
 def get_slice(start_time, duration , quantity, file_info, upsample_fs=None):
@@ -1050,8 +1043,8 @@ def get_slice(start_time, duration , quantity, file_info, upsample_fs=None):
     
     channels_required = config.all_channels[quantity]
     origin = config.origins[quantity]
-    subpath = config.subpaths[origin]
-#         
+    _subpath = config.subpaths[origin]
+#
     file_start_time = file_info.time
     #duration = file_info.duration
     #duration = ((file_info['length']+1)/file_info['sample_rate']).astype('timedelta64[s]') #duration.astype('float64')*(5/3)*1e-11 #duration in minutes
@@ -1140,7 +1133,7 @@ def get_slice(start_time, duration , quantity, file_info, upsample_fs=None):
         file = file_info.isel(time=file_num)['file_name']
         
         gap_length = file_info.isel(time=file_num)['gap_length']
-        sample_rate = file_info.isel(time=file_num)['sample_rate']
+        _sample_rate = file_info.isel(time=file_num)['sample_rate']
         
         logger.debug(file.item())
         
@@ -1155,7 +1148,7 @@ def get_slice(start_time, duration , quantity, file_info, upsample_fs=None):
         if file_contents is None:
             logger.warning('File unreadable: {}'.format(file_path))
             return None
-        curr_file_time, curr_file_size, curr_headers, curr_units, curr_start_time, curr_sample_rate, curr_measurement = file_contents
+        curr_file_time, _curr_file_size, curr_headers, _curr_units, curr_start_time, curr_sample_rate, curr_measurement = file_contents
         
         start_index = 0
         end_index = curr_measurement.shape[0]
@@ -1361,20 +1354,20 @@ def get_slice_corrected(start_time: pd.Timestamp, duration: pd.Timedelta,
         logger.warning(slice_path + ' does not exist, file_info needed for creation of new slice!')    
         return None
  
-    slice = get_slice(start_time, duration, quantity, file_info)
-    
+    data_slice = get_slice(start_time, duration, quantity, file_info)
+
     logger.debug(f'Correcting slice for {quantity}: {start_time}')
-    
-    if slice is None:
+
+    if data_slice is None:
         return None
-    
+
     if quantity == 'wind':
-        slice = wind_transform(*slice)
+        data_slice = wind_transform(*data_slice)
     elif 'strain' in quantity and start_time < pd.Timestamp('2018-01-12',tz='Europe/Berlin'):
         file_info_temp = kwargs.get('file_info_temp',None)
-        strain_start = slice[0]
-        strain_end = slice[3]
-        strain_fs = slice[4]
+        strain_start = data_slice[0]
+        strain_end = data_slice[3]
+        strain_fs = data_slice[4]
         logger.debug((strain_end-strain_start).total_seconds()*strain_fs)
         
         if file_info_temp is not None:
@@ -1399,9 +1392,9 @@ def get_slice_corrected(start_time: pd.Timestamp, duration: pd.Timedelta,
                 temp_slice[5][:,ind]=Pt_mean
 
         #check out of bounds measurements
-        slice = strain_manipulate_transform(*slice, quantity, temp_slice)
-            
-    start_time, headers, units, end_time, sample_rate, measurement = slice  
+        data_slice = strain_manipulate_transform(*data_slice, quantity, temp_slice)
+
+    start_time, headers, units, end_time, sample_rate, measurement = data_slice
     
     out_dict = {'start_time':start_time,
         'headers':headers,
@@ -1429,12 +1422,12 @@ def get_slice_preprocessed(start_time: pd.Timestamp, duration, quantity, file_in
     lowpass = 5
     target_fs = 10
     
-    slice = get_slice_corrected(start_time, duration, quantity, file_info, **kwargs)
-    
-    if slice is None:
+    data_slice = get_slice_corrected(start_time, duration, quantity, file_info, **kwargs)
+
+    if data_slice is None:
         return None
-    
-    actual_start_time, headers, units, end_time, sample_rate, measurement  = slice
+
+    actual_start_time, headers, units, end_time, sample_rate, measurement = data_slice
     
     if np.isnan(measurement).any():
         logger.warning("Measurement slice {}: {} contains nan. Skipping!".format(start_time, quantity))
@@ -1603,7 +1596,7 @@ def compensate_wind_jumps(Wr, Wg):
             if len(interp_x_new)/len(interp_x)>1:
                 continue
 
-            k = min (len(interp_x),5)
+            _k = min (len(interp_x),5)
             spl = scipy.interpolate.InterpolatedUnivariateSpline(interp_x, interp_y, k=5, ext=0, check_finite=False)
 
             interp_y_new = spl(interp_x_new)
@@ -1667,11 +1660,11 @@ def orthogonal_lsq(azr=None, xy=None, rad = False):
         
         
     vector = np.array([x,y]).T       
-    U, S, V_T = np.linalg.svd(vector, full_matrices=False)
+    _U, _S, V_T = np.linalg.svd(vector, full_matrices=False)
     
     angle = np.arctan2(-V_T[1,0],V_T[1,1])
     
-    x_,y_ = calc_xy((az - angle),r)
+    x_, _ = calc_xy((az - angle),r)
     if np.sum(x_<0)>len(x_)/2:
         angle += np.pi
     if not rad:
@@ -1680,7 +1673,7 @@ def orthogonal_lsq(azr=None, xy=None, rad = False):
 
 def strain_manipulate_transform(start_time, headers, units, end_time, sample_rate, measurement, quantity, temp_slice=None):
     
-    measurement, deltas = fbg_strain_reader.manipulate_data(measurement, start_time, sample_rate, 
+    measurement, _deltas = fbg_strain_reader.manipulate_data(measurement, start_time, sample_rate,
                                           previous_a=None, previous_delta=None, previous_start_time=None)
     
     # strain conversion
@@ -1689,8 +1682,8 @@ def strain_manipulate_transform(start_time, headers, units, end_time, sample_rat
     # per strain channel define temp_compensation channel -> may have to use qstation moni data (->f)
     # per strain channel define initial wavelength iwl/rwl/iw
 
-    st=start_time
-    
+    _st=start_time
+
     S1 = 6.37E-06
     S2 = 7.46E-09
     k = 0.772
@@ -1732,7 +1725,7 @@ def strain_manipulate_transform(start_time, headers, units, end_time, sample_rat
 
         
     if temp_slice is not None:
-        start_t, hds_t, _, dur_t, sample_rate_temp, meas_temp = temp_slice
+        _start_t, hds_t, _, _dur_t, _sample_rate_temp, meas_temp = temp_slice
         if quantity == 'strain_rosettes':
             temp_comp={
                 'A_Temp'  :0.5*meas_temp[:,hds_t.index('Pt100_01')]+0.5*meas_temp[:,hds_t.index('Pt100_04')],
@@ -1767,9 +1760,9 @@ def strain_manipulate_transform(start_time, headers, units, end_time, sample_rat
             new_measurement[:,channel]=strain
             units[channel]='m/m'
             
-    mean_=np.nanmean(new_measurement, axis=0)
-    new_measurement_2 = new_measurement - mean_
-    
+    mean_ = np.nanmean(new_measurement, axis=0)
+    _new_measurement_2 = new_measurement - mean_
+
     return start_time, headers, units, end_time, sample_rate, new_measurement
 
 def get_modal_results(quantity: str, duration: pd.Timedelta, 
@@ -1824,8 +1817,8 @@ def create_modal_results(quantity: str, duration: pd.Timedelta,
 
     # prepare modal analysis, config files, geometry, result_folder, etc.
     PreProcessSignals.load_measurement_file = dummy_load
-    conf_dir = os.path.join(config.modal_conf_dir, quantity)
-    
+    _conf_dir = os.path.join(config.modal_conf_dir, quantity)
+
     if check_errors:
         stats = check_and_mark_errors(stats)
     
@@ -1945,16 +1938,16 @@ def create_modal_results(quantity: str, duration: pd.Timedelta,
         
         try:
             with open(os.devnull, 'w') as f, contextlib.redirect_stdout(f):
-                slice = get_slice_preprocessed(start_time, duration, quantity, **kwargs)
+                data_slice = get_slice_preprocessed(start_time, duration, quantity, **kwargs)
         except Exception as e:
             logger.warning('Exception while trying to get preprocessed slice: ')
             logger.warning(e)
-            slice=None
-            
-        if slice is None:
+            data_slice=None
+
+        if data_slice is None:
             this_ds.coords['time'] = [start_time.to_datetime64()]
         else:
-            actual_start_time, headers, units, end_time, sample_rate, measurement = slice
+            _actual_start_time, headers, _units, _end_time, sample_rate, measurement = data_slice
             
     
             this_ds['num_channels'] = (['time'], [measurement.shape[1]])#:len(headers), 
@@ -1970,7 +1963,7 @@ def create_modal_results(quantity: str, duration: pd.Timedelta,
                 except KeyError as e:
                     logger.warning(e)
                     continue
-                except:
+                except Exception:
                     logger.warning('error')
                     
             this_ds.coords['channels'] = np.array(headers,dtype=str)
@@ -1982,10 +1975,10 @@ def create_modal_results(quantity: str, duration: pd.Timedelta,
                 #    pass
                 
                 now=time.time()
-                with open(os.devnull, "w") as f, contextlib.redirect_stdout(f): 
-                    results = modal_analysis_single(start_time,slice, quantity, 
+                with open(os.devnull, "w") as f, contextlib.redirect_stdout(f):
+                    results = modal_analysis_single(start_time, data_slice, quantity,
                                     duration)
-                n, f, std_f, d, std_d, MPC, MP, MPD, MC, msh, s_vals_psd =results
+                n, f, std_f, d, std_d, MPC, _MP, MPD, _MC, msh, s_vals_psd = results
                 logger.info('Modal Analysis took {:.2f} s to return {} modes for : {}'.format(time.time()-now, len(n), start_time))
                 
                 this_dict = describe_stats(s_vals_psd.T)
@@ -2025,24 +2018,22 @@ def create_modal_results(quantity: str, duration: pd.Timedelta,
         if i>0 and not i%chunksize:
             # process_ds should not have changed on disk during processing
             process_ds = save_ds(process_ds, process_ds, process_ds_path, what='modal')
-    else:    
-        # process_ds should not have changed on disk during processing    
-        process_ds = save_ds(process_ds, process_ds, process_ds_path, what='modal')
-        
-        # master_ds almost certainly has changed on disk if multiple workers were processing files
-        master_ds = save_ds(process_ds, master_ds, master_ds_path, reload_current = True, what='modal')
-    
-        # os.rename(process_ds_path, process_ds_path+'.old')
-            
-        logger.debug(f'Removing temporary dataset at {process_ds_path}')
-        os.remove(process_ds_path)
-        
+
+    # process_ds should not have changed on disk during processing
+    process_ds = save_ds(process_ds, process_ds, process_ds_path, what='modal')
+
+    # master_ds almost certainly has changed on disk if multiple workers were processing files
+    master_ds = save_ds(process_ds, master_ds, master_ds_path, reload_current = True, what='modal')
+
+    logger.debug(f'Removing temporary dataset at {process_ds_path}')
+    os.remove(process_ds_path)
+
     return master_ds
 
-def modal_analysis_single(start_time, slice,  quantity, duration):
+def modal_analysis_single(start_time, data_slice, quantity, duration):
     
     conf_dir = os.path.join(config.modal_conf_dir, quantity)
-    st=start_time
+    st = start_time
     
     skip_existing = True
     save_results = True
@@ -2062,18 +2053,18 @@ def modal_analysis_single(start_time, slice,  quantity, duration):
 
     geometry_data = GeometryProcessor.load_geometry(nodes_file, lines_file, master_slaves_file)    
     
-    conf_file = os.path.join(conf_dir, 'setup_info')
-    chan_dofs_file = os.path.join(conf_dir, 'channel_dofs')
-    ssi_file = os.path.join(conf_dir, 'ssi_config')      
-    plscf_file = os.path.join(conf_dir, 'plscf_config')    
+    _conf_file = os.path.join(conf_dir, 'setup_info')
+    _chan_dofs_file = os.path.join(conf_dir, 'channel_dofs')
+    ssi_file = os.path.join(conf_dir, 'ssi_config')
+    _plscf_file = os.path.join(conf_dir, 'plscf_config')
     
     fname = os.path.join(result_folder,
         '{:02d}_{:02d}-{:02d}_{:02d}-{:02d}_prep_data.npz'.format(
             st.year, st.month, st.day, st.hour, st.minute))
     
     if not os.path.exists(fname) or not skip_existing:
-        start_time, headers, units, end_time, sample_rate, measurement \
-            = slice
+        start_time, headers, _units, _end_time, sample_rate, measurement \
+            = data_slice
         
         accel_channels = []
         disp_channels = []
@@ -2126,13 +2117,13 @@ def modal_analysis_single(start_time, slice,  quantity, duration):
         chan_dofs = [[chan]+chan_dofs_dict[header] for chan, header in enumerate(headers)]
         prep_data.add_chan_dofs(chan_dofs)
         s_vals_psd = prep_data.sv_psd(1444, method='blackman-tukey', refs_only=False)
-        freqs = prep_data.freqs
-        if save_results: 
+        _freqs = prep_data.freqs
+        if save_results:
             prep_data.save_state(fname)
-    else:                                
+    else:
         prep_data = PreProcessSignals.load_state(fname)
         s_vals_psd = prep_data.sv_psd(1444, method='blackman-tukey', refs_only=False)
-        freqs = prep_data.freqs
+        _freqs = prep_data.freqs
 
     
     fname = os.path.join(result_folder,
@@ -2156,14 +2147,14 @@ def modal_analysis_single(start_time, slice,  quantity, duration):
              st.year, st.month, st.day, st.hour, st.minute))
     
     if not os.path.exists(fname) or not skip_existing:
-        stabil_calc = StabilCluster(modal_data,prep_data)    
+        stabil_calc = StabilCluster(modal_data)    
         
     else:
         try:
             stabil_calc= StabilCluster.load_state(fname, modal_data)
         except Exception as e:
             logger.warning(e)
-            stabil_calc = StabilCluster(modal_data,prep_data)   
+            stabil_calc = StabilCluster(modal_data)   
             
     if stabil_calc.state==5:
         save_results=False
@@ -2353,7 +2344,7 @@ def main():
         
     duration = pd.Timedelta(minutes=[10,30,60,120][duration_selector])
     minutes = int(duration.total_seconds()/60)
-    db_path = os.path.join(config.db_root_path, f'{minutes}-minutes/')
+    _db_path = os.path.join(config.db_root_path, f'{minutes}-minutes/')
     
     if len(sys.argv) > 4: q_selector=int(sys.argv[4])
     else: q_selector = 1
@@ -2370,7 +2361,7 @@ def main():
     
         
         origin = config.origins[quantity]
-        subpath = config.subpaths[origin]
+        _subpath = config.subpaths[origin]
         logger.info('Quantity: {}, Duration: {}'.format(quantity, minutes))
         
         if 0:
@@ -2395,15 +2386,15 @@ def main():
         
         
         if 0:
-            slice = get_slice_corrected(pd.Timestamp('2018-02-27 20:00',tz='Europe/Berlin'), 
-                                        duration, 
-                                        quantity, 
-                                        file_info, 
+            data_slice = get_slice_corrected(pd.Timestamp('2018-02-27 20:00',tz='Europe/Berlin'),
+                                        duration,
+                                        quantity,
+                                        file_info,
                                         file_info_temp = get_file_info(config.origins['temp']))
-            print(slice[:-1])
-            print(slice[-1].shape)
-            print(np.mean(slice[-1], axis=0))
-            actual_start_time, headers, units, end_time, sample_rate, measurement = slice
+            print(data_slice[:-1])
+            print(data_slice[-1].shape)
+            print(np.mean(data_slice[-1], axis=0))
+            _actual_start_time, headers, _units, _end_time, _sample_rate, measurement = data_slice
             
             this_dict = describe_stats(measurement, headers, quantity)
             print(this_dict)
@@ -2427,9 +2418,9 @@ def main():
             stats = get_stats(quantity, duration, )
         
         
-        if 0 and quantity in ['accel', 'strain_rosettes']: 
-            modal = get_modal_results(quantity, duration, stats, 
-                                      skip_existing=True, create_new=True, filter_errors=False, 
+        if 0 and quantity in ['accel', 'strain_rosettes']:
+            _modal = get_modal_results(quantity, duration, stats,
+                                      skip_existing=True, create_new=True, filter_errors=False,
                                       chunksize=20, num_workers=num_workers, this_worker=this_worker)
             return
         

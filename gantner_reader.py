@@ -7,8 +7,6 @@ metadata (channel names, units, sample rate, start timestamp).
 
 Version 0.1 — Bauhaus-Universität Weimar, Institute of Structural Mechanics.
 """
-import matplotlib.pyplot as plot
-
 import datetime
 import pytz
 import os
@@ -17,10 +15,8 @@ import logging
 logger = logging.getLogger(__name__)
 logger.setLevel(logging.INFO)
 import struct
-import io
 import numpy as np
 import pandas as pd
-import time
 import warnings
 
 
@@ -150,11 +146,11 @@ def read_bin(InFileName):
     if( version > 105):
         typeVendorLen=struct.unpack(BigEndianFlag+"h",fd.read(2))[0]
         typeVendor=fd.read(typeVendorLen)
-        typeVendorStr=typeVendor[:-1].decode()
+        _typeVendorStr=typeVendor[:-1].decode()
     
     # read CheckSum
     if( version > 100):
-        withCheckSum=struct.unpack(BigEndianFlag+"B",fd.read(1))[0]
+        _withCheckSum=struct.unpack(BigEndianFlag+"B",fd.read(1))[0]
     #print withCheckSum
     
     # read ModuleAdditionalDataLen
@@ -252,7 +248,7 @@ def read_bin(InFileName):
         char = struct.unpack(BigEndianFlag+"c",fd.read(1))[0];
         try:
             char=char.decode()
-        except:
+        except Exception:
             fd.seek(currentFilePosition, 0);
             break
         if not char == '*':
@@ -278,16 +274,16 @@ def read_bin(InFileName):
     numLines = int(np.ceil(FileEnd-fd.tell())/(sum(DataTypeSize)+TimeDataType[1]))
     
     timeStamp=struct.unpack(BigEndianFlag+TimeDataType[0],fd.read(TimeDataType[1]))[0]
-    startTimeStamp=timeStamp
+    _startTimeStamp=timeStamp
     # logger.debug(timeStamp)
     tmp=float(timeStamp)*aActTimeToSecondFactor
     dtDeltaTime=datetime.timedelta(seconds=tmp)
 
     dtStartDate=dtReferenceDate+dtDeltaTime
 
-    ReadData=[]
-    thisIter=0
-    startOLE=0.0
+    _ReadData=[]
+    _thisIter=0
+    _startOLE=0.0
     
     dataValues=np.zeros((numLines,VariableCount+1))
     fd.seek(start,0)

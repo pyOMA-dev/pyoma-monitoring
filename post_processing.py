@@ -12,8 +12,6 @@ import logging
 
 import pytz
 import datetime
-# import dateutil
-import time
 
 berlin_dst=pytz.timezone('Europe/Berlin') # cet/cest
 
@@ -26,8 +24,7 @@ import matplotlib.pyplot as plt
 #plt.switch_backend('agg')
 import matplotlib.transforms as tx
 import matplotlib.dates
-from matplotlib.ticker import LinearLocator
-from matplotlib.dates import MonthLocator, WeekdayLocator, DateFormatter
+from matplotlib.dates import MonthLocator, DateFormatter
 import matplotlib.ticker
 import locale
 
@@ -42,11 +39,12 @@ from monitoring import get_file_info, get_stats, get_modal_results,\
     split_modepairs
 from time_convention import TC
 
-from pyOMA.core.StabilDiagram import StabilCalc
 from pyOMA.core.Helpers import calculateMAC
 
 #global logger
 logger = logging.getLogger(__name__)
+
+ds = None  # module-level sentinel; functions that use `global ds` update this
 
 
 def inspect_time_shifts():
@@ -151,10 +149,10 @@ def plot_file_info(origin: str, check_errors: bool=True, filter_errors: bool=Fal
             if file_contents is None:
                 logger.warning('File unreadable: {}'.format(filepath))
                 return
-            file_time, file_size, headers, units, start_time, sample_rate,measurement = file_contents
-            
+            file_time, _file_size, headers, units, start_time, sample_rate, measurement = file_contents
+
             plot_file(file_time, headers, units, start_time, sample_rate, measurement)
-            
+
     global ds
 
     ds =  get_file_info(origin)
@@ -414,14 +412,14 @@ def plot_stats(quantity: str, duration: pd.Timedelta,
         time_picked = np.datetime64(matplotlib.dates.num2date(event.mouseevent.xdata))
         time_ind = np.argmin(np.abs(time_data - time_picked))
         picked_time = event.artist._xorig[time_ind]
-        ds2 = ds.sel(time=picked_time)
+        _ds2 = ds.sel(time=picked_time)
         yn = input('read and plot slice {}, duration {}? (y/n)'.format(pd.Timestamp(picked_time, tz='Europe/Berlin'), duration))
         if yn == 'y':
             if modal:
-                slice=get_slice_preprocessed(pd.Timestamp(picked_time, tz='Europe/Berlin'), duration, quantity)
+                data_slice=get_slice_preprocessed(pd.Timestamp(picked_time, tz='Europe/Berlin'), duration, quantity)
             else:
-                slice=get_slice_corrected(pd.Timestamp(picked_time, tz='Europe/Berlin'), duration, quantity)
-            plot_file(*slice)
+                data_slice=get_slice_corrected(pd.Timestamp(picked_time, tz='Europe/Berlin'), duration, quantity)
+            plot_file(*data_slice)
             
     global ds
     
@@ -477,11 +475,6 @@ def plot_stats(quantity: str, duration: pd.Timedelta,
                 
                 continue
 
-                if this_range is not None:
-                    data.plot.hist(bins=50, range= this_range, label=variable, ax=axes[num,1], normed=True, orientation='horizontal')
-                else:
-                    data.plot.hist(bins=50, label=variable, ax=axes[num,1], normed=True, orientation='horizontal')
-                    
         if check_errors:
             x = error[error>=1].time.variable.data
             logger.debug(x)
@@ -918,7 +911,7 @@ def postprocess_modal_results(quantity: str, duration: pd.Timedelta,
         axes = np.array([[axes]])
     
         
-    cid = fig.canvas.mpl_connect('button_press_event', open_in_new_window)
+    _cid = fig.canvas.mpl_connect('button_press_event', open_in_new_window)
     
     if not single_ax:
         for ax in axes.flat:
@@ -949,7 +942,7 @@ def postprocess_modal_results(quantity: str, duration: pd.Timedelta,
                'data_quality':'$\Delta_{\sigma_{PSD}}$',
                'directions':'$\circ$' }
             
-    q_strings_units={'time':'$t$',
+    _q_strings_units={'time':'$t$',
                'rms_m':'$\sigma$ [\si{\micro\metre\per\metre}]',
                'wind':'$v_w$ [\si{\metre\per\second}]',
                'temp':'$T$ [\si{\celsius}]',
@@ -1064,7 +1057,7 @@ def postprocess_modal_results(quantity: str, duration: pd.Timedelta,
                 if col>row+1:
                     if not (np.issubdtype(y.dtype, np.datetime64) or np.issubdtype(x.dtype, np.datetime64)):
                         
-                        rho, pval = scipy.stats.spearmanr(x,y)
+                        rho, _pval = scipy.stats.spearmanr(x,y)
                         #corr_coef = np.corrcoef(x,y)
                         #rho = corr_coef[1,0]
                         #corr_coef = rho
@@ -1295,7 +1288,7 @@ def modal_dirs(quantity, duration, update=False, plot_=False):
             y = (1 - this_rratio) * np.sin(this_alpha)            
             vector = np.array([x,y]).T  
             vector = vector[~np.isnan(vector).any(axis=1),:]
-            U, S, V_T = np.linalg.svd(vector, full_matrices=False)
+            _U, _S, V_T = np.linalg.svd(vector, full_matrices=False)
             
             mean_alpha = np.degrees(np.arctan(-V_T[1,0]/V_T[1,1]))   
             this_alpha = np.degrees(this_alpha)
@@ -1311,12 +1304,12 @@ def modal_dirs(quantity, duration, update=False, plot_=False):
         
         return this_time, alpha, rratio
     
-    def plot_time(modal, chan_dofs, node='1'):
-        
+    def _plot_time(modal, chan_dofs, node='1'):
+
         colors = list(matplotlib.cm.hsv(np.linspace(0, 1, 10)))  # pylint: disable=no-member
         axes=[]
-        
-        for i in range(5):
+
+        for _ in range(5):
             plt.figure(tight_layout=1)
             axes.append(plt.axes())
 
@@ -1347,9 +1340,8 @@ def modal_dirs(quantity, duration, update=False, plot_=False):
     def plot_histograms(modal, chan_dofs, node='1', modepair=1, ax1=None, ax2=None,orientation ='horizontal'):    
         colors = list(matplotlib.cm.hsv(np.linspace(0, 1, 10)))  # pylint: disable=no-member
         
-        this_time, (alpha_1, alpha_2), (rratio_1,rratio_2) = get_dirs_transformed(modal, chan_dofs, node, modepair)
-        
-        
+        _this_time, (alpha_1, alpha_2), (rratio_1,rratio_2) = get_dirs_transformed(modal, chan_dofs, node, modepair)
+
         if ax1 is None: 
             plt.figure()
             fig1=plt.gcf()
@@ -1387,16 +1379,16 @@ def modal_dirs(quantity, duration, update=False, plot_=False):
         ax2.set_xlim((0,1))
         ax2.set_ylim((0,plt.ylim()[1]))
         
-    def plot_boxplots(modal, chan_dofs, modepair=0):
-        
+    def _plot_boxplots(modal, chan_dofs, modepair=0):
+
         dirs1=[]
         dirs2=[]
-        rrats1=[]
-        rrats2=[]
-        
+        _rrats1=[]
+        _rrats2=[]
+
         for node in ['1','4','5','6','3','2']:
-            
-            this_time, (alpha_1, alpha_2), (rratio_1,rratio_2) = get_dirs_transformed(modal, chan_dofs, node, modepair)
+
+            _this_time, (alpha_1, alpha_2), (rratio_1,rratio_2) = get_dirs_transformed(modal, chan_dofs, node, modepair)
             alpha_1 = alpha_1[rratio_1<0.25]  # pylint: disable=unsubscriptable-object
             alpha_2 = alpha_2[rratio_2<0.25]  # pylint: disable=unsubscriptable-object
             dirs1.append(alpha_1[~np.isnan(alpha_1)])
@@ -1436,7 +1428,7 @@ def modal_dirs(quantity, duration, update=False, plot_=False):
         plt.xlabel('Hauptrichtung')
         plt.gca().get_xaxis().tick_bottom()
         plt.gca().get_yaxis().tick_left()
-        fig1=plt.gcf()
+        _fig1=plt.gcf()
         plt.figure(figsize=(5,3.13*2),tight_layout=True)
         bp = plt.gca().boxplot(dirs2, vert=False, patch_artist=True)
         ## change outline color, fill color and linewidth of the boxes
@@ -1471,13 +1463,15 @@ def modal_dirs(quantity, duration, update=False, plot_=False):
         plt.gca().get_yaxis().tick_left()
         plt.ylabel('Messpunkt / H\\"ohe [\si{\metre}]')
         plt.xlabel('Hauptrichtung')
-        fig2=plt.gcf()
-        
+        _fig2=plt.gcf()
+
         plt.show()
-            
-    def dirs_wind(wind_ds, modal_sorted, chan_dofs, node='1', target='Wr_top', ax1=None, axes=[]):
+
+    def dirs_wind(wind_ds, modal_sorted, chan_dofs, node='1', target='Wr_top', ax1=None, axes=None):
+        if axes is None:
+            axes = []
         logger.debug(modal_sorted)
-        
+
         wind_ds = wind_ds.sel(channels=target)
         wind_ds = wind_ds.where(wind_ds>0)
         
@@ -1488,13 +1482,13 @@ def modal_dirs(quantity, duration, update=False, plot_=False):
         import matplotlib.cm
         colors = list(matplotlib.cm.hsv(np.linspace(0, 1, 10)))  # pylint: disable=no-member
         if not axes:
-            for i in range(2):
+            for _ in range(2):
                 plt.figure(tight_layout=1)
-                axes.append(plt.axes())   
-                     
+                axes.append(plt.axes())
+
         for modepair in range(2):
             logger.debug(modepair)
-            this_time, (alpha_1, alpha_2), (rratio_1,rratio_2) = get_dirs_transformed(modal_sorted, chan_dofs, node, modepair)
+            _this_time, (alpha_1, alpha_2), (rratio_1,rratio_2) = get_dirs_transformed(modal_sorted, chan_dofs, node, modepair)
             x1 = wind_ds['mean']
             
             if 'Wr' in target: 
@@ -1753,8 +1747,8 @@ def strain_vs_accel(duration: pd.Timedelta, mode: int=0):
             kurt_arr = results['kurtosis'].sel(channels=['A_z','B_z', 'C_z', 'D_z']).mean(dim='channels').rename('kurtosis_m')
             
         ds = xr.merge([results, rms_arr, kurt_arr])
-        error_ind = ds['error'].any(dim='channels')
-        #ds = ds.where(np.logical_not(error_ind))
+        _error_ind = ds['error'].any(dim='channels')
+        #ds = ds.where(np.logical_not(_error_ind))
         #ds = ds.where(error_ind)
         #ds = xr.merge([ds, kurt_arr]) 
         if rms_range is not None:
@@ -1863,12 +1857,6 @@ def strain_vs_accel(duration: pd.Timedelta, mode: int=0):
         
         strain_results, accel_results = xr.align(strain_results, accel_results, exclude=['channels','modes'])
         
-        try:
-            import seaborn as sns  # optional dependency
-        except ImportError:
-            sns = None
-
-        strain_results
         for fignum,modal_result in enumerate(modal_results):
             plt.figure(fignum)
             y = strain_results[modal_result].data
@@ -1998,7 +1986,7 @@ def assign_modes(time_stamps, frequencies, modeshapes, threshold, damping=None, 
             proximity_matrix_sq, method=c_method)
         
         
-        leaves = scipy.cluster.hierarchy.leaves_list(linkage_matrix)
+        _leaves = scipy.cluster.hierarchy.leaves_list(linkage_matrix)
         if plot_:
             fig = plt.figure(tight_layout=1)
             ax = fig.add_subplot(111)
@@ -2046,29 +2034,26 @@ def assign_modes(time_stamps, frequencies, modeshapes, threshold, damping=None, 
     for i,inout in enumerate(select_clusters):
         if inout: continue
         this_cluster = cluster_assignments == i
-        cluster_size = sum(this_cluster)
+        _cluster_size = sum(this_cluster)
         time_stamps_ = time_stamps[this_cluster]
         frequencies_ = frequencies[this_cluster]
-        damping_ = damping[this_cluster]
         modal_contributions_ = modal_contributions[this_cluster]
         modeshapes_ = modeshapes[:,this_cluster]
-        
+
         # remove multiple values from the same dataset (=start_time)
-        unique, indices, unique_counts = np.unique(time_stamps_, return_counts=True, return_index=True)            
+        unique, indices, unique_counts = np.unique(time_stamps_, return_counts=True, return_index=True)
         inds= indices[unique_counts==1]
-        
+
         full_inds = np.zeros_like(frequencies, dtype=bool)
         full_inds_2 = full_inds[this_cluster]
         full_inds_2[inds] = True
         full_inds[this_cluster]=full_inds_2
-        
+
         return_indices.append(full_inds)
-        
-        
+
         logger.info('{} unique time stamps out of {} timestamps total'.format(np.sum(unique_counts==1), len(time_stamps_)))
         time_stamps_ = time_stamps[full_inds]
         frequencies_ = frequencies[full_inds]
-        damping_ = damping[full_inds]
         modal_contributions_ = modal_contributions[full_inds]
         modeshapes_ = modeshapes[:,full_inds]
         mshs.append(modeshapes_)
@@ -2097,7 +2082,7 @@ def assign_modes(time_stamps, frequencies, modeshapes, threshold, damping=None, 
             ax4.set_ylim((0,0.5))
     
     #plt.figure()
-    unique, counts = np.unique(time_stamps, return_counts=True)
+    unique, _counts = np.unique(time_stamps, return_counts=True)
 
     logger.info('Clustered {} out of {} ({} %) modes'.format(total_modes_clustered, len(unique)*2, total_modes_clustered/len(unique)/2))
     
@@ -2106,30 +2091,7 @@ def assign_modes(time_stamps, frequencies, modeshapes, threshold, damping=None, 
     if mean_f[0]>mean_f[1]:
         return_indices.reverse()
     return return_indices
-    
-        
-    if plot_:
-        unique, counts = np.unique(np.hstack(times), return_counts=True)
-    
-        times_=[]
-        dfs=[]
-        for ts, count in zip(unique, counts):
-            ind1=times[0]==ts
-            ind2=times[1]==ts
-            if ind1.any() and ind2.any():
-                f_1=fs[0][ind1]
-                f_2=fs[1][ind2]
-        
-                times_.append(ts)
-                dfs.append(f_1-f_2)
-        plt.figure()
-        plt.plot(times_,dfs, ls='none', marker='.')
-        
-        
-        mac=calculateMAC(mshs[0], mshs[1])
-        plt.matshow(mac, vmin=0, vmax=1)
-        plt.show()
-        
+
 def test():
     quantity = 'accel'
     origin = config.origins[quantity]
@@ -2143,7 +2105,7 @@ def test():
         if file_contents is None:
             logger.warning('File unreadable: {}'.format(filepath))
             return
-        file_time, file_size, headers, units, start_time, sample_rate,measurement = file_contents
+        file_time, _file_size, headers, units, start_time, sample_rate,measurement = file_contents
         
         plot_file(file_time, headers, units, start_time, sample_rate, measurement)
         
@@ -2201,11 +2163,9 @@ def main():
                         'font.size':9,                                                                                 
                          'legend.fontsize':9, 
                          'legend.labelspacing':0.1,                                                       
-                         'axes.linewidth':0.5,                                                                           
-                         'xtick.major.width':0.2,                                                                        
-                         'ytick.major.width':0.2,                                                                        
-                         'text.latex.preamble':r"\usepackage{siunitx}\usepackage[utf8]{inputenc}\usepackage{nicefrac}",                                                                        
-                         'xtick.major.width':0.5,                                                                        
+                         'axes.linewidth':0.5,
+                         'text.latex.preamble':r"\usepackage{siunitx}\usepackage[utf8]{inputenc}\usepackage{nicefrac}",
+                         'xtick.major.width':0.5,
                          'ytick.major.width':0.5, 
                          'figure.figsize':(5.906, 5.906 / 1.618),  # print #150 mm \columnwidth
                          # 'figure.figsize':(5.906/2,5.906/2/1.618),#half print #150 mm \columnwidth
@@ -2339,7 +2299,7 @@ def main():
                 axes[i].set_ylabel('')
                 axes[i].yaxis.set_ticks_position('left')
                     
-            loc = matplotlib.ticker.MultipleLocator(base=0.01) # this locator puts ticks at regular intervals
+            _loc = matplotlib.ticker.MultipleLocator(base=0.01) # this locator puts ticks at regular intervals
             for i in range(5):
                 axes[i].yaxis.set_minor_locator(matplotlib.ticker.LinearLocator(numticks=3))
                 axes[i].yaxis.set_major_locator(matplotlib.ticker.LinearLocator(numticks=3))
@@ -2506,12 +2466,10 @@ def main():
                     for i,mode in enumerate(reversed([1,2])):
                         q_1=['frequencies']
                         ax = axes[j * 2 + i + 1]
-                        '''
-                        when q_2=='time' and q1=='frequencies'
-                        we need to get q_1='temp' and predict 'frequencies' from a linear regression
-                        then overlay it on the actual plot
-                        run the loop once again with a predict switch
-                        '''
+                        # when q_2=='time' and q1=='frequencies'
+                        # we need to get q_1='temp' and predict 'frequencies' from a linear regression
+                        # then overlay it on the actual plot
+                        # run the loop once again with a predict switch
                         plt.subplots_adjust(left=0.095, right=0.97, top=0.95, bottom=0.11, hspace=0.12, wspace=0.06)
                         postprocess_modal_results(quantity, duration, filter_errors=False, 
                                                   wind_range=0, temp_range=(-40,5), mode_pair=mode, q_1=['temp'], q_2=q_2, 
@@ -2532,7 +2490,7 @@ def main():
                 label.set_ha(ha)
                 label.set_rotation(rotation)
                 
-            loc = matplotlib.ticker.MultipleLocator(base=0.01) # this locator puts ticks at regular intervals
+            _loc = matplotlib.ticker.MultipleLocator(base=0.01) # this locator puts ticks at regular intervals
     
             for i in range(1,3):
                 axes[i].yaxis.set_minor_locator(matplotlib.ticker.MultipleLocator(base=0.01))
@@ -2658,7 +2616,7 @@ def main():
                     label.set_ha(ha)
                     label.set_rotation(rotation)
                     
-                loc = matplotlib.ticker.MultipleLocator(base=0.01) # this locator puts ticks at regular intervals
+                _loc = matplotlib.ticker.MultipleLocator(base=0.01) # this locator puts ticks at regular intervals
         
                 for i in range(1,3):
                     axes[i].yaxis.set_minor_locator(matplotlib.ticker.MultipleLocator(base=0.01))

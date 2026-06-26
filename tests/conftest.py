@@ -9,7 +9,6 @@ import os
 import sys
 
 import numpy as np
-import pandas as pd
 import pytest
 
 # Allow ``import monitoring``, ``import config``, etc.

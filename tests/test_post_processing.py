@@ -20,18 +20,14 @@ tz-naive UTC dataset via ``ds.sel(time=slice(...))``; this raises
 work around the issue, and include a comment documenting the production
 code limitation.
 """
-import datetime
-
 import matplotlib
 matplotlib.use("Agg")          # non-interactive backend, safe for CI
 
 import matplotlib.pyplot as plt
 import numpy as np
 import pandas as pd
-import pytest
-import xarray as xr
 
-from conftest import RESULT_DB_SHORT, skip_if_no_data
+from conftest import skip_if_no_data
 
 from post_processing import (
     _dtstart_to_stored_utc,
@@ -145,7 +141,7 @@ class TestLoadFilterMerge:
         _, ranges = load_filter_merge(
             self.QUANTITY, self.DURATION, time_range=(_T0, _T1)
         )
-        time_range, rms_range, wind_range, temp_range, f_range = ranges
+        _time_range, _rms_range, wind_range, temp_range, f_range = ranges
         assert len(wind_range) == 2
         assert len(temp_range) == 2
         assert len(f_range) == 2
@@ -206,7 +202,7 @@ class TestPlotDaily:
         try:
             result = plot_daily("accel", self.DURATION, self.DTSTART)
             assert isinstance(result, tuple)
-            fig1, fig2 = result
+            fig1, _fig2 = result
             assert isinstance(fig1, plt.Figure)
         finally:
             self._close_all()
