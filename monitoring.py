@@ -1901,6 +1901,7 @@ def create_modal_results(quantity: str, duration: pd.Timedelta,
     for start_time in time_iterator[start*jobsize:(start+1)*jobsize]:
 
         logger.debug('')
+        start_time_naive = pd.Timestamp(start_time)
         start_time = TC.to_local(start_time)
         if pd.isnull(start_time):
             continue
