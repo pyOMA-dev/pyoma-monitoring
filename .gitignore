@@ -38,3 +38,7 @@ daily.sh
 # Test fixtures (override the data-file exclusion rules above)
 !tests/data/
 !tests/data/**
+PYOMA_MONITORING_REFACTOR_BRIEFING.md
+.gitignore
+.ipynb_checkpoints/Untitled-checkpoint.ipynb
+Untitled.ipynb

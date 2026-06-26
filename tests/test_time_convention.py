@@ -7,7 +7,6 @@ import datetime
 
 import numpy as np
 import pandas as pd
-import pytest
 import pytz
 import xarray as xr
 
