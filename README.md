@@ -37,7 +37,11 @@ Gantner Q.station controller
 fbg_strain_reader.py / gantner_reader.py      ← low-level binary readers
         │
         ▼
-main_v2.py  (core pipeline)
+site_geyer.py  ──► config.py                  ← Geyer-specific configuration
+        │            (paths, channels, ranges)
+        │  registers Site dataclass in monitoring engine
+        ▼
+monitoring.py  (generic engine)
   ├── get_file_info()   → accel/wind/temp/strain file-info NetCDF database
   ├── get_stats()       → per-slice statistics NetCDF database
   └── get_modal_results() → SSI-based modal results NetCDF database
@@ -48,6 +52,13 @@ post_processing.py                 ← Matplotlib plots (daily, waterfall)
         ▼
 daily.py  (CLI entry-point, called by daily2.sh cron wrapper)
 ```
+
+The engine (`monitoring.py`) is site-agnostic — it never imports `config.py`
+directly. All site-specific knowledge (paths, channel lists, file-name patterns,
+signal transforms, sync policy) is encapsulated in the `Site` dataclass and
+registered by `site_geyer.py` at import time via `register_site()` /
+`set_active_site()`. To adapt the pipeline to a different monitoring site,
+write a new `site_<name>.py` and import it instead.
 
 ### Pipeline stages
 
@@ -78,19 +89,28 @@ Python ≥ 3.9 is required.
 
 ## Configuration
 
-All project-specific settings live in `config.py`. Before using the pipeline
-on a new project, update at minimum:
+All Geyer-specific settings live in `config.py`. They are read by `site_geyer.py`
+at import time and stored in the `Site` dataclass that is registered with the
+engine. Before using the pipeline on a new deployment, update `config.py` with
+the correct values:
 
 | Variable | Description |
 |---|---|
 | `file_root_path` | Root directory where raw `.dat` / `.bin` files are stored |
-| `slice_root_path` | Scratch directory for temporary 30-minute data slices |
+| `slice_root_path` | Scratch directory for temporary data slices |
 | `db_root_path` | Directory where NetCDF result databases are written |
 | `modal_conf_dir` | Directory containing SSI configuration files (pole selection etc.) |
+| `origins` | Dict mapping each quantity name to its origin tag |
+| `subpaths` | Dict mapping each origin tag to its subdirectory under `file_root_path` |
 | `all_channels` | Dict mapping each quantity to its primary channel names |
 | `optional_channels` | Dict of channels that may or may not be present in a file |
 | `ranges` | Physical plausibility limits per channel (used for outlier rejection) |
-| `dtstarts` | First valid timestamp for each quantity |
+| `dtstarts` | First valid timestamp for each origin |
+
+To port the pipeline to a **different monitoring site**, create a new
+`site_<name>.py` that builds a `monitoring.Site` dataclass from that site's
+configuration and calls `monitoring.register_site()` / `monitoring.set_active_site()`.
+The engine itself requires no changes.
 
 A `config.example.py` with dummy values is planned (Priority 3).
 
