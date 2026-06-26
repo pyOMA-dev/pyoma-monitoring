@@ -1,0 +1,243 @@
+# Tower monitoring pipeline — static site configuration.
+# Load this file via config.py, which validates and exposes every value as a
+# module-level attribute. Edit here; never import this file directly.
+
+# ---------------------------------------------------------------------------
+# File-system roots
+# ---------------------------------------------------------------------------
+paths:
+  file_root: '/home/womo1998/Projects/grkgeyer/'
+  slice_root: '/home/womo1998/Projects/grkgeyer/tower_scratch_data/'
+  db_root: '/home/womo1998/Projects/grkgeyer/analysis/result_db/'
+  modal_conf_dir: '/home/womo1998/Projects/grkgeyer/analysis/modal_source_files/'
+
+# ---------------------------------------------------------------------------
+# Quantity → data-origin / sub-directory mapping
+# ---------------------------------------------------------------------------
+origins:
+  accel:           accel
+  wind:            wind
+  temp:            temp
+  strain_rosettes: strain
+  strain_bolts:    strain
+
+subpaths:
+  accel:  towerdata
+  wind:   towerdata
+  temp:   towerdata
+  strain: strain_data
+
+# Earliest available data date per origin (ISO 8601 date strings)
+dtstarts:
+  accel:  '2015-05-20'
+  wind:   '2015-05-20'
+  temp:   '2015-05-20'
+  strain: '2016-12-16'
+
+# ---------------------------------------------------------------------------
+# Channel definitions
+# ---------------------------------------------------------------------------
+channels:
+  all:
+    accel:
+      - Accel_01
+      - Accel_02
+    wind:
+      - Wr
+      - Wg
+    strain_rosettes:
+      - A_Temp
+      - B_Temp
+      - C_Temp
+      - D_Temp_1
+      - D_Temp_2
+      - D_Temp_3
+      - A_z
+      - A_t
+      - A_zt
+      - B_z
+      - B_t
+      - B_zt
+      - C_z
+      - C_t
+      - C_zt
+      - D_z
+      - D_t
+      - D_zt
+    strain_bolts:
+      - 10_Temp
+      - 10_z1
+      - 10_z2
+      - 8_z1
+      - 8_z2
+      - 8_z3
+      - 9_z1
+      - 9_z2
+      - 9_z3
+    temp:
+      - Pt100_01
+      - Pt100_02
+      - Pt100_03
+      - Pt100_04
+      - Pt100_05
+
+  optional:
+    accel:
+      - Accel_01_top
+      - Accel_02_top
+      - Accel_03_top
+      - Accel_04_top
+      - Accel_03
+      - Accel_04
+      - Accel_05
+      - Accel_06
+      - Accel_07
+      - Accel_08
+    wind:
+      - Wr_top
+      - Wg_top
+
+  # Flat lists used by strain-processing helpers
+  strain_list:
+    - A_z
+    - A_t
+    - A_zt
+    - B_z
+    - B_t
+    - B_zt
+    - C_z
+    - C_t
+    - C_zt
+    - D_z
+    - D_t
+    - D_zt
+    - 10_z1
+    - 10_z2
+    - 8_z1
+    - 8_z2
+    - 8_z3
+    - 9_z1
+    - 9_z2
+    - 9_z3
+
+  temp_list:
+    - 10_Temp
+    - D_Temp_1
+    - D_Temp_2
+    - D_Temp_3
+    - C_Temp
+    - B_Temp
+    - A_Temp
+
+# ---------------------------------------------------------------------------
+# Physical plausibility ranges  [min, max]
+# ---------------------------------------------------------------------------
+ranges:
+  Accel_01:      [-5, 5]
+  Accel_01_top:  [-1, 1]
+  Accel_02:      [-5, 5]
+  Accel_02_top:  [-1, 1]
+  Accel_03:      [-5, 5]
+  Accel_03_top:  [-1, 1]
+  Accel_04:      [-5, 5]
+  Accel_04_top:  [-1, 1]
+  Accel_05:      [-1, 1]
+  Accel_06:      [-1, 1]
+  Accel_07:      [-10, 10]
+  Accel_08:      [-10, 10]
+  Tagessekunden: [0, 86400]
+  Time:          [0, 86400]
+  Wg:            [-1, 61]
+  Wg_top:        [-1, 61]
+  Wr:            [-185, 185]
+  Wr_top:        [-185, 185]
+  Wx:            [-61, 61]
+  Wx_top:        [-61, 61]
+  Wy:            [-61, 61]
+  Wy_top:        [-61, 61]
+  Pt100_01:      [-40, 80]
+  Pt100_02:      [-40, 80]
+  Pt100_03:      [-40, 80]
+  Pt100_04:      [-40, 80]
+  Pt100_05:      [-40, 80]
+  Pt100_top:     [-40, 80]
+  Pt100_box:     [-40, 80]
+  WTemp:         [-40, 80]
+  WTemp_top:     [-40, 80]
+  D_Temp_1:      [-40, 60]
+  D_Temp_2:      [-40, 60]
+  D_Temp_3:      [-40, 60]
+  A_Temp:        [-40, 60]
+  B_Temp:        [-40, 60]
+  C_Temp:        [-40, 60]
+  A_z:           [-0.0007,  0.0002]
+  A_t:           [-0.0005,  0.0005]
+  A_zt:          [-0.0006,  0.0000]
+  B_z:           [-0.0002,  0.0002]
+  B_t:           [-0.0004,  0.0000]
+  B_zt:          [-0.0003,  0.0001]
+  C_z:           [-0.0003,  0.0001]
+  C_t:           [-0.0002,  0.0002]
+  C_zt:          [-0.0004,  0.0000]
+  D_z:           [-0.0002,  0.0002]
+  D_t:           [-0.0002,  0.0002]
+  D_zt:          [-0.0003,  0.0000]
+
+# ---------------------------------------------------------------------------
+# Strain channel → companion temperature channel
+# ---------------------------------------------------------------------------
+strain_temperature_map:
+  strain_rosettes:
+    A_z:  A_Temp
+    A_t:  A_Temp
+    A_zt: A_Temp
+    B_z:  B_Temp
+    B_t:  B_Temp
+    B_zt: B_Temp
+    C_z:  C_Temp
+    C_t:  C_Temp
+    C_zt: C_Temp
+    D_z:  D_Temp_2
+    D_t:  D_Temp_2
+    D_zt: D_Temp_2
+  strain_bolts:
+    10_z1: 10_Temp
+    10_z2: 10_Temp
+    8_z1:  8_Temp
+    8_z2:  8_Temp
+    8_z3:  8_Temp
+    9_z1:  9_Temp
+    9_z2:  9_Temp
+    9_z3:  9_Temp
+
+# ---------------------------------------------------------------------------
+# Initial FBG wavelengths [nm] for strain computation
+# ---------------------------------------------------------------------------
+initial_wavelengths:
+  10_Temp: 1520.10
+  10_z1:   1527.59
+  10_z2:   1535.07
+  8_z1:    1565.06
+  8_z2:    1572.44
+  8_z3:    1579.84
+  9_z1:    1565.00
+  9_z2:    1572.50
+  9_z3:    1580.00
+  D_Temp_1: 1520.00
+  D_Temp_2: 1527.50
+  D_Temp_3: 1535.00
+  D_z:     1542.50
+  D_t:     1550.00
+  D_zt:    1557.50
+  C_z:     1565.00
+  C_t:     1572.50
+  C_zt:    1580.00
+  C_Temp:  1520.28
+  B_Temp:  1530.14
+  A_Temp:  1539.97
+  A_z:     1542.50
+  A_t:     1550.00
+  A_zt:    1557.50
+  B_z:     1565.00
+  B_t:     1572.50
+  B_zt:    1580.00

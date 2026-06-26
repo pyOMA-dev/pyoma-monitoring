@@ -1,108 +1,224 @@
-"""Centralised project configuration for the tower monitoring pipeline.
+"""YAML-based configuration loader for the tower monitoring pipeline.
 
-This module is a singleton state object: it is imported by all pipeline
-modules and holds file-system paths, channel definitions, physical plausibility
-ranges, and shared in-process caches. Edit the path variables and channel lists
-here to adapt the pipeline to a different monitoring project.
+All static site configuration lives in ``config.yaml`` next to this file.
+This module loads that file, validates its structure, and re-exports every
+value as a module-level attribute so that existing code using
+``import config; config.origins`` continues to work without modification.
+
+Runtime-only state (``file_cache``, ``ds_cache``, ``pid``) is also
+initialised here and is *not* part of the YAML file.
 """
-import os
 import datetime
+import logging
+import os
 from collections import deque
-file_cache = deque(maxlen=25)
 
-origins = {'accel':'accel', 
-          'wind':'wind', 
-          'temp':'temp', 
-          'strain_rosettes':'strain', 
-          'strain_bolts':'strain'}
+import yaml
 
-ds_cache = {}
-for origin in origins.values():
-    ds_cache[f'{origin}_file_info']={'ds':None, 'mtime':None}
-for quantity in origins.keys():
-    ds_cache[f'{quantity}_stats']={'ds':None, 'mtime':None}
-    if quantity in ['accel', 'strain_rosettes']:
-        ds_cache[f'{quantity}_modal']={'ds':None, 'mtime':None}
-        
-pid=str(os.getpid())
+logger = logging.getLogger(__name__)
 
-subpaths = {'accel':'towerdata',
-            'wind':'towerdata',
-            'temp':'towerdata',
-            'strain':'strain_data'}
-file_root_path = '/home/womo1998/Projects/grkgeyer/'
-slice_root_path = '/home/womo1998/Projects/grkgeyer/tower_scratch_data/'
-db_root_path = '/home/womo1998/Projects/grkgeyer/analysis/result_db/'
-modal_conf_dir = '/home/womo1998/Projects/grkgeyer/analysis/modal_source_files/'
-    
-dtstarts = {'accel':datetime.datetime(2015,5,20),
-            'wind':datetime.datetime(2015,5,20),
-            'temp':datetime.datetime(2015,5,20),
-            'strain':datetime.datetime(2016,12,16)}
+_CONFIG_PATH = os.path.join(os.path.dirname(__file__), 'config.yaml')
 
-all_channels = {
-    'accel' : ['Accel_01','Accel_02',],
-    'wind' : ['Wr', 'Wg',],
-    'strain_rosettes' : ['A_Temp','B_Temp','C_Temp','D_Temp_1','D_Temp_2',
-                           'D_Temp_3','A_z','A_t','A_zt','B_z','B_t',
-                           'B_zt','C_z','C_t','C_zt','D_z','D_t','D_zt',],
-    'strain_bolts' : ['10_Temp','10_z1','10_z2','8_z1','8_z2',
-                        '8_z3','9_z1','9_z2','9_z3',],
-    'temp' : ['Pt100_01','Pt100_02','Pt100_03','Pt100_04',
-                       'Pt100_05']
-    }
+# ---------------------------------------------------------------------------
+# Public API
+# ---------------------------------------------------------------------------
 
-optional_channels = {'accel': ['Accel_01_top', 'Accel_02_top', 
-                               'Accel_03_top', 'Accel_04_top',
-                               'Accel_03','Accel_04', 'Accel_05',
-                               'Accel_06','Accel_07','Accel_08'] ,
-                    'wind': ['Wr_top','Wg_top']}
+def load_config(path: str = _CONFIG_PATH) -> dict:
+    """Load *path* as YAML and return the validated configuration dict.
 
-strain_channels = ['A_z','A_t','A_zt','B_z','B_t','B_zt','C_z','C_t',
-                       'C_zt','D_z','D_t','D_zt','10_z1','10_z2','8_z1',
-                       '8_z2','8_z3','9_z1','9_z2','9_z3',]
+    Parameters
+    ----------
+    path:
+        Path to a YAML file with the structure defined in ``config.yaml``.
 
-temp_channels = ['10_Temp', 'D_Temp_1','D_Temp_2','D_Temp_3','C_Temp','B_Temp','A_Temp']
+    Raises
+    ------
+    FileNotFoundError
+        When *path* does not exist.
+    yaml.YAMLError
+        When the file is not valid YAML.
+    ValueError
+        When required keys are missing or values have wrong types.
+    """
+    if not os.path.exists(path):
+        raise FileNotFoundError(f"Configuration file not found: {path!r}")
+    with open(path, 'r', encoding='utf-8') as fh:
+        raw = yaml.safe_load(fh)
+    validate_config(raw)
+    return raw
 
-ranges={'Accel_01':(-5,5), 'Accel_01_top':(-1,1), 'Accel_02':(-5,5),
-        'Accel_02_top':(-1,1), 'Accel_03':(-5,5), 'Accel_03_top':(-1,1), 
-        'Accel_04':(-5,5), 'Accel_04_top':(-1,1), 'Accel_05':(-1,1), 
-        'Accel_06':(-1,1), 'Accel_07':(-10,10), 'Accel_08':(-10,10), 
-        'Tagessekunden':(0,86400),  'Time':(0,86400), 'Wg':(-1,61), 
-        'Wg_top':(-1,61),  'Wr':(-185,185), 'Wr_top':(-185,185),
-        'Wx':(-61,61), 'Wx_top':(-61,61), 'Wy':(-61,61), 'Wy_top':(-61,61),
-        'Pt100_01':(-40,80), 'Pt100_02':(-40,80), 'Pt100_03':(-40,80),
-        'Pt100_04':(-40,80), 'Pt100_05':(-40,80), 'Pt100_top':(-40,80),
-        'Pt100_box':(-40,80), 'WTemp':(-40,80), 'WTemp_top':(-40,80),
-        'D_Temp_1':(-40,60), 'D_Temp_2':(-40,60), 'D_Temp_3':(-40,60),
-        'A_Temp':(-40,60), 'B_Temp':(-40,60), 'C_Temp':(-40,60),
-        'A_z':(-0.0007,0.0002), 'A_t':(-0.0005,0.0005), 'A_zt':(-0.0006,0.0000),
-        'B_z':(-0.0002,0.0002), 'B_t':(-0.0004,0.0000), 'B_zt':(-0.0003,0.0001),
-        'C_z':(-0.0003,0.0001), 'C_t':(-0.0002,0.0002), 'C_zt':(-0.0004,0.0000),
-        'D_z':(-0.0002,0.0002), 'D_t':(-0.0002,0.0002), 'D_zt':(-0.0003,0.0000)
-        }
-strain_t = {
-    'strain_rosettes': {
-        'A_z': 'A_Temp',  'A_t': 'A_Temp',  'A_zt': 'A_Temp',
-        'B_z': 'B_Temp',  'B_t': 'B_Temp',  'B_zt': 'B_Temp',
-        'C_z': 'C_Temp',  'C_t': 'C_Temp',  'C_zt': 'C_Temp',
-        'D_z': 'D_Temp_2', 'D_t': 'D_Temp_2', 'D_zt': 'D_Temp_2',
-    },
-    'strain_bolts': {
-        '10_z1': '10_Temp', '10_z2': '10_Temp',
-        '8_z1': '8_Temp', '8_z2': '8_Temp', '8_z3': '8_Temp',
-        '9_z1': '9_Temp', '9_z2': '9_Temp', '9_z3': '9_Temp',
-    },
-}
 
-initial_wl ={
-        '10_Temp':1520.1, '10_z1':1527.59, '10_z2':1535.07,
-        '8_z1':1565.06, '8_z2':1572.44, '8_z3':1579.84,
-        '9_z1':1565, '9_z2':1572.5, '9_z3':1580,
-        'D_Temp_1':1520, 'D_Temp_2':1527.5, 'D_Temp_3':1535,
-        'D_z':1542.5, 'D_t':1550, 'D_zt':1557.5,
-        'C_z':1565, 'C_t':1572.5, 'C_zt':1580,
-        'C_Temp':1520.28, 'B_Temp':1530.14, 'A_Temp':1539.97,
-        'A_z':1542.5, 'A_t':1550, 'A_zt':1557.5,
-        'B_z':1565, 'B_t':1572.5, 'B_zt':1580,
-        }
+def validate_config(cfg: dict) -> None:
+    """Validate the structure of a loaded configuration dict.
+
+    Raises :exc:`ValueError` with a descriptive message on the first
+    violation found.
+
+    Parameters
+    ----------
+    cfg:
+        Dict produced by :func:`load_config` (or ``yaml.safe_load``).
+    """
+    _require_keys(cfg, ['paths', 'origins', 'subpaths', 'dtstarts',
+                        'channels', 'ranges', 'strain_temperature_map',
+                        'initial_wavelengths'])
+    _validate_paths(cfg['paths'])
+    _validate_string_map(cfg['origins'], 'origins')
+    _validate_string_map(cfg['subpaths'], 'subpaths')
+    _validate_dtstarts(cfg['dtstarts'])
+    _validate_channels(cfg['channels'])
+    _validate_ranges(cfg['ranges'])
+    _validate_strain_temperature_map(cfg['strain_temperature_map'])
+    _validate_initial_wavelengths(cfg['initial_wavelengths'])
+
+
+# ---------------------------------------------------------------------------
+# Private helpers — validators
+# ---------------------------------------------------------------------------
+
+def _require_keys(mapping: dict, keys: list) -> None:
+    missing = [k for k in keys if k not in mapping]
+    if missing:
+        raise ValueError(f"Config missing required keys: {missing}")
+
+
+def _validate_paths(paths: dict) -> None:
+    _require_keys(paths, ['file_root', 'slice_root', 'db_root', 'modal_conf_dir'])
+    for key, val in paths.items():
+        if not isinstance(val, str):
+            raise ValueError(
+                f"paths.{key} must be a string, got {type(val).__name__!r}")
+
+
+def _validate_string_map(mapping: dict, section: str) -> None:
+    for key, val in mapping.items():
+        if not isinstance(val, str):
+            raise ValueError(
+                f"{section}.{key} must be a string, got {type(val).__name__!r}")
+
+
+def _validate_dtstarts(dtstarts: dict) -> None:
+    for key, val in dtstarts.items():
+        if not isinstance(val, (str, datetime.date)):
+            raise ValueError(
+                f"dtstarts.{key} must be an ISO date string, "
+                f"got {type(val).__name__!r}")
+        try:
+            datetime.date.fromisoformat(str(val))
+        except ValueError as exc:
+            raise ValueError(
+                f"dtstarts.{key} is not a valid ISO date: {val!r}") from exc
+
+
+def _validate_channels(channels: dict) -> None:
+    _require_keys(channels, ['all', 'optional', 'strain_list', 'temp_list'])
+    for grp, chans in channels['all'].items():
+        if not isinstance(chans, list):
+            raise ValueError(f"channels.all.{grp} must be a list")
+        for ch in chans:
+            if not isinstance(ch, str):
+                raise ValueError(
+                    f"channels.all.{grp}: every entry must be a string, "
+                    f"got {ch!r}")
+    for lst_name in ('strain_list', 'temp_list'):
+        if not isinstance(channels[lst_name], list):
+            raise ValueError(f"channels.{lst_name} must be a list")
+
+
+def _validate_ranges(ranges: dict) -> None:
+    for key, val in ranges.items():
+        if not (isinstance(val, (list, tuple)) and len(val) == 2):
+            raise ValueError(
+                f"ranges.{key} must be a [min, max] pair, got {val!r}")
+        if not all(isinstance(v, (int, float)) for v in val):
+            raise ValueError(
+                f"ranges.{key} bounds must be numbers, got {val!r}")
+        if val[0] > val[1]:
+            raise ValueError(
+                f"ranges.{key}: min ({val[0]}) must not exceed max ({val[1]})")
+
+
+def _validate_strain_temperature_map(stmap: dict) -> None:
+    for grp, mapping in stmap.items():
+        if not isinstance(mapping, dict):
+            raise ValueError(
+                f"strain_temperature_map.{grp} must be a dict, "
+                f"got {type(mapping).__name__!r}")
+        for strain_ch, temp_ch in mapping.items():
+            if not isinstance(temp_ch, str):
+                raise ValueError(
+                    f"strain_temperature_map.{grp}.{strain_ch} must be a "
+                    f"string, got {type(temp_ch).__name__!r}")
+
+
+def _validate_initial_wavelengths(wl: dict) -> None:
+    for key, val in wl.items():
+        if not isinstance(val, (int, float)):
+            raise ValueError(
+                f"initial_wavelengths.{key} must be a number, "
+                f"got {type(val).__name__!r}")
+
+
+# ---------------------------------------------------------------------------
+# Private helpers — converters
+# ---------------------------------------------------------------------------
+
+def _parse_dtstarts(raw: dict) -> dict:
+    """Convert ISO date strings (or ``datetime.date`` objects) to ``datetime.datetime``."""
+    result = {}
+    for key, val in raw.items():
+        result[key] = datetime.datetime.fromisoformat(str(val))
+    return result
+
+
+def _parse_ranges(raw: dict) -> dict:
+    """Convert ``[min, max]`` lists to ``(min, max)`` tuples."""
+    return {k: tuple(v) for k, v in raw.items()}
+
+
+# ---------------------------------------------------------------------------
+# Load and expose configuration
+# ---------------------------------------------------------------------------
+_cfg = load_config()
+
+# Paths
+file_root_path: str = _cfg['paths']['file_root']
+slice_root_path: str = _cfg['paths']['slice_root']
+db_root_path: str = _cfg['paths']['db_root']
+modal_conf_dir: str = _cfg['paths']['modal_conf_dir']
+
+# Quantity → origin / sub-directory mappings
+origins: dict = _cfg['origins']
+subpaths: dict = _cfg['subpaths']
+
+# Earliest available data per origin
+dtstarts: dict = _parse_dtstarts(_cfg['dtstarts'])
+
+# Channel definitions
+all_channels: dict = _cfg['channels']['all']
+optional_channels: dict = _cfg['channels']['optional']
+strain_channels: list = _cfg['channels']['strain_list']
+temp_channels: list = _cfg['channels']['temp_list']
+
+# Physical plausibility ranges as (min, max) tuples
+ranges: dict = _parse_ranges(_cfg['ranges'])
+
+# Strain ↔ temperature channel mapping
+strain_t: dict = _cfg['strain_temperature_map']
+
+# Initial FBG wavelengths [nm]
+initial_wl: dict = _cfg['initial_wavelengths']
+
+# ---------------------------------------------------------------------------
+# Runtime-only state (not part of YAML configuration)
+# ---------------------------------------------------------------------------
+pid: str = str(os.getpid())
+file_cache: deque = deque(maxlen=25)
+
+ds_cache: dict = {}
+for _origin in set(origins.values()):
+    ds_cache[f'{_origin}_file_info'] = {'ds': None, 'mtime': None}
+for _quantity in origins:
+    ds_cache[f'{_quantity}_stats'] = {'ds': None, 'mtime': None}
+    if _quantity in ('accel', 'strain_rosettes'):
+        ds_cache[f'{_quantity}_modal'] = {'ds': None, 'mtime': None}

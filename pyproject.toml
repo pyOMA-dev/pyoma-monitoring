@@ -43,4 +43,5 @@ dependencies = [
     "netcdf4",
     "h5py",
     "pyOMA",
+    "pyyaml",
 ]
