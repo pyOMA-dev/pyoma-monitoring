@@ -1,7 +1,7 @@
 # pyOMA-Monitoring
 
-Long-term structural health monitoring (SHM) pipeline for the **Geyer guyed
-mast** (~188 m tall), developed at Bauhaus-Universität Weimar as part of
+Long-term structural health monitoring (SHM) pipeline for a **guyed mast**
+(~188 m tall), developed at Bauhaus-Universität Weimar as part of
 doctoral research on ambient-vibration-based system identification.
 
 The pipeline reads multi-sensor binary data recorded by a Gantner Q.station
@@ -37,7 +37,7 @@ Gantner Q.station controller
 fbg_strain_reader.py / gantner_reader.py      ← low-level binary readers
         │
         ▼
-site_geyer.py  ──► config.py                  ← Geyer-specific configuration
+site_geyer.py  ──► config.py                  ← tower-specific configuration
         │            (paths, channels, ranges)
         │  registers Site dataclass in monitoring engine
         ▼
@@ -89,7 +89,7 @@ Python ≥ 3.9 is required.
 
 ## Configuration
 
-All Geyer-specific settings live in `config.py`. They are read by `site_geyer.py`
+All tower-specific settings live in `config.py`. They are read by `site_geyer.py`
 at import time and stored in the `Site` dataclass that is registered with the
 engine. Before using the pipeline on a new deployment, update `config.py` with
 the correct values:
@@ -166,7 +166,7 @@ If you use this code, please cite the underlying pyOMA library:
 > Bauhaus-Universität Weimar.
 > <https://github.com/simonmarwitz/pyOMA>
 
-Relevant publications describing the Geyer mast monitoring campaign will be
+Relevant publications describing the tower monitoring campaign will be
 listed here once publicly available.
 
 ---
