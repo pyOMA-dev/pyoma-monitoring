@@ -1,6 +1,6 @@
 
 # coding: utf-8
-"""Matplotlib visualisation helpers for the Geyer mast monitoring pipeline.
+"""Matplotlib visualisation helpers for the tower monitoring pipeline.
 
 Provides ``plot_daily()`` for time-history overview plots and
 ``plot_waterfall()`` for frequency-domain waterfall diagrams, both reading

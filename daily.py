@@ -1,4 +1,4 @@
-"""CLI entry-point for the Geyer mast monitoring pipeline.
+"""CLI entry-point for the tower monitoring pipeline.
 
 Run the file-info scan, statistics computation, OMA, and/or plotting for a
 given measurement quantity and look-back duration. Intended to be called from
@@ -12,7 +12,7 @@ import sys
 import getopt
 import numpy as np
 import pandas as pd
-import site_geyer  # registers and activates the Geyer site in the monitoring engine  # noqa: F401
+import site_tower  # registers and activates the tower site in the monitoring engine  # noqa: F401
 from monitoring import get_file_info, get_file_list, round_dt, get_stats, get_modal_results
 import config
 from post_processing import plot_daily, plot_waterfall
@@ -86,7 +86,7 @@ def main(argv):
     _subpath = config.subpaths[quantity]
     origin = config.origins[quantity]
     
-    start_up_str = 'Geyer Monitoring System - Commandline Tool\n\n'
+    start_up_str = 'Tower Monitoring System - Commandline Tool\n\n'
     start_up_str += 'Selected parameters:\n'
     start_up_str += f'Quantity: \t\t {quantity}\n'
     start_up_str += f'Duration: \t\t {minutes} minutes\n'

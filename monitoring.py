@@ -1,5 +1,5 @@
 '''
-A data-organization, -storage and analysis scheme for monitoring system “Geyer”
+A data-organization, -storage and analysis scheme for long-term tower monitoring
 
 store binary files on hard disk
 time synchronization must be achieved prior to analysis:

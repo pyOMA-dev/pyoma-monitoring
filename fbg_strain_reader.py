@@ -1,4 +1,4 @@
-"""Low-level reader for LabVIEW binary files produced by the Geyer mast DAQ.
+"""Low-level reader for LabVIEW binary files produced by the tower DAQ.
 
 Parses the proprietary binary format written by LabVIEW into numpy arrays,
 detects missing peaks (marked as NaN), and returns per-channel time-series
@@ -243,7 +243,7 @@ def read_bin(inFileName, stats_only=False, wavepower=False, indices_only=False, 
     headers=[]
     for channel, channel_data in enumerate(channelData):
         if channel == 0:
-            continue#skip the first row for Geyer Monitoring system
+            continue  # skip the first row for the tower monitoring system
         arrays.append(np.vstack(channel_data))
         headers += namesChannels[channel]
     
@@ -253,7 +253,7 @@ def read_bin(inFileName, stats_only=False, wavepower=False, indices_only=False, 
         headersPow=[]
         for channel, channel_data in enumerate(channelDataPow):
             if channel == 0:
-                continue#skip the first row for Geyer Monitoring system
+                continue  # skip the first row for the tower monitoring system
             arraysPow.append(np.vstack(channel_data))
             headersPow += namesChannels[channel]
         #print([len(abc) for abc   in arraysPow])

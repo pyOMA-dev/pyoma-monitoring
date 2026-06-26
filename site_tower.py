@@ -1,16 +1,16 @@
-"""Geyer mast monitoring — site-specific callbacks and registration.
+"""Tower monitoring — site-specific callbacks and registration.
 
-All knowledge that is particular to the Geyer site lives here:
-  * File-list discovery (Geyer-specific filename patterns)
+All knowledge that is particular to the tower site lives here:
+  * File-list discovery (tower-specific filename patterns)
   * Wind-direction math (wind_transform, compensate_wind_jumps, …)
   * FBG strain conversion and temperature compensation
   * Channel-to-DOF mapping for modal analysis
   * Synchronisation-era policy (the 2016/2018/2019 cutoffs)
   * Modal frequency bands for split_modepairs
 
-Import this module to register and activate the Geyer site in the engine::
+Import this module to register and activate the tower site in the engine::
 
-    import site_geyer          # registers on import
+    import site_tower          # registers on import
 """
 # coding: utf-8
 
@@ -325,14 +325,14 @@ def strain_manipulate_transform(
 # Site transform callbacks
 # ---------------------------------------------------------------------------
 
-def _geyer_wind_transform(start_time, headers, units, end_time, sample_rate, measurement,
+def _tower_wind_transform(start_time, headers, units, end_time, sample_rate, measurement,
                            quantity=None, **kwargs):
     return wind_transform(start_time, headers, units, end_time, sample_rate, measurement)
 
 
-def _geyer_strain_transform(start_time, headers, units, end_time, sample_rate, measurement,
+def _tower_strain_transform(start_time, headers, units, end_time, sample_rate, measurement,
                               quantity=None, start_time_local=None, duration=None, **kwargs):
-    """Geyer FBG strain transform — only applies to pre-2018 files."""
+    """Tower FBG strain transform — only applies to pre-2018 files."""
     if start_time_local is None or start_time_local >= pd.Timestamp('2018-01-12', tz='Europe/Berlin'):
         return start_time, headers, units, end_time, sample_rate, measurement
 
@@ -376,7 +376,7 @@ def _geyer_strain_transform(start_time, headers, units, end_time, sample_rate, m
 # Geometry / DOF setup for modal analysis
 # ---------------------------------------------------------------------------
 
-def _geyer_setup_accel(headers):
+def _tower_setup_accel(headers):
     ref_channels = [headers.index('Accel_01'), headers.index('Accel_02')]
     accel_channels = list(range(len(headers)))
     disp_channels = []
@@ -397,7 +397,7 @@ def _geyer_setup_accel(headers):
     return ref_channels, accel_channels, disp_channels, chan_dofs_dict
 
 
-def _geyer_setup_strain_rosettes(headers):
+def _tower_setup_strain_rosettes(headers):
     ref_channels = [
         headers.index('A_zt'),
         headers.index('B_zt'),
@@ -427,8 +427,8 @@ def _geyer_setup_strain_rosettes(headers):
 # Synchronisation-era policy
 # ---------------------------------------------------------------------------
 
-def _geyer_sync_policy(start_time, file_time, duration):
-    """Return the correct synchronised start time for the Geyer mast recording eras."""
+def _tower_sync_policy(start_time, file_time, duration):
+    """Return the correct synchronised start time for the tower recording eras."""
     if start_time < berlin_dst.localize(datetime.datetime(2016, 12, 15)):
         return start_time
     if start_time < berlin_dst.localize(datetime.datetime(2018, 1, 25)):
@@ -442,7 +442,7 @@ def _geyer_sync_policy(start_time, file_time, duration):
 # Site data constants
 # ---------------------------------------------------------------------------
 
-_GEYER_MODAL_BANDS = [
+_TOWER_MODAL_BANDS = [
     (0.34, 0.38),
     (0.60, 0.65),
     (1.2,  1.4),
@@ -450,7 +450,7 @@ _GEYER_MODAL_BANDS = [
     (3.2,  3.55),
 ]
 
-_GEYER_ERROR_RULES = {
+_TOWER_ERROR_RULES = {
     'accel':           {'kurtosis_max': 5, 'kurtosis_min': -2},
     'strain_rosettes': {'kurtosis_max': 5, 'kurtosis_min': -2},
 }
@@ -460,8 +460,8 @@ _GEYER_ERROR_RULES = {
 # File-list discovery
 # ---------------------------------------------------------------------------
 
-def _geyer_get_file_list(origin, reduced=False, file_info=None):
-    """Return all data file paths for the given Geyer origin."""
+def _tower_get_file_list(origin, reduced=False, file_info=None):
+    """Return all data file paths for the given tower origin."""
     path = os.path.join(config.file_root_path, config.subpaths[origin])
     path = os.path.normpath(path)
     if not os.path.exists(path):
@@ -541,7 +541,7 @@ def _geyer_get_file_list(origin, reduced=False, file_info=None):
 # Wind-direction circular mean for describe_stats
 # ---------------------------------------------------------------------------
 
-def _geyer_channel_mean_fn(header, measurement, headers):
+def _tower_channel_mean_fn(header, measurement, headers):
     """Return orthogonal-LSQ mean for wind-direction channels; None for all others."""
     suffix = header.replace('Wr', '')
     wx_key = 'Wx' + suffix
@@ -557,7 +557,7 @@ def _geyer_channel_mean_fn(header, measurement, headers):
 # Pre-processing channel selection for OMA
 # ---------------------------------------------------------------------------
 
-_GEYER_PREPROC_CHANNELS = {
+_TOWER_PREPROC_CHANNELS = {
     'strain_rosettes': [
         'A_z', 'A_t', 'A_zt',
         'B_z', 'B_t', 'B_zt',
@@ -576,31 +576,31 @@ _GEYER_PREPROC_CHANNELS = {
 # Site registration
 # ---------------------------------------------------------------------------
 
-def register_geyer_site():
-    """Register and activate the Geyer site in the monitoring engine.
+def register_tower_site():
+    """Register and activate the tower site in the monitoring engine.
 
     Called automatically when this module is imported. Can be called again
     safely (idempotent — it simply overwrites the registry entry).
     """
     import monitoring as _m  # late import avoids circular dependency at load time
 
-    geyer_site = _m.Site(
-        name="geyer",
+    tower_site = _m.Site(
+        name="tower",
         transforms={
-            'wind':            _geyer_wind_transform,
-            'strain_rosettes': _geyer_strain_transform,
-            'strain_bolts':    _geyer_strain_transform,
+            'wind':            _tower_wind_transform,
+            'strain_rosettes': _tower_strain_transform,
+            'strain_bolts':    _tower_strain_transform,
         },
         setup_prep={
-            'accel':           _geyer_setup_accel,
-            'strain_rosettes': _geyer_setup_strain_rosettes,
+            'accel':           _tower_setup_accel,
+            'strain_rosettes': _tower_setup_strain_rosettes,
         },
-        error_rules=_GEYER_ERROR_RULES,
-        sync_policy=_geyer_sync_policy,
-        modal_bands=_GEYER_MODAL_BANDS,
-        file_list_fn=_geyer_get_file_list,
-        channel_mean_fn=_geyer_channel_mean_fn,
-        preproc_channels=_GEYER_PREPROC_CHANNELS,
+        error_rules=_TOWER_ERROR_RULES,
+        sync_policy=_tower_sync_policy,
+        modal_bands=_TOWER_MODAL_BANDS,
+        file_list_fn=_tower_get_file_list,
+        channel_mean_fn=_tower_channel_mean_fn,
+        preproc_channels=_TOWER_PREPROC_CHANNELS,
         # Site-specific configuration (previously imported directly from config.py by the engine)
         db_root_path=config.db_root_path,
         slice_root_path=config.slice_root_path,
@@ -614,8 +614,8 @@ def register_geyer_site():
         ranges=config.ranges,
     )
 
-    _m.register_site(geyer_site)
-    _m.set_active_site(geyer_site)
+    _m.register_site(tower_site)
+    _m.set_active_site(tower_site)
 
 
-register_geyer_site()
+register_tower_site()

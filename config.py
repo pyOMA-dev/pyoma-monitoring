@@ -1,4 +1,4 @@
-"""Centralised project configuration for the Geyer mast monitoring pipeline.
+"""Centralised project configuration for the tower monitoring pipeline.
 
 This module is a singleton state object: it is imported by all pipeline
 modules and holds file-system paths, channel definitions, physical plausibility

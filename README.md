@@ -37,7 +37,7 @@ Gantner Q.station controller
 fbg_strain_reader.py / gantner_reader.py      ← low-level binary readers
         │
         ▼
-site_geyer.py  ──► config.py                  ← tower-specific configuration
+site_tower.py  ──► config.py                  ← tower-specific configuration
         │            (paths, channels, ranges)
         │  registers Site dataclass in monitoring engine
         ▼
@@ -56,7 +56,7 @@ daily.py  (CLI entry-point, called by daily2.sh cron wrapper)
 The engine (`monitoring.py`) is site-agnostic — it never imports `config.py`
 directly. All site-specific knowledge (paths, channel lists, file-name patterns,
 signal transforms, sync policy) is encapsulated in the `Site` dataclass and
-registered by `site_geyer.py` at import time via `register_site()` /
+registered by `site_tower.py` at import time via `register_site()` /
 `set_active_site()`. To adapt the pipeline to a different monitoring site,
 write a new `site_<name>.py` and import it instead.
 
@@ -89,7 +89,7 @@ Python ≥ 3.9 is required.
 
 ## Configuration
 
-All tower-specific settings live in `config.py`. They are read by `site_geyer.py`
+All tower-specific settings live in `config.py`. They are read by `site_tower.py`
 at import time and stored in the `Site` dataclass that is registered with the
 engine. Before using the pipeline on a new deployment, update `config.py` with
 the correct values:
