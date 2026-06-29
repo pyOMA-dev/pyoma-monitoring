@@ -7,7 +7,7 @@ name = "pyOMA-Monitoring"
 version = "0.1.0a1"
 description = "Structural Monitoring with pyOMA"
 readme = "README.md"
-license = { file = "LICENSE" }
+license = "MIT"
 authors = [
     { name = "Simon Marwitz", email = "25247720+simonmarwitz@users.noreply.github.com" },
     { name = "Volkmar Zabel" },
@@ -45,3 +45,5 @@ dependencies = [
     "pyOMA",
     "pyyaml",
 ]
+[tool.setuptools]
+py-modules = ["monitoring", "daily", "config", "gantner_reader", "fbg_strain_reader", "post_processing", "time_convention", "site_tower", "site_example", "MultiLock"]
