@@ -1,0 +1,158 @@
+\begin{tikzpicture}
+
+
+
+\node (vr) at (-4,0) {};
+\node (vl) at (-6,0) {};
+
+\node (hr) at ($(vr)+(1.5,1)$) {};
+\node (hl) at ($(vl)+(1.5,1)$) {};
+
+\node (v2) at ($(vr.center)+.7*(1.5,1)$) {};
+\node (v4) at ($(vr.center)+.3*(1.5,1)$) {};
+
+\fill[red!50!white] (hr.center)--(hl.center)--(vl.center)--(vr.center)--(v4.center) -- ($(v4.center)-(.5,0)$) -- ($(v4.center)-(.5,0)+.1*(1.5,1)$) -- ($(v4.center)-(.75,0)+.1*(1.5,1)$) -- ($(v2.center)-(.75,0)-.2*(1.5,1)$) -- ($(v2.center)-(.25,0)-.2*(1.5,1)$) -- ($(v2.center)-(.25,0)$) -- (v2.center) --(hr.center);
+\draw (hr.center)--(hl.center)--(vl.center)--(vr.center)--(v4.center) -- ($(v4.center)-(.5,0)$) -- ($(v4.center)-(.5,0)+.1*(1.5,1)$) -- ($(v4.center)-(.75,0)+.1*(1.5,1)$) -- ($(v2.center)-(.75,0)-.2*(1.5,1)$) -- ($(v2.center)-(.25,0)-.2*(1.5,1)$) -- ($(v2.center)-(.25,0)$) -- (v2.center) --(hr.center);
+
+\fill[red!50!white] ($(hr) +.2*(1.5,1)$) -- ($(hl) +.2*(1.5,1)$) -- ($(hl) +.4*(1.5,1)$)--($(hr) +.4*(1.5,1)$) -- ($(hr) +.2*(1.5,1)$);
+\draw ($(hr) +.2*(1.5,1)$) -- ($(hl) +.2*(1.5,1)$) -- ($(hl) +.4*(1.5,1)$)--($(hr) +.4*(1.5,1)$) -- ($(hr) +.2*(1.5,1)$);
+% \foreach \x in {-1.75,-2,...,-2.75} \draw[help lines,black] (\x,3) -- (\x+1.5,4);
+\foreach \i in {.1,.2,.3,.7,.8,.9,1} \draw[help lines,black] ($(vr.center)+\i*(1.5,1)$)--($(vl.center)+\i*(1.5,1)$);
+\draw[help lines, black] ($(vr)-(0.75,0)+.4*(1.5,1)$) -- ($(vl)+.4*(1.5,1)$);
+\draw[help lines, black] ($(vr)-(0.75,0)+.5*(1.5,1)$) -- ($(vl)+.5*(1.5,1)$);
+\draw[help lines, black] ($(vr)-(0.25,0)+.6*(1.5,1)$) -- ($(vl)+.6*(1.5,1)$);
+\foreach \x in {-4.75,-5,...,-5.75} \draw[help lines,black] (\x,0) -- (\x+1.5,1);
+\draw[help lines, black] ($(vr)-(.25,0)$) -- ($(vr)-(.25,0)+.3*(1.5,1)$);
+\draw[help lines, black] ($(vr)-(.5,0)$) -- ($(vr)-(.5,0)+.3*(1.5,1)$);
+
+\draw[help lines, black] ($(hr)-(.25,0)$) -- ($(hr)-(.25,0)-.3*(1.5,1)$);
+\draw[help lines, black] ($(hr)-(.5,0)$) -- ($(hr)-(.5,0)-.5*(1.5,1)$);
+\draw[help lines, black] ($(hr) +.3*(1.5,1)$)--($(hl) +.3*(1.5,1)$);
+
+\foreach \x in {-.25,-.5,-.75,...,-2} \draw[help lines, black] ($(hr) +(\x,0)+.4*(1.5,1)$)--($(hr) +(\x,0)+.2*(1.5,1)$);
+
+
+
+\node (vul) at (-3.25,0) {};
+\node (vur) at (-1,0) {};
+\node (vor) at (-1,3) {};
+\node (vol) at (-3.25,3) {};
+\node (hul) at (-1.25,1) {};
+\node (hur) at (0.5,1) {};
+\node (hor) at (0.5,4) {};
+\node (hol) at (-1.75,4) {};
+
+\node (v3) at ($(vur.center)+.7*(1.5,1)$) {};
+\node (v5) at ($(vur.center)+.3*(1.5,1)$) {};
+
+\node (v2) at ($(vor.center)+.7*(1.5,1)$) {};
+\node (v4) at ($(vor.center)+.3*(1.5,1)$) {};
+
+\draw[fill,blue!50!white,opacity=.75]  (vur) rectangle (vol);
+\fill [blue!50!white,opacity=.75] (vur.center) -- (hur.center) -- (hor.center) -- (vor.center);
+\fill [blue!50!white,opacity=.75] (vor.center) -- (hor.center) -- (hol.center) -- (vol.center);
+\fill[blue!50!white,opacity=.75] ($(hur) +(0,0.5)+.2*(1.5,1)$)-- ($(hur) +(0,0.5)+.4*(1.5,1)$)--($(hor) +.4*(1.5,1)$)--($(hor) +.2*(1.5,1)$)--($(hur) +(0,0.5)+.2*(1.5,1)$);
+\fill[blue!50!white,opacity=.75] ($(hor) +.2*(1.5,1)$) -- ($(hol) +.2*(1.5,1)$) -- ($(hol) +.4*(1.5,1)$)--($(hor) +.4*(1.5,1)$);
+\fill[blue!50!white,opacity=.75] ($(hur) +(0,0.5)+.2*(1.5,1)$)--($(hor) +.2*(1.5,1)$)-- ($(hol) +.2*(1.5,1)$)-- ($(hol) -(0,0.195)+.2*(1.5,1)$)-- ($(hor)$)-- ($(hur)+(0,0.5)+(0,0.195)$)--($(hur) +(0,0.5)+.2*(1.5,1)$);
+
+\draw [help lines,black, step=0.25] (vol) grid (vur);
+
+\foreach \y in {.25,.5,...,2.75} \draw[help lines,black] (-1,\y) -- (-0.55,\y+.3);
+\foreach \y in {.25,.5,...,2.75} \draw[help lines,black] (0.05,\y+.7) -- (.5,\y+1);
+\foreach \x in {-1.75,-2,...,-3} \draw[help lines,black] (\x,3) -- (\x+1.5,4);
+\foreach \i in {.1,.2,.3,.7,.8,.9,1} \draw[help lines,black] ($(vur.center)+\i*(1.5,1)$) -- ($(vor.center)+\i*(1.5,1)$)--($(vol.center)+\i*(1.5,1)$);
+\foreach \y in {.25,.5,...,2.75} \draw[help lines,black] ($(v3)+\y*(0,1)$) -- ($(v3)-(0.25,0)+\y*(0,1)$) -- ($(v3)-(0.25,0)-.2*(1.5,1)+\y*(0,1)$) -- ($(v3)-(0.3,0)-.2*(1.5,1)+\y*(0,1)$);
+
+\draw[help lines,black] ($(vur.center)-(.25,0)+.5*(1.5,1)$) -- ($(vor.center)-(.25,0)+.5*(1.5,1)$);
+\draw[help lines,black] ($(vur.center)-(.25,0)+.6*(1.5,1)$) -- ($(vor.center)-(.25,0)+.6*(1.5,1)$);
+\draw[help lines,black] ($(vur.center)-(.25,0)+.7*(1.5,1)$) -- ($(vor.center)-(.25,0)+.7*(1.5,1)$);
+
+\draw[help lines,black] ($(vur.center)-(.5,-2.8)+.5*(1.5,1)$) -- ($(vor.center)-(.5,0)+.5*(1.5,1)$);
+\draw[help lines,black] ($(vur.center)-(.75,-2.9)+.5*(1.5,1)$) -- ($(vor.center)-(.75,0)+.5*(1.5,1)$);
+\draw[help lines,black] ($(vur.center)-(.5,-2.9)+.4*(1.5,1)$) -- ($(vor.center)-(.5,0)+.4*(1.5,1)$);
+
+\draw[help lines, black] ($(vor)-(0.75,0)+.4*(1.5,1)$) -- ($(vol)+.4*(1.5,1)$);
+\draw[help lines, black] ($(vor)-(0.75,0)+.5*(1.5,1)$) -- ($(vol)+.5*(1.5,1)$);
+\draw[help lines, black] ($(vor)-(0.25,0)+.6*(1.5,1)$) -- ($(vol)+.6*(1.5,1)$);
+
+\draw[help lines, black] ($(vor)-(.25,0)$) -- ($(vor)-(.25,0)+.3*(1.5,1)$);
+\draw[help lines, black] ($(vor)-(.5,0)$) -- ($(vor)-(.5,0)+.3*(1.5,1)$);
+
+\draw[help lines, black] ($(hor)-(.25,0)$) -- ($(hor)-(.25,0)-.3*(1.5,1)$);
+\draw[help lines, black] ($(hor)-(.5,0)$) -- ($(hor)-(.5,0)-.5*(1.5,1)$);
+
+\draw[help lines, black] ($(hur) +(0,0.5)+.3*(1.5,1)$)--($(hor) +.3*(1.5,1)$)--($(hol) +.3*(1.5,1)$);
+\draw[help lines, black] ($(hur) +(-0.25,0.5)+.2*(1.5,1)$)--($(hor) +(-0.25,0)+.2*(1.5,1)$)--($(hor) +(-0.25,0)+.4*(1.5,1)$);
+
+\foreach \x in {-.5,-.75,...,-2} \draw[help lines, black] ($(hor) +(\x,0)+.4*(1.5,1)$)--($(hor) +(\x,0)+.2*(1.5,1)$)--($(hor) +(\x,-.2)+.2*(1.5,1)$);
+
+\foreach \y in {.5,.75,1,...,3} \draw[help lines, black] ($(hur) +(0,\y)+.4*(1.5,1)$)--($(hur) +(0,\y)+.2*(1.5,1)$)--($(hur) +(-.3,\y)+.2*(1.5,1)$);
+
+
+\draw (v4.center) -- ($(v4.center)-(.5,0)$) -- ($(v4.center)-(.5,0)+.1*(1.5,1)$) -- ($(v4.center)-(.75,0)+.1*(1.5,1)$) -- ($(v2.center)-(.75,0)-.2*(1.5,1)$) -- ($(v2.center)-(.25,0)-.2*(1.5,1)$) -- ($(v2.center)-(.25,0)$) -- (v2.center);
+
+\fill[white](v5.center) -- ($(v3)-(.3,0)-.2*(1.5,1)$) -- ($(v3)-(.25,0)-.2*(1.5,1)$) -- ($(v3)-(.25,0)$) -- (v3.center);
+\draw(v5.center) -- ($(v3)-(.3,0)-.2*(1.5,1)$) -- ($(v3)-(.25,0)-.2*(1.5,1)$) -- ($(v3)-(.25,0)$) -- (v3.center);
+
+\draw (v2.center) -- (v3.center);
+\draw (v4.center) -- (v5.center);
+
+\draw (vol.center) -- (hol.center) -- (hor.center) -- (hur.center) --(v3.center)(v5.center)-- (vur.center) -- (vul.center) -- (vol.center) -- (vor.center) --(v4.center)(v2.center)-- (hor.center);
+\draw (vur.center) -- (vor.center);
+
+
+\draw ($(hur) +(0,0.5)+.2*(1.5,1)$)-- ($(hur) +(0,0.5)+.4*(1.5,1)$)--($(hor) +.4*(1.5,1)$)--($(hor) +.2*(1.5,1)$)--($(hur) +(0,0.5)+.2*(1.5,1)$);
+\draw ($(hor) +.2*(1.5,1)$) -- ($(hol) +.2*(1.5,1)$) -- ($(hol) +.4*(1.5,1)$)--($(hor) +.4*(1.5,1)$);
+\draw ($(hur)+(0,0.5)+(0,0.195)$)--($(hur) +(0,0.5)+.2*(1.5,1)$);
+\draw ($(hol) +.2*(1.5,1)$)-- ($(hol) -(0,0.195)+.2*(1.5,1)$);
+
+% \draw[very thin, densely dashed] ($(hur)$)--($(hur) +.4*(1.5,1)$)--($(hur)+(0,0.5) +.4*(1.5,1)$); 
+
+\node (vur) at (0,0) {};
+\node (vor) at (0,3) {};
+\node (hur) at (1.5,1) {};
+\node (hor) at (1.5,4) {};
+
+\fill [green!70!white,opacity=.5] (vur.center) -- (hur.center) -- (hor.center) -- (vor.center);
+\fill[green!70!white,opacity=.5] ($(hur) +(0,0.5)+.2*(1.5,1)$)-- ($(hur) +(0,0.5)+.4*(1.5,1)$)--($(hor) +.4*(1.5,1)$)--($(hor) +.2*(1.5,1)$)--($(hur) +(0,0.5)+.2*(1.5,1)$);
+
+\foreach \y in {.25,.5,...,2.75} \draw[help lines,black] ($(vur)+(0,\y)$)--($(vur)+(1.5,\y+1)$);
+\foreach \i in {.1,.2,...,1} \draw[help lines,black] ($(vur)+\i*(1.5,1)$)--($(vor)+\i*(1.5,1)$);
+
+
+\foreach \y in {.25,.5,...,2.25} \draw[help lines,black] ($(hur) +(0,0.5)+.2*(1.5,1)+(0,\y)$)--($(hur) +(0,0.5)+.2*(1.5,1)+(.2*1.5,\y+.2*1)$);
+\foreach \i in {.1,.2} \draw[help lines,black] ($(hur) +(0,0.5)+.2*(1.5,1)+\i*(1.5,1)$)--($(hor) +.2*(1.5,1)+\i*(1.5,1)$);
+
+\draw (vur.center) -- (hur.center) -- (hor.center) -- (vor.center) -- (vur.center);
+\draw ($(hur) +(0,0.5)+.2*(1.5,1)$)-- ($(hur) +(0,0.5)+.4*(1.5,1)$)--($(hor) +.4*(1.5,1)$)--($(hor) +.2*(1.5,1)$)--($(hur) +(0,0.5)+.2*(1.5,1)$);
+
+
+
+\fill[orange!90!white,opacity=75] (0.93,0) -- ($(0.93,0)+1*(1.5,1)$) -- ($(0.87,0)+1*(1.5,1)$)  -- (0.87,0);
+
+\fill[orange!90!white,opacity=75] ($(0.93,0)+1.2*(1.5,1)$)--($(0.93,0)+1.4*(1.5,1)$) --($(0.87,0)+1.4*(1.5,1)$)--($(0.87,0)+1.2*(1.5,1)$);
+\foreach \i in {0,.1,.2,...,1,1.2,1.3,1.4} \draw[help lines, black] ($(0.95,0)+\i*(1.5,1)$)--($(0.85,0)+\i*(1.5,1)$);
+
+
+\draw[->,thick] (2.2,0) node (v1) {} -- (5.2,0);
+\draw[->,thick] (v1.center) -- ($(v1)+(0,3)$);
+\draw[->,thick] (v1.center) -- ($(v1)+1.4*(1.5,1)$);
+
+\node at (5.2,0.3) {modes};
+\node at (2.9,3.2) {channels};
+\node at (4.5,1.6) {time};
+
+\node (v8) at (0.9,-0.3)  {};
+\node (v7) at (0,-0.3)  {};
+\node (v6) at (-2.1,-0.3)  {} ;
+\node (v5) at(-5.1,-0.3) {};
+\draw[<-] (v6.north) -- (v6.center) -- ($(v6)+.45*(1,-1)$);
+\draw[<-] (v7.north) -- (v7.center) -- ($(v7)+.45*(1,-1)$);
+\draw[<-] (v8.north) -- (v8.center) -- ($(v8)+.45*(1,-1)$);
+\draw[<-] (v5.north) --(v5.center) -- ($(v5)+.45*(1,-1)$);
+
+\node[rotate=-45,font=\small, align=right, text width=14ex] at ($(v8)+(1,-1)$) {duration, ...};
+\node[rotate=-45,font=\small, align=right, text width=10ex] at ($(v7)+(1,-1)$)  {kurtosis, RMS, ...};
+\node[rotate=-45,font=\small, align=right, text width=14ex] at ($(v6)+(1,-1)$)  {modeshapes, directions, ...};
+\node[rotate=-45,font=\small, align=right, text width=14ex] at ($(v5)+(1,-1)$)  {frequencies, damping, ...};
+\end{tikzpicture}

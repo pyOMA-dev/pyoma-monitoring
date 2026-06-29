@@ -1,0 +1,906 @@
+
+<!DOCTYPE html>
+
+
+<html lang="en" data-content_root="./" >
+
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" /><meta name="viewport" content="width=device-width, initial-scale=1" />
+
+    <title>Writing a Site Module &#8212; pyOMA-Monitoring  documentation</title>
+  
+  
+  
+  <script data-cfasync="false">
+    document.documentElement.dataset.mode = localStorage.getItem("mode") || "";
+    document.documentElement.dataset.theme = localStorage.getItem("theme") || "";
+  </script>
+  <!--
+    this give us a css class that will be invisible only if js is disabled
+  -->
+  <noscript>
+    <style>
+      .pst-js-only { display: none !important; }
+
+    </style>
+  </noscript>
+  
+  <!-- Loaded before other Sphinx assets -->
+  <link href="_static/styles/theme.css?digest=a95f357e85573c9b56d5" rel="stylesheet" />
+<link href="_static/styles/pydata-sphinx-theme.css?digest=a95f357e85573c9b56d5" rel="stylesheet" />
+
+    <link rel="stylesheet" type="text/css" href="_static/pygments.css?v=8f2a1f02" />
+    <link rel="stylesheet" type="text/css" href="_static/mystnb.11b39860a7a0cbfd473a3ad8a317855267ff0bd372690045ca344a6b62be495e.css" />
+    <link rel="stylesheet" type="text/css" href="_static/autoclasstoc.css?v=08871587" />
+  
+  <!-- So that users can add custom icons -->
+  <script defer src="_static/scripts/fontawesome.js?digest=a95f357e85573c9b56d5"></script>
+  <!-- Pre-loaded scripts that we'll load fully later -->
+  <link rel="preload" as="script" href="_static/scripts/bootstrap.js?digest=a95f357e85573c9b56d5" />
+<link rel="preload" as="script" href="_static/scripts/pydata-sphinx-theme.js?digest=a95f357e85573c9b56d5" />
+
+    <script src="_static/documentation_options.js?v=5929fcd5"></script>
+    <script src="_static/doctools.js?v=9bcbadda"></script>
+    <script src="_static/sphinx_highlight.js?v=dc90522c"></script>
+    <script>DOCUMENTATION_OPTIONS.pagename = 'site_module';</script>
+    <script>DOCUMENTATION_OPTIONS.search_as_you_type = false;</script>
+    <link rel="index" title="Index" href="genindex.html" />
+    <link rel="search" title="Search" href="search.html" />
+    <link rel="next" title="API Reference" href="api_reference.html" />
+    <link rel="prev" title="Configuration Guide" href="configuration.html" />
+  <meta name="viewport" content="width=device-width, initial-scale=1"/>
+  <meta name="docsearch:language" content="en"/>
+  <meta name="docsearch:version" content="" />
+  
+    
+    <script src="_static/searchtools.js"></script>
+    <script src="_static/language_data.js"></script>
+    <script src="searchindex.js"></script>
+  
+  </head>
+  <body data-default-mode="">
+  
+  
+  <div id="pst-skip-link" class="skip-link d-print-none"><a href="#main-content">Skip to main content</a></div>
+
+  
+  <div id="pst-scroll-pixel-helper"></div>
+  
+  <button type="button" class="btn rounded-pill" id="pst-back-to-top">
+    <i class="fa-solid fa-arrow-up"></i>Back to top</button>
+  
+  
+  
+  
+  <dialog id="pst-search-dialog">
+    
+<form class="bd-search d-flex align-items-center"
+      action="search.html"
+      method="get">
+  <i class="fa-solid fa-magnifying-glass"></i>
+  <input type="search"
+         class="form-control"
+         name="q"
+         placeholder="Search the docs ..."
+         aria-label="Search the docs ..."
+         autocomplete="off"
+         autocorrect="off"
+         autocapitalize="off"
+         spellcheck="false"/>
+  <span class="search-button__kbd-shortcut"><kbd class="kbd-shortcut__modifier">Ctrl</kbd>+<kbd>K</kbd></span>
+</form>
+  </dialog>
+
+  <div class="pst-async-banner-revealer d-none">
+  <aside id="bd-header-version-warning" class="d-none d-print-none" aria-label="Version warning"></aside>
+</div>
+
+  
+    <header id="pst-header" class="bd-header navbar navbar-expand-lg bd-navbar d-print-none">
+<div class="bd-header__inner bd-page-width">
+  <button class="pst-navbar-icon sidebar-toggle primary-toggle" aria-label="Site navigation">
+    <span class="fa-solid fa-bars"></span>
+  </button>
+  
+  
+  <div class=" navbar-header-items__start">
+    
+      <div class="navbar-item">
+
+  
+    
+  
+
+<a class="navbar-brand logo" href="index.html">
+  
+  
+  
+  
+  
+    
+    
+      
+    
+    
+    <img src="_static/logo.png" class="logo__image only-light" alt="pyOMA-Monitoring  documentation - Home"/>
+    <img src="_static/logo.png" class="logo__image only-dark pst-js-only" alt="pyOMA-Monitoring  documentation - Home"/>
+  
+  
+</a></div>
+    
+  </div>
+  
+  <div class=" navbar-header-items">
+    
+    <div class="me-auto navbar-header-items__center">
+      
+        <div class="navbar-item">
+<nav>
+  <ul class="bd-navbar-elements navbar-nav">
+    
+<li class="nav-item ">
+  <a class="nav-link nav-internal" href="architecture.html">
+    Architecture
+  </a>
+</li>
+
+
+<li class="nav-item ">
+  <a class="nav-link nav-internal" href="pipeline.html">
+    The Daily Processing Pipeline
+  </a>
+</li>
+
+
+<li class="nav-item ">
+  <a class="nav-link nav-internal" href="configuration.html">
+    Configuration Guide
+  </a>
+</li>
+
+
+<li class="nav-item current active">
+  <a class="nav-link nav-internal" href="#">
+    Writing a Site Module
+  </a>
+</li>
+
+
+<li class="nav-item ">
+  <a class="nav-link nav-internal" href="api_reference.html">
+    API Reference
+  </a>
+</li>
+
+  </ul>
+</nav></div>
+      
+    </div>
+    
+    
+    <div class="navbar-header-items__end">
+      
+        <div class="navbar-item navbar-persistent--container">
+          
+
+<button class="btn search-button-field search-button__button pst-js-only" title="Search" aria-label="Search" data-bs-placement="bottom" data-bs-toggle="tooltip">
+ <i class="fa-solid fa-magnifying-glass"></i>
+ <span class="search-button__default-text">Search</span>
+ <span class="search-button__kbd-shortcut"><kbd class="kbd-shortcut__modifier">Ctrl</kbd>+<kbd class="kbd-shortcut__modifier">K</kbd></span>
+</button>
+        </div>
+      
+      
+        <div class="navbar-item">
+
+<div class="theme-switch-container dropdown pst-js-only" data-bs-toggle="tooltip" data-bs-placement="bottom" title="Color mode">
+  <button class="btn btn-sm nav-link pst-navbar-icon theme-switch-button dropdown-toggle" aria-label="Color mode" data-bs-toggle="dropdown">
+    <i class="theme-switch fa-solid fa-sun fa-lg fa-fw" data-mode="light" title="Light"></i>
+    <i class="theme-switch fa-solid fa-moon fa-lg fa-fw" data-mode="dark" title="Dark"></i>
+    <i class="theme-switch fa-solid fa-circle-half-stroke fa-lg fa-fw" data-mode="auto" title="System Settings"></i>
+  </button>
+  <ul class="dropdown-menu dropdown-menu-end">
+    <li><button class="dropdown-item d-flex align-items-center theme-change-button" data-mode="auto"><i class="fa-solid fa-circle-half-stroke fa-lg fa-fw me-1"></i>System Settings</button></li>
+    <li><button class="dropdown-item d-flex align-items-center theme-change-button" data-mode="light"><i class="fa-solid fa-sun fa-lg fa-fw me-1"></i>Light</button></li>
+    <li><button class="dropdown-item d-flex align-items-center theme-change-button" data-mode="dark"><i class="fa-solid fa-moon fa-lg fa-fw me-1"></i>Dark</button></li>
+  </ul>
+</div></div>
+      
+        <div class="navbar-item"><ul class="navbar-icon-links"
+    aria-label="Icon Links">
+        <li class="nav-item">
+          
+          
+          
+          
+          
+          
+          
+          
+          <a href="https://github.com/pyOMA-dev/pyOMA-Monitoring" title="GitHub" class="nav-link pst-navbar-icon" rel="noopener" target="_blank" data-bs-toggle="tooltip" data-bs-placement="bottom"><i class="fa-brands fa-github fa-lg" aria-hidden="true"></i><span class="visually-hidden">GitHub</span></a>
+        </li>
+</ul></div>
+      
+    </div>
+    
+  </div>
+  
+  
+    <div class="navbar-persistent--mobile">
+
+<button class="btn search-button-field search-button__button pst-js-only" title="Search" aria-label="Search" data-bs-placement="bottom" data-bs-toggle="tooltip">
+ <i class="fa-solid fa-magnifying-glass"></i>
+ <span class="search-button__default-text">Search</span>
+ <span class="search-button__kbd-shortcut"><kbd class="kbd-shortcut__modifier">Ctrl</kbd>+<kbd class="kbd-shortcut__modifier">K</kbd></span>
+</button>
+    </div>
+  
+
+  
+    <button class="pst-navbar-icon sidebar-toggle secondary-toggle" aria-label="On this page">
+      <span class="fa-solid fa-outdent"></span>
+    </button>
+  
+</div>
+
+    </header>
+  
+
+  <div class="bd-container">
+    <div class="bd-container__inner bd-page-width">
+      
+      
+      
+      <dialog id="pst-primary-sidebar-modal"></dialog>
+      <div id="pst-primary-sidebar" class="bd-sidebar-primary bd-sidebar">
+        
+
+  
+  <div class="sidebar-header-items sidebar-primary__section">
+    
+    
+      <div class="sidebar-header-items__center">
+        
+          
+          
+            <div class="navbar-item">
+<nav>
+  <ul class="bd-navbar-elements navbar-nav">
+    
+<li class="nav-item ">
+  <a class="nav-link nav-internal" href="architecture.html">
+    Architecture
+  </a>
+</li>
+
+
+<li class="nav-item ">
+  <a class="nav-link nav-internal" href="pipeline.html">
+    The Daily Processing Pipeline
+  </a>
+</li>
+
+
+<li class="nav-item ">
+  <a class="nav-link nav-internal" href="configuration.html">
+    Configuration Guide
+  </a>
+</li>
+
+
+<li class="nav-item current active">
+  <a class="nav-link nav-internal" href="#">
+    Writing a Site Module
+  </a>
+</li>
+
+
+<li class="nav-item ">
+  <a class="nav-link nav-internal" href="api_reference.html">
+    API Reference
+  </a>
+</li>
+
+  </ul>
+</nav></div>
+          
+        
+      </div>
+    
+    
+    
+      <div class="sidebar-header-items__end">
+        
+          <div class="navbar-item">
+
+<div class="theme-switch-container dropdown pst-js-only" data-bs-toggle="tooltip" data-bs-placement="bottom" title="Color mode">
+  <button class="btn btn-sm nav-link pst-navbar-icon theme-switch-button dropdown-toggle" aria-label="Color mode" data-bs-toggle="dropdown">
+    <i class="theme-switch fa-solid fa-sun fa-lg fa-fw" data-mode="light" title="Light"></i>
+    <i class="theme-switch fa-solid fa-moon fa-lg fa-fw" data-mode="dark" title="Dark"></i>
+    <i class="theme-switch fa-solid fa-circle-half-stroke fa-lg fa-fw" data-mode="auto" title="System Settings"></i>
+  </button>
+  <ul class="dropdown-menu dropdown-menu-end">
+    <li><button class="dropdown-item d-flex align-items-center theme-change-button" data-mode="auto"><i class="fa-solid fa-circle-half-stroke fa-lg fa-fw me-1"></i>System Settings</button></li>
+    <li><button class="dropdown-item d-flex align-items-center theme-change-button" data-mode="light"><i class="fa-solid fa-sun fa-lg fa-fw me-1"></i>Light</button></li>
+    <li><button class="dropdown-item d-flex align-items-center theme-change-button" data-mode="dark"><i class="fa-solid fa-moon fa-lg fa-fw me-1"></i>Dark</button></li>
+  </ul>
+</div></div>
+        
+          <div class="navbar-item"><ul class="navbar-icon-links"
+    aria-label="Icon Links">
+        <li class="nav-item">
+          
+          
+          
+          
+          
+          
+          
+          
+          <a href="https://github.com/pyOMA-dev/pyOMA-Monitoring" title="GitHub" class="nav-link pst-navbar-icon" rel="noopener" target="_blank" data-bs-toggle="tooltip" data-bs-placement="bottom"><i class="fa-brands fa-github fa-lg" aria-hidden="true"></i><span class="visually-hidden">GitHub</span></a>
+        </li>
+</ul></div>
+        
+      </div>
+    
+  </div>
+  
+    <div class="sidebar-primary-items__start sidebar-primary__section">
+        <div class="sidebar-primary-item pst-sidebar-collapse"><button id="pst-collapse-sidebar-button" aria-expanded="true" aria-controls="pst-primary-sidebar"><svg class="pst-icon svg-inline--fa" role="img" aria-hidden="true" focusable="false" viewBox="0 0 16 16" xmlns="http://www.w3.org/2000/svg">
+    <path fill="currentColor" d="M3 15.5C2.36232 15.5 1.74874 15.2564 1.28478 14.8189C0.820828 14.3815 0.541576 13.7832 0.504167 13.1467L0.5 13L0.5 3C0.499965 2.36232 0.743605 1.74874 1.18107 1.28478C1.61854 0.820828 2.21676 0.541576 2.85333 0.504167L3 0.5L13 0.5C13.6377 0.499965 14.2513 0.743605 14.7152 1.18107C15.1792 1.61854 15.4584 2.21676 15.4958 2.85333L15.5 3L15.5 13C15.5 13.6377 15.2564 14.2513 14.8189 14.7152C14.3815 15.1792 13.7832 15.4584 13.1467 15.4958L13 15.5L3 15.5ZM3 13.8333L10.5 13.8333L10.5 2.16667L3 2.16667C2.79589 2.16669 2.59889 2.24163 2.44636 2.37726C2.29383 2.5129 2.19638 2.69979 2.1725 2.9025L2.16667 3L2.16667 13C2.16669 13.2041 2.24163 13.4011 2.37726 13.5536C2.5129 13.7062 2.69979 13.8036 2.9025 13.8275L3 13.8333ZM6.65583 10.325L6.5775 10.2558L4.91083 8.58917C4.76735 8.44567 4.68116 8.25476 4.66843 8.05223C4.65569 7.84971 4.71729 7.6495 4.84167 7.48917L4.91083 7.41083L6.5775 5.74417C6.72747 5.59471 6.9287 5.50794 7.14032 5.50148C7.35194 5.49502 7.55809 5.56935 7.7169 5.70937C7.8757 5.8494 7.97525 6.04463 7.99533 6.25539C8.01541 6.46616 7.95451 6.67667 7.825 6.84417L7.75583 6.9225L6.67917 8L7.75583 9.0775C7.89931 9.22099 7.98551 9.41191 7.99824 9.61443C8.01097 9.81695 7.94938 10.0172 7.825 10.1775L7.75583 10.2558C7.61234 10.3993 7.42142 10.4855 7.2189 10.4982C7.01638 10.511 6.81617 10.4494 6.65583 10.325Z"/>
+  </svg>
+  <span class="pst-collapse-sidebar-label">Collapse Sidebar</span>
+  <span class="pst-expand-sidebar-label">Expand Sidebar</span>
+</button></div>
+        <div class="sidebar-primary-item">
+
+<nav class="bd-docs-nav bd-links"
+     aria-label="Section Navigation">
+  <p class="bd-links__title" role="heading" aria-level="1">Section Navigation</p>
+  <div class="bd-toc-item navbar-nav"></div>
+</nav></div>
+    </div>
+  
+  
+  <div class="sidebar-primary-items__end sidebar-primary__section">
+      <div class="sidebar-primary-item">
+<div id="ethical-ad-placement"
+      class="flat"
+      data-ea-publisher="readthedocs"
+      data-ea-type="readthedocs-sidebar"
+      data-ea-manual="true">
+</div></div>
+  </div>
+
+
+      </div>
+      
+      <main id="main-content" class="bd-main" role="main">
+        
+        
+          <div class="bd-content">
+            <div class="bd-article-container">
+              
+              <div class="bd-header-article d-print-none">
+<div class="header-article-items header-article__inner">
+  
+    <div class="header-article-items__start">
+      
+        <div class="header-article-item">
+
+<nav aria-label="Breadcrumb" class="d-print-none">
+  <ul class="bd-breadcrumbs">
+    
+    <li class="breadcrumb-item breadcrumb-home">
+      <a href="index.html" class="nav-link" aria-label="Home">
+        <i class="fa-solid fa-home"></i>
+      </a>
+    </li>
+    <li class="breadcrumb-item active" aria-current="page"><span class="ellipsis">Writing a Site Module</span></li>
+  </ul>
+</nav>
+</div>
+      
+    </div>
+  
+  
+</div>
+</div>
+              
+              
+              
+                
+<div id="searchbox"></div>
+                <article class="bd-article">
+                  
+  <section id="writing-a-site-module">
+<span id="site-module"></span><h1>Writing a Site Module<a class="headerlink" href="#writing-a-site-module" title="Link to this heading">#</a></h1>
+<p>A <em>site module</em> is the single file that encapsulates everything specific to one
+monitoring deployment.  The generic engine in <code class="docutils literal notranslate"><span class="pre">monitoring.py</span></code> is completely
+site-agnostic; it delegates every site-dependent decision to callbacks
+registered through the <a class="reference internal" href="api_reference.html#monitoring.Site" title="monitoring.Site"><code class="xref py py-class docutils literal notranslate"><span class="pre">Site</span></code></a> dataclass.</p>
+<p><code class="docutils literal notranslate"><span class="pre">site_example.py</span></code> is a fully-documented template.  Copy it, rename it
+<code class="docutils literal notranslate"><span class="pre">site_&lt;yoursite&gt;.py</span></code>, fill in the stubs, and you have a working site.</p>
+<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="kn">import</span><span class="w"> </span><span class="nn">site_mysite</span>          <span class="c1"># registers and activates the site on import</span>
+<span class="kn">import</span><span class="w"> </span><span class="nn">monitoring</span>
+
+<span class="n">site</span> <span class="o">=</span> <span class="n">monitoring</span><span class="o">.</span><span class="n">get_active_site</span><span class="p">()</span>
+<span class="nb">print</span><span class="p">(</span><span class="n">site</span><span class="o">.</span><span class="n">name</span><span class="p">)</span>            <span class="c1"># &quot;mysite&quot;</span>
+</pre></div>
+</div>
+<section id="architecture-overview">
+<h2>Architecture overview<a class="headerlink" href="#architecture-overview" title="Link to this heading">#</a></h2>
+<div class="highlight-text notranslate"><div class="highlight"><pre><span></span>daily.py / notebook
+    │  import site_mysite
+    ▼
+site_mysite.py
+    │  reads paths / channel lists from a config file (or hard-codes them)
+    │  defines transform / setup_prep / sync_policy / file_list_fn callbacks
+    │  calls register_site() + set_active_site()  ──►  monitoring.py
+    ▼
+monitoring.py   (site-agnostic engine)
+    │  get_file_list()          uses  site.file_list_fn
+    │  get_slice_corrected()    uses  site.transforms
+    │  describe_stats()         uses  site.ranges, site.error_rules,
+    │                                 site.channel_mean_fn
+    │  create_stats()           uses  site.origins, site.dtstarts
+    │  modal_analysis_single()  uses  site.setup_prep
+    └──────────────────────────────────────────────────────────────────────
+</pre></div>
+</div>
+<p>The dependency arrow runs in one direction only: the site module imports the
+engine (lazily, inside functions), never the other way around.</p>
+</section>
+<section id="the-site-dataclass">
+<h2>The <code class="docutils literal notranslate"><span class="pre">Site</span></code> dataclass<a class="headerlink" href="#the-site-dataclass" title="Link to this heading">#</a></h2>
+<div class="pst-scrollable-table-container"><table class="table">
+<colgroup>
+<col style="width: 25.0%" />
+<col style="width: 20.0%" />
+<col style="width: 55.0%" />
+</colgroup>
+<thead>
+<tr class="row-odd"><th class="head"><p>Field</p></th>
+<th class="head"><p>Type</p></th>
+<th class="head"><p>Purpose</p></th>
+</tr>
+</thead>
+<tbody>
+<tr class="row-even"><td><p><code class="docutils literal notranslate"><span class="pre">name</span></code></p></td>
+<td><p><code class="docutils literal notranslate"><span class="pre">str</span></code></p></td>
+<td><p>Unique site identifier; used as registry key.</p></td>
+</tr>
+<tr class="row-odd"><td><p><code class="docutils literal notranslate"><span class="pre">transforms</span></code></p></td>
+<td><p><code class="docutils literal notranslate"><span class="pre">Dict[str,</span> <span class="pre">Callable]</span></code></p></td>
+<td><p>Per-quantity post-processing applied to every raw slice before it is
+stored.  See <a class="reference internal" href="#transform-callback"><span class="std std-ref">transforms[quantity] — slice transform</span></a>.</p></td>
+</tr>
+<tr class="row-even"><td><p><code class="docutils literal notranslate"><span class="pre">setup_prep</span></code></p></td>
+<td><p><code class="docutils literal notranslate"><span class="pre">Dict[str,</span> <span class="pre">Callable]</span></code></p></td>
+<td><p>Per-quantity channel-role mapping fed into <code class="docutils literal notranslate"><span class="pre">PreProcessSignals</span></code> before
+OMA.  See <a class="reference internal" href="#setup-prep-callback"><span class="std std-ref">setup_prep[quantity] — OMA channel-role mapping</span></a>.</p></td>
+</tr>
+<tr class="row-odd"><td><p><code class="docutils literal notranslate"><span class="pre">error_rules</span></code></p></td>
+<td><p><code class="docutils literal notranslate"><span class="pre">Dict[str,</span> <span class="pre">dict]</span></code></p></td>
+<td><p>Kurtosis thresholds per quantity.  Keys: <code class="docutils literal notranslate"><span class="pre">kurtosis_max</span></code>,
+<code class="docutils literal notranslate"><span class="pre">kurtosis_min</span></code>.</p></td>
+</tr>
+<tr class="row-even"><td><p><code class="docutils literal notranslate"><span class="pre">sync_policy</span></code></p></td>
+<td><p><code class="docutils literal notranslate"><span class="pre">Callable</span></code></p></td>
+<td><p>Converts raw file timestamps to a canonical wall-clock time.
+See <a class="reference internal" href="#sync-policy-callback"><span class="std std-ref">sync_policy — timestamp correction</span></a>.</p></td>
+</tr>
+<tr class="row-odd"><td><p><code class="docutils literal notranslate"><span class="pre">modal_bands</span></code></p></td>
+<td><p><code class="docutils literal notranslate"><span class="pre">List[tuple]</span></code></p></td>
+<td><p><code class="docutils literal notranslate"><span class="pre">(f_lo,</span> <span class="pre">f_hi)</span></code> Hz bands used by <code class="docutils literal notranslate"><span class="pre">split_modepairs</span></code> to assign
+poles to named modes.</p></td>
+</tr>
+<tr class="row-even"><td><p><code class="docutils literal notranslate"><span class="pre">file_list_fn</span></code></p></td>
+<td><p><code class="docutils literal notranslate"><span class="pre">Callable</span></code></p></td>
+<td><p>Discovers raw data files on disk.  See <a class="reference internal" href="#file-list-callback"><span class="std std-ref">file_list_fn — file discovery</span></a>.</p></td>
+</tr>
+<tr class="row-odd"><td><p><code class="docutils literal notranslate"><span class="pre">channel_mean_fn</span></code></p></td>
+<td><p><code class="docutils literal notranslate"><span class="pre">Optional[Callable]</span></code></p></td>
+<td><p>Returns a custom mean for directional channels (e.g. wind direction),
+or <code class="docutils literal notranslate"><span class="pre">None</span></code> to fall back to the arithmetic mean.
+See <a class="reference internal" href="#channel-mean-callback"><span class="std std-ref">channel_mean_fn — custom channel mean</span></a>.</p></td>
+</tr>
+<tr class="row-even"><td><p><code class="docutils literal notranslate"><span class="pre">preproc_channels</span></code></p></td>
+<td><p><code class="docutils literal notranslate"><span class="pre">Dict[str,</span> <span class="pre">list]</span></code></p></td>
+<td><p>Channel names kept after band-pass / decimation pre-processing per
+quantity.</p></td>
+</tr>
+<tr class="row-odd"><td><p><code class="docutils literal notranslate"><span class="pre">db_root_path</span></code></p></td>
+<td><p><code class="docutils literal notranslate"><span class="pre">str</span></code></p></td>
+<td><p>Root directory for result databases (<code class="docutils literal notranslate"><span class="pre">file_info_*.nc</span></code>, etc.).</p></td>
+</tr>
+<tr class="row-even"><td><p><code class="docutils literal notranslate"><span class="pre">slice_root_path</span></code></p></td>
+<td><p><code class="docutils literal notranslate"><span class="pre">str</span></code></p></td>
+<td><p>Root directory for pre-processed signal slices (<code class="docutils literal notranslate"><span class="pre">.npz</span></code> files).</p></td>
+</tr>
+<tr class="row-odd"><td><p><code class="docutils literal notranslate"><span class="pre">modal_conf_dir</span></code></p></td>
+<td><p><code class="docutils literal notranslate"><span class="pre">str</span></code></p></td>
+<td><p>Directory containing OMA configuration files (<code class="docutils literal notranslate"><span class="pre">nodes</span></code>, <code class="docutils literal notranslate"><span class="pre">lines</span></code>,
+<code class="docutils literal notranslate"><span class="pre">ssi_config</span></code>, …).</p></td>
+</tr>
+<tr class="row-even"><td><p><code class="docutils literal notranslate"><span class="pre">file_root_path</span></code></p></td>
+<td><p><code class="docutils literal notranslate"><span class="pre">str</span></code></p></td>
+<td><p>Root directory of raw measurement files.</p></td>
+</tr>
+<tr class="row-odd"><td><p><code class="docutils literal notranslate"><span class="pre">origins</span></code></p></td>
+<td><p><code class="docutils literal notranslate"><span class="pre">Dict[str,</span> <span class="pre">str]</span></code></p></td>
+<td><p>Maps <em>quantity</em> → <em>origin tag</em> (the key used in <code class="docutils literal notranslate"><span class="pre">subpaths</span></code>,
+<code class="docutils literal notranslate"><span class="pre">all_channels</span></code>, and <code class="docutils literal notranslate"><span class="pre">dtstarts</span></code>).</p></td>
+</tr>
+<tr class="row-even"><td><p><code class="docutils literal notranslate"><span class="pre">subpaths</span></code></p></td>
+<td><p><code class="docutils literal notranslate"><span class="pre">Dict[str,</span> <span class="pre">str]</span></code></p></td>
+<td><p>Maps <em>origin tag</em> → relative sub-directory under <code class="docutils literal notranslate"><span class="pre">file_root_path</span></code>.</p></td>
+</tr>
+<tr class="row-odd"><td><p><code class="docutils literal notranslate"><span class="pre">all_channels</span></code></p></td>
+<td><p><code class="docutils literal notranslate"><span class="pre">Dict[str,</span> <span class="pre">list]</span></code></p></td>
+<td><p>Required channel names per quantity.  A slice missing any of these is
+discarded.</p></td>
+</tr>
+<tr class="row-even"><td><p><code class="docutils literal notranslate"><span class="pre">optional_channels</span></code></p></td>
+<td><p><code class="docutils literal notranslate"><span class="pre">Dict[str,</span> <span class="pre">list]</span></code></p></td>
+<td><p>Channel names that <em>may</em> be present but are not required.</p></td>
+</tr>
+<tr class="row-odd"><td><p><code class="docutils literal notranslate"><span class="pre">dtstarts</span></code></p></td>
+<td><p><code class="docutils literal notranslate"><span class="pre">Dict[str,</span> <span class="pre">object]</span></code></p></td>
+<td><p>Earliest available datetime per origin tag.  ISO string or
+<code class="docutils literal notranslate"><span class="pre">datetime.datetime</span></code>.</p></td>
+</tr>
+<tr class="row-even"><td><p><code class="docutils literal notranslate"><span class="pre">ranges</span></code></p></td>
+<td><p><code class="docutils literal notranslate"><span class="pre">Dict[str,</span> <span class="pre">tuple]</span></code></p></td>
+<td><p><code class="docutils literal notranslate"><span class="pre">(min,</span> <span class="pre">max)</span></code> plausibility range per channel name.  Samples outside
+this interval flag the slice as erroneous.</p></td>
+</tr>
+</tbody>
+</table>
+</div>
+</section>
+<section id="callback-reference">
+<h2>Callback reference<a class="headerlink" href="#callback-reference" title="Link to this heading">#</a></h2>
+<section id="transforms-quantity-slice-transform">
+<span id="transform-callback"></span><h3><code class="docutils literal notranslate"><span class="pre">transforms[quantity]</span></code> — slice transform<a class="headerlink" href="#transforms-quantity-slice-transform" title="Link to this heading">#</a></h3>
+<p><strong>Signature</strong>:</p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="k">def</span><span class="w"> </span><span class="nf">my_transform</span><span class="p">(</span>
+    <span class="n">start_time</span><span class="p">,</span>          <span class="c1"># timezone-aware datetime</span>
+    <span class="n">headers</span><span class="p">,</span>             <span class="c1"># List[str] — channel names, length N</span>
+    <span class="n">units</span><span class="p">,</span>               <span class="c1"># List[str] — unit strings, length N</span>
+    <span class="n">end_time</span><span class="p">,</span>            <span class="c1"># timezone-aware datetime</span>
+    <span class="n">sample_rate</span><span class="p">,</span>         <span class="c1"># float — samples per second</span>
+    <span class="n">measurement</span><span class="p">,</span>         <span class="c1"># np.ndarray — shape (T, N)</span>
+    <span class="n">quantity</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span>       <span class="c1"># str — injected by the engine</span>
+    <span class="o">**</span><span class="n">kwargs</span><span class="p">,</span>            <span class="c1"># start_time_local, duration, file_info_temp, …</span>
+<span class="p">):</span>
+    <span class="o">...</span>
+    <span class="k">return</span> <span class="n">start_time</span><span class="p">,</span> <span class="n">headers</span><span class="p">,</span> <span class="n">units</span><span class="p">,</span> <span class="n">end_time</span><span class="p">,</span> <span class="n">sample_rate</span><span class="p">,</span> <span class="n">measurement</span>
+    <span class="c1"># or return None  →  slice is discarded</span>
+</pre></div>
+</div>
+<dl class="simple">
+<dt><strong>When it is called</strong>:</dt><dd><p><code class="docutils literal notranslate"><span class="pre">monitoring.get_slice_corrected</span></code> applies this transform to every raw slice
+before saving it to disk.  It is called once per time window per quantity.</p>
+</dd>
+</dl>
+<p><strong>Contract</strong>:</p>
+<ul>
+<li><p>The returned 6-tuple must have the same structure as the input.
+<code class="docutils literal notranslate"><span class="pre">headers</span></code> and <code class="docutils literal notranslate"><span class="pre">measurement</span></code> may be modified (e.g. columns added /
+removed, values transformed); <code class="docutils literal notranslate"><span class="pre">T</span></code> and <code class="docutils literal notranslate"><span class="pre">N</span></code> must remain consistent.</p></li>
+<li><p>Return <code class="docutils literal notranslate"><span class="pre">None</span></code> to signal that the slice is invalid and should not be stored.</p></li>
+<li><p>The callback may call back into the engine (e.g. <code class="docutils literal notranslate"><span class="pre">monitoring.get_slice</span></code>)
+to fetch auxiliary data.  Use a <strong>lazy import</strong> to avoid a circular import
+at module-load time:</p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="k">def</span><span class="w"> </span><span class="nf">my_transform</span><span class="p">(</span><span class="o">...</span><span class="p">):</span>
+    <span class="kn">import</span><span class="w"> </span><span class="nn">monitoring</span><span class="w"> </span><span class="k">as</span><span class="w"> </span><span class="nn">_m</span>   <span class="c1"># inside the function — safe</span>
+    <span class="n">aux</span> <span class="o">=</span> <span class="n">_m</span><span class="o">.</span><span class="n">get_slice</span><span class="p">(</span><span class="o">...</span><span class="p">)</span>
+</pre></div>
+</div>
+</li>
+</ul>
+<dl class="simple">
+<dt><strong>Quantities with no transform</strong>:</dt><dd><p>Simply omit the quantity from the <code class="docutils literal notranslate"><span class="pre">transforms</span></code> dict.  The engine will use
+the raw slice unchanged.</p>
+</dd>
+</dl>
+</section>
+<section id="setup-prep-quantity-oma-channel-role-mapping">
+<span id="setup-prep-callback"></span><h3><code class="docutils literal notranslate"><span class="pre">setup_prep[quantity]</span></code> — OMA channel-role mapping<a class="headerlink" href="#setup-prep-quantity-oma-channel-role-mapping" title="Link to this heading">#</a></h3>
+<p><strong>Signature</strong>:</p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="k">def</span><span class="w"> </span><span class="nf">my_setup</span><span class="p">(</span><span class="n">headers</span><span class="p">):</span>          <span class="c1"># List[str]</span>
+    <span class="o">...</span>
+    <span class="k">return</span> <span class="n">ref_channels</span><span class="p">,</span> <span class="n">accel_channels</span><span class="p">,</span> <span class="n">disp_channels</span><span class="p">,</span> <span class="n">chan_dofs_dict</span>
+</pre></div>
+</div>
+<p><strong>Return values</strong>:</p>
+<ul class="simple">
+<li><p><code class="docutils literal notranslate"><span class="pre">ref_channels</span></code> — <code class="docutils literal notranslate"><span class="pre">List[int]</span></code>: indices of reference channels in <em>headers</em>.</p></li>
+<li><p><code class="docutils literal notranslate"><span class="pre">accel_channels</span></code> — <code class="docutils literal notranslate"><span class="pre">List[int]</span></code>: indices of all acceleration channels.</p></li>
+<li><p><code class="docutils literal notranslate"><span class="pre">disp_channels</span></code> — <code class="docutils literal notranslate"><span class="pre">List[int]</span></code>: indices of all displacement channels
+(pass <code class="docutils literal notranslate"><span class="pre">[]</span></code> when none).</p></li>
+<li><p><code class="docutils literal notranslate"><span class="pre">chan_dofs_dict</span></code> — <code class="docutils literal notranslate"><span class="pre">Dict[str,</span> <span class="pre">list]</span></code>: mapping <em>channel name</em> →
+<code class="docutils literal notranslate"><span class="pre">[node_id,</span> <span class="pre">azimuth_deg,</span> <span class="pre">inclination_deg]</span></code>.</p></li>
+</ul>
+<dl class="simple">
+<dt><strong>When it is called</strong>:</dt><dd><p><code class="docutils literal notranslate"><span class="pre">monitoring.modal_analysis_single</span></code> calls this once per slice before
+constructing a <code class="docutils literal notranslate"><span class="pre">PreProcessSignals</span></code> object.</p>
+</dd>
+</dl>
+</section>
+<section id="sync-policy-timestamp-correction">
+<span id="sync-policy-callback"></span><h3><code class="docutils literal notranslate"><span class="pre">sync_policy</span></code> — timestamp correction<a class="headerlink" href="#sync-policy-timestamp-correction" title="Link to this heading">#</a></h3>
+<p><strong>Signature</strong>:</p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="k">def</span><span class="w"> </span><span class="nf">my_sync_policy</span><span class="p">(</span><span class="n">start_time</span><span class="p">,</span> <span class="n">file_time</span><span class="p">,</span> <span class="n">duration</span><span class="p">):</span>
+    <span class="o">...</span>
+    <span class="k">return</span> <span class="n">corrected_start_time</span>    <span class="c1"># timezone-aware datetime</span>
+</pre></div>
+</div>
+<p><strong>Parameters</strong>:</p>
+<ul class="simple">
+<li><p><code class="docutils literal notranslate"><span class="pre">start_time</span></code> — timezone-aware <code class="docutils literal notranslate"><span class="pre">datetime</span></code>: timestamp embedded in the
+file header.</p></li>
+<li><p><code class="docutils literal notranslate"><span class="pre">file_time</span></code> — timezone-aware <code class="docutils literal notranslate"><span class="pre">datetime</span></code>: filesystem modification time.</p></li>
+<li><p><code class="docutils literal notranslate"><span class="pre">duration</span></code> — <code class="docutils literal notranslate"><span class="pre">datetime.timedelta</span></code>: recording length.</p></li>
+</ul>
+<dl>
+<dt><strong>When it is called</strong>:</dt><dd><p><code class="docutils literal notranslate"><span class="pre">monitoring.create_file_info</span></code> calls this for every file, and
+<code class="docutils literal notranslate"><span class="pre">monitoring.get_slice</span></code> calls it for every constituent file of a slice.
+The returned value is used as the <code class="docutils literal notranslate"><span class="pre">time</span></code> coordinate in all databases.</p>
+</dd>
+<dt><strong>Default behaviour</strong>:</dt><dd><p>Return <em>start_time</em> unchanged when the embedded timestamp is reliable:</p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="k">def</span><span class="w"> </span><span class="nf">my_sync_policy</span><span class="p">(</span><span class="n">start_time</span><span class="p">,</span> <span class="n">file_time</span><span class="p">,</span> <span class="n">duration</span><span class="p">):</span>
+    <span class="k">return</span> <span class="n">start_time</span>
+</pre></div>
+</div>
+</dd>
+</dl>
+</section>
+<section id="file-list-fn-file-discovery">
+<span id="file-list-callback"></span><h3><code class="docutils literal notranslate"><span class="pre">file_list_fn</span></code> — file discovery<a class="headerlink" href="#file-list-fn-file-discovery" title="Link to this heading">#</a></h3>
+<p><strong>Signature</strong>:</p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="k">def</span><span class="w"> </span><span class="nf">my_get_file_list</span><span class="p">(</span><span class="n">origin</span><span class="p">,</span> <span class="n">reduced</span><span class="o">=</span><span class="kc">False</span><span class="p">,</span> <span class="n">file_info</span><span class="o">=</span><span class="kc">None</span><span class="p">):</span>
+    <span class="o">...</span>
+    <span class="k">return</span> <span class="p">[</span><span class="s2">&quot;/abs/path/to/file1&quot;</span><span class="p">,</span> <span class="s2">&quot;/abs/path/to/file2&quot;</span><span class="p">,</span> <span class="o">...</span><span class="p">]</span>
+</pre></div>
+</div>
+<p><strong>Parameters</strong>:</p>
+<ul class="simple">
+<li><p><code class="docutils literal notranslate"><span class="pre">origin</span></code> — <code class="docutils literal notranslate"><span class="pre">str</span></code>: origin tag (a value from <code class="docutils literal notranslate"><span class="pre">Site.origins</span></code>).</p></li>
+<li><p><code class="docutils literal notranslate"><span class="pre">reduced</span></code> — <code class="docutils literal notranslate"><span class="pre">bool</span></code>: when <code class="docutils literal notranslate"><span class="pre">True</span></code>, return only files not yet present in
+<em>file_info</em>.</p></li>
+<li><p><code class="docutils literal notranslate"><span class="pre">file_info</span></code> — <code class="docutils literal notranslate"><span class="pre">xr.Dataset</span> <span class="pre">|</span> <span class="pre">None</span></code>: current <code class="docutils literal notranslate"><span class="pre">file_info_&lt;origin&gt;.nc</span></code>
+database.  Present when <code class="docutils literal notranslate"><span class="pre">reduced=True</span></code>; <code class="docutils literal notranslate"><span class="pre">None</span></code> otherwise.</p></li>
+</ul>
+<dl class="simple">
+<dt><strong>When it is called</strong>:</dt><dd><p><code class="docutils literal notranslate"><span class="pre">monitoring.get_file_list</span></code> and <code class="docutils literal notranslate"><span class="pre">monitoring.create_file_info</span></code> call this
+to discover which raw files to process.</p>
+</dd>
+</dl>
+</section>
+<section id="channel-mean-fn-custom-channel-mean">
+<span id="channel-mean-callback"></span><h3><code class="docutils literal notranslate"><span class="pre">channel_mean_fn</span></code> — custom channel mean<a class="headerlink" href="#channel-mean-fn-custom-channel-mean" title="Link to this heading">#</a></h3>
+<p><strong>Signature</strong>:</p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="k">def</span><span class="w"> </span><span class="nf">my_channel_mean_fn</span><span class="p">(</span><span class="n">header</span><span class="p">,</span> <span class="n">measurement</span><span class="p">,</span> <span class="n">headers</span><span class="p">):</span>
+    <span class="o">...</span>
+    <span class="k">return</span> <span class="nb">float</span> <span class="o">|</span> <span class="kc">None</span>
+</pre></div>
+</div>
+<p><strong>Parameters</strong>:</p>
+<ul class="simple">
+<li><p><code class="docutils literal notranslate"><span class="pre">header</span></code> — <code class="docutils literal notranslate"><span class="pre">str</span></code>: name of the channel whose mean is needed.</p></li>
+<li><p><code class="docutils literal notranslate"><span class="pre">measurement</span></code> — <code class="docutils literal notranslate"><span class="pre">np.ndarray</span></code> shape <code class="docutils literal notranslate"><span class="pre">(T,</span> <span class="pre">N)</span></code>: full measurement array.</p></li>
+<li><p><code class="docutils literal notranslate"><span class="pre">headers</span></code> — <code class="docutils literal notranslate"><span class="pre">List[str]</span></code>: all channel names, length <code class="docutils literal notranslate"><span class="pre">N</span></code>.</p></li>
+</ul>
+<dl>
+<dt><strong>Return value</strong>:</dt><dd><p>A <code class="docutils literal notranslate"><span class="pre">float</span></code> mean to use, or <code class="docutils literal notranslate"><span class="pre">None</span></code> to fall back to the arithmetic mean.</p>
+</dd>
+<dt><strong>When it is called</strong>:</dt><dd><p><code class="docutils literal notranslate"><span class="pre">monitoring.describe_stats</span></code> calls this once per channel when building
+statistical summaries.  Implement it for directional quantities (e.g. wind
+direction in degrees) where the arithmetic mean wraps around 0°/360°.</p>
+<p>Set <code class="docutils literal notranslate"><span class="pre">channel_mean_fn=None</span></code> in <a class="reference internal" href="api_reference.html#monitoring.Site" title="monitoring.Site"><code class="xref py py-class docutils literal notranslate"><span class="pre">Site</span></code></a> to skip the hook
+entirely and always use the arithmetic mean.</p>
+</dd>
+</dl>
+</section>
+</section>
+<section id="step-by-step-adding-a-new-site">
+<h2>Step-by-step: adding a new site<a class="headerlink" href="#step-by-step-adding-a-new-site" title="Link to this heading">#</a></h2>
+<ol class="arabic">
+<li><p><strong>Copy the template</strong>:</p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">cp</span> <span class="n">site_example</span><span class="o">.</span><span class="n">py</span> <span class="n">site_mysite</span><span class="o">.</span><span class="n">py</span>
+</pre></div>
+</div>
+</li>
+<li><p><strong>Edit the configuration constants</strong> at the top of the file:
+<code class="docutils literal notranslate"><span class="pre">MYSITE_DB_ROOT_PATH</span></code>, <code class="docutils literal notranslate"><span class="pre">MYSITE_ORIGINS</span></code>, <code class="docutils literal notranslate"><span class="pre">MYSITE_ALL_CHANNELS</span></code>, etc.</p></li>
+<li><p><strong>Implement the callbacks</strong> — replace every <code class="docutils literal notranslate"><span class="pre">raise</span> <span class="pre">NotImplementedError</span></code>
+with real logic.  Start with <code class="docutils literal notranslate"><span class="pre">file_list_fn</span></code> (needed to scan files) and
+<code class="docutils literal notranslate"><span class="pre">sync_policy</span></code> (needed to stamp them correctly).  Add <code class="docutils literal notranslate"><span class="pre">transforms</span></code> and
+<code class="docutils literal notranslate"><span class="pre">setup_prep</span></code> only for quantities that need them.</p></li>
+<li><p><strong>Register the site</strong> — <code class="docutils literal notranslate"><span class="pre">register_example_site()</span></code> is called automatically
+at module-import time.  Rename it to <code class="docutils literal notranslate"><span class="pre">register_mysite_site()</span></code> and update
+the <code class="docutils literal notranslate"><span class="pre">name</span></code> field.</p></li>
+<li><p><strong>Wire it into ``daily.py``</strong>:</p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="kn">import</span><span class="w"> </span><span class="nn">site_mysite</span>  <span class="c1"># noqa: F401  — registers on import</span>
+</pre></div>
+</div>
+</li>
+<li><p><strong>Test incrementally</strong>:</p>
+<div class="highlight-bash notranslate"><div class="highlight"><pre><span></span>python<span class="w"> </span>-m<span class="w"> </span>pytest<span class="w"> </span>tests/<span class="w"> </span>-x<span class="w"> </span>-q
+</pre></div>
+</div>
+<p>The test suite patches <code class="docutils literal notranslate"><span class="pre">monitoring._active_site</span></code> via <code class="docutils literal notranslate"><span class="pre">monkeypatch</span></code>, so
+your callbacks are isolated from the real file system during unit tests.</p>
+</li>
+</ol>
+</section>
+<section id="configuration-files-required-for-oma">
+<h2>Configuration files required for OMA<a class="headerlink" href="#configuration-files-required-for-oma" title="Link to this heading">#</a></h2>
+<p><code class="docutils literal notranslate"><span class="pre">modal_conf_dir/&lt;quantity&gt;/</span></code> must contain:</p>
+<div class="pst-scrollable-table-container"><table class="table">
+<colgroup>
+<col style="width: 30.0%" />
+<col style="width: 70.0%" />
+</colgroup>
+<thead>
+<tr class="row-odd"><th class="head"><p>File</p></th>
+<th class="head"><p>Contents</p></th>
+</tr>
+</thead>
+<tbody>
+<tr class="row-even"><td><p><code class="docutils literal notranslate"><span class="pre">nodes</span></code></p></td>
+<td><p>Node coordinates (pyOMA <code class="docutils literal notranslate"><span class="pre">GeometryProcessor</span></code> format).</p></td>
+</tr>
+<tr class="row-odd"><td><p><code class="docutils literal notranslate"><span class="pre">lines</span></code></p></td>
+<td><p>Line connectivity between nodes.</p></td>
+</tr>
+<tr class="row-even"><td><p><code class="docutils literal notranslate"><span class="pre">master_slaves</span></code></p></td>
+<td><p>Master/slave channel relationships (may be empty).</p></td>
+</tr>
+<tr class="row-odd"><td><p><code class="docutils literal notranslate"><span class="pre">ssi_config</span></code></p></td>
+<td><p>SSI algorithm parameters (model-order range, block rows, …).</p></td>
+</tr>
+<tr class="row-even"><td><p><code class="docutils literal notranslate"><span class="pre">channel_dofs</span></code></p></td>
+<td><p>Channel-to-DOF mapping (auto-generated from <code class="docutils literal notranslate"><span class="pre">setup_prep</span></code> output by
+<code class="docutils literal notranslate"><span class="pre">modal_analysis_single</span></code>; do not edit by hand).</p></td>
+</tr>
+</tbody>
+</table>
+</div>
+<p>See the pyOMA documentation for the exact file format of each configuration
+file.</p>
+</section>
+</section>
+
+
+                </article>
+              
+              
+              
+              
+              
+                <footer class="prev-next-footer d-print-none">
+                  
+<div class="prev-next-area">
+    <a class="left-prev"
+       href="configuration.html"
+       title="previous page">
+      <i class="fa-solid fa-angle-left"></i>
+      <div class="prev-next-info">
+        <p class="prev-next-subtitle">previous</p>
+        <p class="prev-next-title">Configuration Guide</p>
+      </div>
+    </a>
+    <a class="right-next"
+       href="api_reference.html"
+       title="next page">
+      <div class="prev-next-info">
+        <p class="prev-next-subtitle">next</p>
+        <p class="prev-next-title">API Reference</p>
+      </div>
+      <i class="fa-solid fa-angle-right"></i>
+    </a>
+</div>
+                </footer>
+              
+            </div>
+            
+            
+              
+                <dialog id="pst-secondary-sidebar-modal"></dialog>
+                <div id="pst-secondary-sidebar" class="bd-sidebar-secondary bd-toc"><div class="sidebar-secondary-items sidebar-secondary__inner">
+
+
+  <div class="sidebar-secondary-item">
+<div
+    id="pst-page-navigation-heading-2"
+    class="page-toc tocsection onthispage">
+    <i class="fa-solid fa-list"></i> On this page
+  </div>
+  <nav id="pst-page-toc-nav" class="page-toc" aria-labelledby="pst-page-navigation-heading-2">
+    <ul class="pst-show_toc_level nav section-nav flex-column">
+<li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#architecture-overview">Architecture overview</a></li>
+<li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#the-site-dataclass">The <code class="docutils literal notranslate"><span class="pre">Site</span></code> dataclass</a></li>
+<li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#callback-reference">Callback reference</a><ul class="nav section-nav flex-column">
+<li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#transforms-quantity-slice-transform"><code class="docutils literal notranslate"><span class="pre">transforms[quantity]</span></code> — slice transform</a></li>
+<li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#setup-prep-quantity-oma-channel-role-mapping"><code class="docutils literal notranslate"><span class="pre">setup_prep[quantity]</span></code> — OMA channel-role mapping</a></li>
+<li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#sync-policy-timestamp-correction"><code class="docutils literal notranslate"><span class="pre">sync_policy</span></code> — timestamp correction</a></li>
+<li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#file-list-fn-file-discovery"><code class="docutils literal notranslate"><span class="pre">file_list_fn</span></code> — file discovery</a></li>
+<li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#channel-mean-fn-custom-channel-mean"><code class="docutils literal notranslate"><span class="pre">channel_mean_fn</span></code> — custom channel mean</a></li>
+</ul>
+</li>
+<li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#step-by-step-adding-a-new-site">Step-by-step: adding a new site</a></li>
+<li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#configuration-files-required-for-oma">Configuration files required for OMA</a></li>
+</ul>
+  </nav></div>
+
+  <div class="sidebar-secondary-item">
+
+  <div class="tocsection sourcelink">
+    <a href="_sources/site_module.rst.txt">
+      <i class="fa-solid fa-file-lines"></i> Show Source
+    </a>
+  </div>
+</div>
+
+</div></div>
+              
+            
+          </div>
+          <footer class="bd-footer-content">
+            
+          </footer>
+        
+      </main>
+    </div>
+  </div>
+  
+  <!-- Scripts loaded after <body> so the DOM is not blocked -->
+  <script defer src="_static/scripts/bootstrap.js?digest=a95f357e85573c9b56d5"></script>
+<script defer src="_static/scripts/pydata-sphinx-theme.js?digest=a95f357e85573c9b56d5"></script>
+
+  <footer class="bd-footer">
+<div class="bd-footer__inner bd-page-width">
+  
+    <div class="footer-items__start">
+      
+        <div class="footer-item">
+
+  <p class="copyright">
+    
+      © Copyright 2024-2025, Simon Marwitz, Volkmar Zabel.
+      <br/>
+    
+  </p>
+</div>
+      
+        <div class="footer-item">
+
+  <p class="sphinx-version">
+    Created using <a href="https://www.sphinx-doc.org/">Sphinx</a> 8.2.3.
+    <br/>
+  </p>
+</div>
+      
+    </div>
+  
+  
+  
+    <div class="footer-items__end">
+      
+        <div class="footer-item">
+<p class="theme-version">
+  <!-- # L10n: Setting the PST URL as an argument as this does not need to be localized -->
+  Built with the <a href="https://pydata-sphinx-theme.readthedocs.io/en/stable/index.html">PyData Sphinx Theme</a> 0.19.0.
+</p></div>
+      
+    </div>
+  
+</div>
+
+  </footer>
+  </body>
+</html>

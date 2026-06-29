@@ -133,8 +133,23 @@ def inspect_time_shifts():
     plt.show() 
            
 def plot_file_info(origin: str, check_errors: bool=True, filter_errors: bool=False):
-    
-    
+    """Plot channel mean-value time histories from the file-info database.
+
+    Generates an interactive matplotlib figure with one scatter series per
+    channel; clicking a data point lets the user read and plot the raw file.
+
+    Parameters
+    ----------
+    origin : str
+        Origin tag (e.g. ``'accel'``, ``'wind'``) identifying which
+        file-info NetCDF to open.
+    check_errors : bool, optional
+        When ``True`` (default), call :func:`~monitoring.check_and_mark_errors`
+        on the dataset before plotting.
+    filter_errors : bool, optional
+        When ``True``, omit time steps flagged as erroneous from the plot.
+        Defaults to ``False``.
+    """
     def onpick(event):
         #event._xorig
         time_data = event.artist._xorig
@@ -236,6 +251,24 @@ def plot_file_info(origin: str, check_errors: bool=True, filter_errors: bool=Fal
         plt.show()
         
 def plot_file(file_time, headers, units, start_time, sample_rate, measurement):
+    """Plot all channels of a single raw measurement file as overlapping time series.
+
+    Parameters
+    ----------
+    file_time : datetime.datetime
+        File modification time (used as the time axis origin).
+    headers : list of str
+        Channel names in the same order as columns in *measurement*.
+    units : list of str
+        Unit strings (currently unused; reserved for axis labels).
+    start_time : datetime.datetime
+        Timestamp embedded in the file header (unused in the current
+        implementation; *file_time* is used instead).
+    sample_rate : float
+        Sample rate in Hz; controls the time spacing between samples.
+    measurement : numpy.ndarray, shape (n_samples, n_channels)
+        Raw signal matrix.
+    """
     if 0:
         num_channels = len(headers)
         # figure size = 1x1.61, subplot sizes = 1x0.81
@@ -290,6 +323,26 @@ def _dtstart_to_stored_utc(dtstart: np.datetime64) -> np.datetime64:
 
 
 def plot_waterfall(quantity: str, duration: pd.Timedelta, dtstart: np.datetime64):
+    """Plot a frequency-vs-time waterfall of singular-value PSD magnitudes.
+
+    Loads the first singular value of the PSD (in dB) from cached
+    ``prep_data.npz`` artefacts and assembles a ``pcolormesh`` waterfall.
+
+    Parameters
+    ----------
+    quantity : str
+        Quantity tag (e.g. ``'accel'``, ``'strain_rosettes'``).
+    duration : pandas.Timedelta
+        Analysis window length; controls which result subdirectory is used.
+    dtstart : numpy.datetime64
+        Earliest time step to include in the plot (Berlin-naive UTC storage
+        convention, as returned by ``ds.time.values``).
+
+    Returns
+    -------
+    matplotlib.figure.Figure
+        The waterfall figure (already shown; returned for saving).
+    """
     from pyOMA.core.PreProcessingTools import PreProcessSignals
     ds = get_modal_results(quantity, duration)
     minutes = int(duration.total_seconds()/60)
@@ -337,7 +390,31 @@ def plot_waterfall(quantity: str, duration: pd.Timedelta, dtstart: np.datetime64
         
     
 def plot_daily(quantity: str, duration: pd.Timedelta, dtstart: np.datetime64):
-    
+    """Generate a daily overview figure for a monitoring quantity.
+
+    Plots per-channel mean, min, and max time histories from the statistics
+    (for ``wind`` and ``temp``) or the modal-results database (for ``accel``
+    and ``strain_rosettes``).  For vibration quantities, an additional figure
+    with identified natural frequencies is returned.
+
+    Parameters
+    ----------
+    quantity : str
+        Quantity tag — one of ``'accel'``, ``'wind'``, ``'temp'``,
+        ``'strain_rosettes'``.
+    duration : pandas.Timedelta
+        Analysis window length.
+    dtstart : numpy.datetime64
+        Start of the time range to display.
+
+    Returns
+    -------
+    fig : matplotlib.figure.Figure
+        Time-history overview figure with mean / min / max bands.
+    fig2 : matplotlib.figure.Figure or None
+        Identified-frequency scatter plot (only for vibration quantities).
+        ``None`` when the modal database has no ``frequencies`` variable.
+    """
     if quantity in ['accel', 'strain_rosettes']:
         modal = True
     else:
@@ -402,10 +479,29 @@ def plot_daily(quantity: str, duration: pd.Timedelta, dtstart: np.datetime64):
         fig2 = None
     return fig, fig2
 
-def plot_stats(quantity: str, duration: pd.Timedelta, 
-               check_errors: bool=True, filter_errors: bool=False, 
+def plot_stats(quantity: str, duration: pd.Timedelta,
+               check_errors: bool=True, filter_errors: bool=False,
                modal: bool=False):
-    
+    """Interactively browse statistics or modal results by channel.
+
+    Opens one figure per channel showing mean/min/max, percentiles, and
+    kurtosis time histories.  Clicking a data point prompts the user to
+    read and plot the corresponding raw signal slice.
+
+    Parameters
+    ----------
+    quantity : str
+        Quantity tag (e.g. ``'accel'``, ``'wind'``).
+    duration : pandas.Timedelta
+        Analysis window length.
+    check_errors : bool, optional
+        When ``True`` (default), re-run error detection on the dataset.
+    filter_errors : bool, optional
+        When ``True``, exclude flagged time steps from the plots.
+    modal : bool, optional
+        When ``True``, load from the modal-results database; otherwise load
+        from the statistics database.  Defaults to ``False``.
+    """
     def onpick(event):
         #event._xorig
         time_data = event.artist._xorig
@@ -596,14 +692,18 @@ def load_filter_merge(quantity: str, duration: pd.Timedelta,
         assert isinstance(time_range[0], pd.Timestamp)
         assert isinstance(time_range[1], pd.Timestamp)
     
-    if isinstance(wind_range, int):
+    if wind_range is None:
+        pass
+    elif isinstance(wind_range, int):
         #             ['all',     'weak wind','moderate wind','strong wind',custom scaling]
         wind_range = [(0,40),(0,5.4),(5.4,10.7),(10.7,25),(0,20)][wind_range]
     else:
         assert len(wind_range)==2
-    
-    #             [ 'all',    'frost'    , '0-10','10-20','20-...'] 
-    if isinstance(temp_range,int):
+
+    #             [ 'all',    'frost'    , '0-10','10-20','20-...']
+    if temp_range is None:
+        pass
+    elif isinstance(temp_range,int):
         temp_range = [(-20,40),(-20,0),(0,10),(10,20),(20,40)][temp_range]
     else:
         assert len(temp_range)==2
@@ -770,13 +870,67 @@ def load_filter_merge(quantity: str, duration: pd.Timedelta,
     
     
     
-def postprocess_modal_results(quantity: str, duration: pd.Timedelta, 
-                              time_range=None, kurt_range=None, rms_range=None, 
-                              wind_range=None, temp_range=None, 
-                              f_range=None, damp_range=None, mode_pair=0, mc_range=None, 
-                              filter_errors=False, 
-                              q_1=None, q_2=None, 
+def postprocess_modal_results(quantity: str, duration: pd.Timedelta,
+                              time_range=None, kurt_range=None, rms_range=None,
+                              wind_range=None, temp_range=None,
+                              f_range=None, damp_range=None, mode_pair=0, mc_range=None,
+                              filter_errors=False,
+                              q_1=None, q_2=None,
                               fig=None, axes=None, color='grey', hide_ticks=False, scatter=True, log_scale=False, **kwargs):
+    """Apply filter ranges and produce a cross-correlation figure for modal results.
+
+    Loads modal results and related statistics (wind, temperature), applies
+    all specified filter ranges, and plots identified modal parameters against
+    environmental and signal-quality covariates.
+
+    Parameters
+    ----------
+    quantity : str
+        Quantity tag (e.g. ``'accel'``, ``'strain_rosettes'``).
+    duration : pandas.Timedelta
+        Analysis window length.
+    time_range : tuple of (pd.Timestamp, pd.Timestamp), optional
+        ``(start, end)`` filter on the ``time`` coordinate.
+    kurt_range : tuple of (float, float), optional
+        ``(min, max)`` kurtosis filter (mean over channels).
+    rms_range : tuple of (float, float), optional
+        ``(min, max)`` RMS filter (mean over channels).
+    wind_range : tuple or int, optional
+        Wind-speed filter.  An integer selects a predefined range:
+        0 = all, 1 = weak, 2 = moderate, 3 = strong.
+    temp_range : tuple or int, optional
+        Temperature filter.  An integer selects a predefined range:
+        0 = (−20, 40), 1 = (−20, 0), 2 = (0, 10), 3 = (10, 20), 4 = (20, 40).
+    f_range : tuple of (float, float), optional
+        ``(f_min, f_max)`` frequency filter.  Overrides *mode_pair*.
+    damp_range : tuple of (float, float), optional
+        Damping-ratio filter.
+    mode_pair : int, optional
+        Selects a predefined *f_range* (0 = all modes).
+    mc_range : tuple of (float, float), optional
+        Modal-contribution filter.
+    filter_errors : bool, optional
+        Drop error-flagged time steps.  Defaults to ``False``.
+    q_1, q_2 : str or None, optional
+        Names of environmental covariates to plot on the figure axes.
+    fig, axes : matplotlib objects or None, optional
+        Existing figure and axes to draw into; creates new ones when ``None``.
+    color : str, optional
+        Scatter marker color.  Defaults to ``'grey'``.
+    hide_ticks : bool, optional
+        When ``True``, suppress tick labels on the figure axes.
+    scatter : bool, optional
+        When ``True`` (default), draw a scatter plot; otherwise draw lines.
+    log_scale : bool, optional
+        Use logarithmic scale for environmental covariates.
+
+    Returns
+    -------
+    fig : matplotlib.figure.Figure
+    axes : numpy.ndarray of Axes
+    ds : xarray.Dataset
+        The filtered dataset used for plotting.
+    """
     '''
     relating modal_results to other quantities:
             f,   d, MC, MPC,MPD,order, ⟵ modal results
@@ -1212,7 +1366,30 @@ def postprocess_modal_results(quantity: str, duration: pd.Timedelta,
     return
   
 def modal_dirs(quantity, duration, update=False, plot_=False):
-    
+    """Compute and optionally plot principal oscillation directions from modal results.
+
+    For each node and each time step, project the two horizontal modeshape
+    components onto the principal axis by orthogonal LSQ and compute the
+    mean oscillation direction angle.
+
+    Parameters
+    ----------
+    quantity : str
+        Quantity tag; currently only ``'accel'`` is supported.
+    duration : pandas.Timedelta
+        Analysis window length.
+    update : bool, optional
+        When ``True``, recompute the direction matrix from the modeshapes
+        database.  Defaults to ``False``.
+    plot_ : bool, optional
+        When ``True``, generate a polar scatter plot of the directions.
+
+    Warns
+    -----
+    UserWarning
+        Modeshapes are mostly missing from the result database in the current
+        deployment; reading them from disk is required for a complete result.
+    """
     assert quantity=='accel'
     assert isinstance(duration, pd.Timedelta)
     warnings.warn("Modeshapes are mostly missing from result db, would have to reread them all from disk.")
@@ -1625,7 +1802,39 @@ def modal_dirs(quantity, duration, update=False, plot_=False):
 
 def subplots(nrows=1, ncols=1, sharex=False, sharey=False, squeeze=True,
              subplot_kw=None, gridspec_kw=None, **fig_kw):
+    """Create a figure with a ``GridSpec`` subplot layout.
 
+    Wrapper around :func:`matplotlib.pyplot.figure` + :class:`~matplotlib.gridspec.GridSpec`
+    that replicates the ``plt.subplots`` interface while allowing
+    ``gridspec_kw`` to control subplot sizes (e.g. ``width_ratios``).
+
+    Parameters
+    ----------
+    nrows, ncols : int, optional
+        Number of subplot rows and columns.  Defaults to 1.
+    sharex, sharey : bool or str, optional
+        Axis-sharing policy: ``True`` / ``'all'`` share all axes; ``'col'``
+        shares within each column; ``'row'`` within each row; ``False`` /
+        ``'none'`` (default) shares nothing.
+    squeeze : bool, optional
+        When ``True`` (default), extra dimensions are squeezed out of the
+        returned axes array.
+    subplot_kw : dict, optional
+        Keyword arguments forwarded to :meth:`~matplotlib.figure.Figure.add_subplot`.
+    gridspec_kw : dict, optional
+        Keyword arguments forwarded to :class:`~matplotlib.gridspec.GridSpec`
+        (e.g. ``{'width_ratios': [3, 1]}``).
+    **fig_kw
+        Additional keyword arguments forwarded to
+        :func:`matplotlib.pyplot.figure`.
+
+    Returns
+    -------
+    fig : matplotlib.figure.Figure
+    axarr : numpy.ndarray of Axes or single Axes
+        Array of :class:`~matplotlib.axes.Axes` objects; squeezed when
+        *squeeze* is ``True`` and the grid has only one row or column.
+    """
     from matplotlib.gridspec import GridSpec
     figure = plt.figure
     
@@ -1708,8 +1917,21 @@ def subplots(nrows=1, ncols=1, sharex=False, sharey=False, squeeze=True,
     return ret
     
 def strain_vs_accel(duration: pd.Timedelta, mode: int=0):
-    
-    
+    """Cross-compare strain-rosette and accelerometer modal results for a single mode.
+
+    Loads modal results for both ``'accel'`` and ``'strain_rosettes'``,
+    filters by the frequency band corresponding to *mode*, aligns the two
+    datasets on their ``time`` coordinate, and generates a scatter plot of
+    identified natural frequencies from one system against the other.
+
+    Parameters
+    ----------
+    duration : pandas.Timedelta
+        Analysis window length.
+    mode : int, optional
+        Mode index (0–4) selecting a predefined frequency band from
+        ``_TOWER_MODAL_BANDS``.  Defaults to 0.
+    """
     modal_results=['frequencies',
            'damping', 
            'modal_contributions',
@@ -1892,6 +2114,34 @@ def strain_vs_accel(duration: pd.Timedelta, mode: int=0):
     plt.show()
     
 def assign_modes(time_stamps, frequencies, modeshapes, threshold, damping=None, modal_contributions=None):
+    """Assign identified poles to modal clusters using hierarchical agglomerative clustering.
+
+    Groups poles from different time steps into physical modes by clustering
+    them in a joint frequency–MAC feature space.  The MAC (Modal Assurance
+    Criterion) distance between modeshapes is used to quantify similarity.
+
+    Parameters
+    ----------
+    time_stamps : array-like
+        Time stamp for each identified pole.
+    frequencies : array-like
+        Natural frequency for each pole (Hz).
+    modeshapes : array-like, shape (n_poles, n_channels)
+        Complex modeshape vector for each pole.
+    threshold : float
+        Agglomerative clustering distance threshold (in normalised
+        frequency–MAC space; typical range 0.05–0.5).
+    damping : array-like or None, optional
+        Damping ratios; included in the output but not used for clustering.
+    modal_contributions : array-like or None, optional
+        Modal participation factors; included in the output but not used
+        for clustering.
+
+    Returns
+    -------
+    cluster_assignments : numpy.ndarray of int
+        Cluster label for each input pole.
+    """
     #from sklearn.neighbors import kneighbors_graph
     #from sklearn.cluster import AgglomerativeClustering
     logger.debug(threshold)
@@ -2093,6 +2343,7 @@ def assign_modes(time_stamps, frequencies, modeshapes, threshold, damping=None, 
     return return_indices
 
 def test():
+    """Interactive smoke test: read and plot a single accelerometer file."""
     quantity = 'accel'
     origin = config.origins[quantity]
     ds =  get_file_info(origin)
@@ -2110,6 +2361,11 @@ def test():
         plot_file(file_time, headers, units, start_time, sample_rate, measurement)
         
 def main():
+    """Entry point for interactive post-processing and figure generation.
+
+    Configure the database root, block length, quantity, and figure options
+    at the top of this function, then uncomment the desired plot calls.
+    """
     ###################################################################
     # Input the following:                                            #
     ###################################################################

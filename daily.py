@@ -25,7 +25,41 @@ logger.setLevel(logging.INFO)
 # - only log exit status and other relevant information, e.g. num_file, num_slices, dtstart, runtimes, statistics, etc. to stdout
 
 def main(argv):
-    
+    """Parse CLI arguments and run the requested pipeline stages.
+
+    Reads the tower measurement system CLI options and executes the selected
+    stages in order: file-info scan → statistics → modal analysis → plotting.
+    Intended to be invoked from the cron wrapper ``daily2.sh``.
+
+    Parameters
+    ----------
+    argv : list of str
+        Command-line argument vector (typically ``sys.argv[1:]``).
+
+    CLI Options
+    -----------
+    -d <minutes>
+        Analysis window duration in minutes.  Supported: 10, 30, 60, 120.
+    -q <quantity>
+        Measurement quantity.  Supported: ``accel``, ``wind``, ``temp``,
+        ``strain_rosettes``.
+    --file_info
+        Scan for new raw files and update the file-info database.
+    --stats
+        Compute per-window statistics.
+    --modal
+        Run VarSSI-Ref modal analysis (requires ``accel`` or
+        ``strain_rosettes``).
+    --plot
+        Generate daily summary and waterfall figures and save them to
+        *--tmp_dir*.
+    --tmp_dir=<path>
+        Directory for temporary and output files.  Must already exist.
+    --dtstart=<YYYY-MM-DD hh:mm>
+        Override the start date for statistics / modal analysis.
+    --loglevel=<level>
+        Python logging level (e.g. ``INFO``, ``DEBUG``, ``WARNING``).
+    """
     opts, _args = getopt.getopt(argv,'hd:q:v',['file_info', 'stats', 'modal', 'plot','tmp_dir=', 'dtstart=','loglevel='])
     
     duration = None

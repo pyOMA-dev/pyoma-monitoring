@@ -77,12 +77,39 @@ def validate_config(cfg: dict) -> None:
 # ---------------------------------------------------------------------------
 
 def _require_keys(mapping: dict, keys: list) -> None:
+    """Raise ``ValueError`` if any key in *keys* is absent from *mapping*.
+
+    Parameters
+    ----------
+    mapping : dict
+        The configuration dict (or sub-dict) to inspect.
+    keys : list of str
+        Required keys that must be present in *mapping*.
+
+    Raises
+    ------
+    ValueError
+        Lists every missing key in the error message.
+    """
     missing = [k for k in keys if k not in mapping]
     if missing:
         raise ValueError(f"Config missing required keys: {missing}")
 
 
 def _validate_paths(paths: dict) -> None:
+    """Validate the ``paths`` section of the configuration.
+
+    Parameters
+    ----------
+    paths : dict
+        Must contain the keys ``file_root``, ``slice_root``, ``db_root``,
+        and ``modal_conf_dir``, each mapping to a string.
+
+    Raises
+    ------
+    ValueError
+        When a required key is absent or a value is not a string.
+    """
     _require_keys(paths, ['file_root', 'slice_root', 'db_root', 'modal_conf_dir'])
     for key, val in paths.items():
         if not isinstance(val, str):
@@ -91,6 +118,20 @@ def _validate_paths(paths: dict) -> None:
 
 
 def _validate_string_map(mapping: dict, section: str) -> None:
+    """Validate that every value in *mapping* is a string.
+
+    Parameters
+    ----------
+    mapping : dict
+        A flat dict whose values must all be strings.
+    section : str
+        Section name used in error messages (e.g. ``'origins'``).
+
+    Raises
+    ------
+    ValueError
+        When any value is not a string.
+    """
     for key, val in mapping.items():
         if not isinstance(val, str):
             raise ValueError(
@@ -98,6 +139,18 @@ def _validate_string_map(mapping: dict, section: str) -> None:
 
 
 def _validate_dtstarts(dtstarts: dict) -> None:
+    """Validate the ``dtstarts`` section (earliest available data per origin).
+
+    Parameters
+    ----------
+    dtstarts : dict
+        Maps origin tag to an ISO date string or ``datetime.date`` object.
+
+    Raises
+    ------
+    ValueError
+        When a value is not a string/date or cannot be parsed as an ISO date.
+    """
     for key, val in dtstarts.items():
         if not isinstance(val, (str, datetime.date)):
             raise ValueError(
@@ -111,6 +164,20 @@ def _validate_dtstarts(dtstarts: dict) -> None:
 
 
 def _validate_channels(channels: dict) -> None:
+    """Validate the ``channels`` section (required/optional channel lists).
+
+    Parameters
+    ----------
+    channels : dict
+        Must contain the keys ``all``, ``optional``, ``strain_list``, and
+        ``temp_list``.  Values under ``all`` must be lists of strings.
+
+    Raises
+    ------
+    ValueError
+        When a required key is absent, a channel group is not a list, or a
+        channel name is not a string.
+    """
     _require_keys(channels, ['all', 'optional', 'strain_list', 'temp_list'])
     for grp, chans in channels['all'].items():
         if not isinstance(chans, list):
@@ -126,6 +193,20 @@ def _validate_channels(channels: dict) -> None:
 
 
 def _validate_ranges(ranges: dict) -> None:
+    """Validate the ``ranges`` section (physical plausibility bounds per channel).
+
+    Parameters
+    ----------
+    ranges : dict
+        Maps channel name to a ``[min, max]`` two-element list or tuple of
+        numbers.
+
+    Raises
+    ------
+    ValueError
+        When a value is not a two-element list, contains non-numbers, or has
+        ``min > max``.
+    """
     for key, val in ranges.items():
         if not (isinstance(val, (list, tuple)) and len(val) == 2):
             raise ValueError(
@@ -139,6 +220,25 @@ def _validate_ranges(ranges: dict) -> None:
 
 
 def _validate_strain_temperature_map(stmap: dict) -> None:
+    """Validate the ``strain_temperature_map`` section.
+
+    Each entry maps a strain-channel group to a dict of
+    ``{strain_channel: temperature_channel}`` string pairs, used by FBG
+    correction routines to look up which temperature channel compensates a
+    given strain channel.
+
+    Parameters
+    ----------
+    stmap : dict
+        The ``strain_temperature_map`` sub-dict from the YAML config.  May be
+        an empty dict if FBG sensors are not used.
+
+    Raises
+    ------
+    ValueError
+        When a group value is not a dict or a temperature-channel value is
+        not a string.
+    """
     for grp, mapping in stmap.items():
         if not isinstance(mapping, dict):
             raise ValueError(
@@ -152,6 +252,19 @@ def _validate_strain_temperature_map(stmap: dict) -> None:
 
 
 def _validate_initial_wavelengths(wl: dict) -> None:
+    """Validate the ``initial_wavelengths`` section (FBG reference wavelengths).
+
+    Parameters
+    ----------
+    wl : dict
+        Maps FBG channel name to its reference wavelength in nanometres.
+        May be an empty dict if FBG sensors are not used.
+
+    Raises
+    ------
+    ValueError
+        When any wavelength value is not a number.
+    """
     for key, val in wl.items():
         if not isinstance(val, (int, float)):
             raise ValueError(

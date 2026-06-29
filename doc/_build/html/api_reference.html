@@ -1,0 +1,1757 @@
+
+<!DOCTYPE html>
+
+
+<html lang="en" data-content_root="./" >
+
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" /><meta name="viewport" content="width=device-width, initial-scale=1" />
+
+    <title>API Reference &#8212; pyOMA-Monitoring  documentation</title>
+  
+  
+  
+  <script data-cfasync="false">
+    document.documentElement.dataset.mode = localStorage.getItem("mode") || "";
+    document.documentElement.dataset.theme = localStorage.getItem("theme") || "";
+  </script>
+  <!--
+    this give us a css class that will be invisible only if js is disabled
+  -->
+  <noscript>
+    <style>
+      .pst-js-only { display: none !important; }
+
+    </style>
+  </noscript>
+  
+  <!-- Loaded before other Sphinx assets -->
+  <link href="_static/styles/theme.css?digest=a95f357e85573c9b56d5" rel="stylesheet" />
+<link href="_static/styles/pydata-sphinx-theme.css?digest=a95f357e85573c9b56d5" rel="stylesheet" />
+
+    <link rel="stylesheet" type="text/css" href="_static/pygments.css?v=8f2a1f02" />
+    <link rel="stylesheet" type="text/css" href="_static/mystnb.11b39860a7a0cbfd473a3ad8a317855267ff0bd372690045ca344a6b62be495e.css" />
+    <link rel="stylesheet" type="text/css" href="_static/autoclasstoc.css?v=08871587" />
+  
+  <!-- So that users can add custom icons -->
+  <script defer src="_static/scripts/fontawesome.js?digest=a95f357e85573c9b56d5"></script>
+  <!-- Pre-loaded scripts that we'll load fully later -->
+  <link rel="preload" as="script" href="_static/scripts/bootstrap.js?digest=a95f357e85573c9b56d5" />
+<link rel="preload" as="script" href="_static/scripts/pydata-sphinx-theme.js?digest=a95f357e85573c9b56d5" />
+
+    <script src="_static/documentation_options.js?v=5929fcd5"></script>
+    <script src="_static/doctools.js?v=9bcbadda"></script>
+    <script src="_static/sphinx_highlight.js?v=dc90522c"></script>
+    <script>DOCUMENTATION_OPTIONS.pagename = 'api_reference';</script>
+    <script>DOCUMENTATION_OPTIONS.search_as_you_type = false;</script>
+    <link rel="index" title="Index" href="genindex.html" />
+    <link rel="search" title="Search" href="search.html" />
+    <link rel="prev" title="Writing a Site Module" href="site_module.html" />
+  <meta name="viewport" content="width=device-width, initial-scale=1"/>
+  <meta name="docsearch:language" content="en"/>
+  <meta name="docsearch:version" content="" />
+  
+    
+    <script src="_static/searchtools.js"></script>
+    <script src="_static/language_data.js"></script>
+    <script src="searchindex.js"></script>
+  
+  </head>
+  <body data-default-mode="">
+  
+  
+  <div id="pst-skip-link" class="skip-link d-print-none"><a href="#main-content">Skip to main content</a></div>
+
+  
+  <div id="pst-scroll-pixel-helper"></div>
+  
+  <button type="button" class="btn rounded-pill" id="pst-back-to-top">
+    <i class="fa-solid fa-arrow-up"></i>Back to top</button>
+  
+  
+  
+  
+  <dialog id="pst-search-dialog">
+    
+<form class="bd-search d-flex align-items-center"
+      action="search.html"
+      method="get">
+  <i class="fa-solid fa-magnifying-glass"></i>
+  <input type="search"
+         class="form-control"
+         name="q"
+         placeholder="Search the docs ..."
+         aria-label="Search the docs ..."
+         autocomplete="off"
+         autocorrect="off"
+         autocapitalize="off"
+         spellcheck="false"/>
+  <span class="search-button__kbd-shortcut"><kbd class="kbd-shortcut__modifier">Ctrl</kbd>+<kbd>K</kbd></span>
+</form>
+  </dialog>
+
+  <div class="pst-async-banner-revealer d-none">
+  <aside id="bd-header-version-warning" class="d-none d-print-none" aria-label="Version warning"></aside>
+</div>
+
+  
+    <header id="pst-header" class="bd-header navbar navbar-expand-lg bd-navbar d-print-none">
+<div class="bd-header__inner bd-page-width">
+  <button class="pst-navbar-icon sidebar-toggle primary-toggle" aria-label="Site navigation">
+    <span class="fa-solid fa-bars"></span>
+  </button>
+  
+  
+  <div class=" navbar-header-items__start">
+    
+      <div class="navbar-item">
+
+  
+    
+  
+
+<a class="navbar-brand logo" href="index.html">
+  
+  
+  
+  
+  
+    
+    
+      
+    
+    
+    <img src="_static/logo.png" class="logo__image only-light" alt="pyOMA-Monitoring  documentation - Home"/>
+    <img src="_static/logo.png" class="logo__image only-dark pst-js-only" alt="pyOMA-Monitoring  documentation - Home"/>
+  
+  
+</a></div>
+    
+  </div>
+  
+  <div class=" navbar-header-items">
+    
+    <div class="me-auto navbar-header-items__center">
+      
+        <div class="navbar-item">
+<nav>
+  <ul class="bd-navbar-elements navbar-nav">
+    
+<li class="nav-item ">
+  <a class="nav-link nav-internal" href="architecture.html">
+    Architecture
+  </a>
+</li>
+
+
+<li class="nav-item ">
+  <a class="nav-link nav-internal" href="pipeline.html">
+    The Daily Processing Pipeline
+  </a>
+</li>
+
+
+<li class="nav-item ">
+  <a class="nav-link nav-internal" href="configuration.html">
+    Configuration Guide
+  </a>
+</li>
+
+
+<li class="nav-item ">
+  <a class="nav-link nav-internal" href="site_module.html">
+    Writing a Site Module
+  </a>
+</li>
+
+
+<li class="nav-item current active">
+  <a class="nav-link nav-internal" href="#">
+    API Reference
+  </a>
+</li>
+
+  </ul>
+</nav></div>
+      
+    </div>
+    
+    
+    <div class="navbar-header-items__end">
+      
+        <div class="navbar-item navbar-persistent--container">
+          
+
+<button class="btn search-button-field search-button__button pst-js-only" title="Search" aria-label="Search" data-bs-placement="bottom" data-bs-toggle="tooltip">
+ <i class="fa-solid fa-magnifying-glass"></i>
+ <span class="search-button__default-text">Search</span>
+ <span class="search-button__kbd-shortcut"><kbd class="kbd-shortcut__modifier">Ctrl</kbd>+<kbd class="kbd-shortcut__modifier">K</kbd></span>
+</button>
+        </div>
+      
+      
+        <div class="navbar-item">
+
+<div class="theme-switch-container dropdown pst-js-only" data-bs-toggle="tooltip" data-bs-placement="bottom" title="Color mode">
+  <button class="btn btn-sm nav-link pst-navbar-icon theme-switch-button dropdown-toggle" aria-label="Color mode" data-bs-toggle="dropdown">
+    <i class="theme-switch fa-solid fa-sun fa-lg fa-fw" data-mode="light" title="Light"></i>
+    <i class="theme-switch fa-solid fa-moon fa-lg fa-fw" data-mode="dark" title="Dark"></i>
+    <i class="theme-switch fa-solid fa-circle-half-stroke fa-lg fa-fw" data-mode="auto" title="System Settings"></i>
+  </button>
+  <ul class="dropdown-menu dropdown-menu-end">
+    <li><button class="dropdown-item d-flex align-items-center theme-change-button" data-mode="auto"><i class="fa-solid fa-circle-half-stroke fa-lg fa-fw me-1"></i>System Settings</button></li>
+    <li><button class="dropdown-item d-flex align-items-center theme-change-button" data-mode="light"><i class="fa-solid fa-sun fa-lg fa-fw me-1"></i>Light</button></li>
+    <li><button class="dropdown-item d-flex align-items-center theme-change-button" data-mode="dark"><i class="fa-solid fa-moon fa-lg fa-fw me-1"></i>Dark</button></li>
+  </ul>
+</div></div>
+      
+        <div class="navbar-item"><ul class="navbar-icon-links"
+    aria-label="Icon Links">
+        <li class="nav-item">
+          
+          
+          
+          
+          
+          
+          
+          
+          <a href="https://github.com/pyOMA-dev/pyOMA-Monitoring" title="GitHub" class="nav-link pst-navbar-icon" rel="noopener" target="_blank" data-bs-toggle="tooltip" data-bs-placement="bottom"><i class="fa-brands fa-github fa-lg" aria-hidden="true"></i><span class="visually-hidden">GitHub</span></a>
+        </li>
+</ul></div>
+      
+    </div>
+    
+  </div>
+  
+  
+    <div class="navbar-persistent--mobile">
+
+<button class="btn search-button-field search-button__button pst-js-only" title="Search" aria-label="Search" data-bs-placement="bottom" data-bs-toggle="tooltip">
+ <i class="fa-solid fa-magnifying-glass"></i>
+ <span class="search-button__default-text">Search</span>
+ <span class="search-button__kbd-shortcut"><kbd class="kbd-shortcut__modifier">Ctrl</kbd>+<kbd class="kbd-shortcut__modifier">K</kbd></span>
+</button>
+    </div>
+  
+
+  
+    <button class="pst-navbar-icon sidebar-toggle secondary-toggle" aria-label="On this page">
+      <span class="fa-solid fa-outdent"></span>
+    </button>
+  
+</div>
+
+    </header>
+  
+
+  <div class="bd-container">
+    <div class="bd-container__inner bd-page-width">
+      
+      
+      
+      <dialog id="pst-primary-sidebar-modal"></dialog>
+      <div id="pst-primary-sidebar" class="bd-sidebar-primary bd-sidebar">
+        
+
+  
+  <div class="sidebar-header-items sidebar-primary__section">
+    
+    
+      <div class="sidebar-header-items__center">
+        
+          
+          
+            <div class="navbar-item">
+<nav>
+  <ul class="bd-navbar-elements navbar-nav">
+    
+<li class="nav-item ">
+  <a class="nav-link nav-internal" href="architecture.html">
+    Architecture
+  </a>
+</li>
+
+
+<li class="nav-item ">
+  <a class="nav-link nav-internal" href="pipeline.html">
+    The Daily Processing Pipeline
+  </a>
+</li>
+
+
+<li class="nav-item ">
+  <a class="nav-link nav-internal" href="configuration.html">
+    Configuration Guide
+  </a>
+</li>
+
+
+<li class="nav-item ">
+  <a class="nav-link nav-internal" href="site_module.html">
+    Writing a Site Module
+  </a>
+</li>
+
+
+<li class="nav-item current active">
+  <a class="nav-link nav-internal" href="#">
+    API Reference
+  </a>
+</li>
+
+  </ul>
+</nav></div>
+          
+        
+      </div>
+    
+    
+    
+      <div class="sidebar-header-items__end">
+        
+          <div class="navbar-item">
+
+<div class="theme-switch-container dropdown pst-js-only" data-bs-toggle="tooltip" data-bs-placement="bottom" title="Color mode">
+  <button class="btn btn-sm nav-link pst-navbar-icon theme-switch-button dropdown-toggle" aria-label="Color mode" data-bs-toggle="dropdown">
+    <i class="theme-switch fa-solid fa-sun fa-lg fa-fw" data-mode="light" title="Light"></i>
+    <i class="theme-switch fa-solid fa-moon fa-lg fa-fw" data-mode="dark" title="Dark"></i>
+    <i class="theme-switch fa-solid fa-circle-half-stroke fa-lg fa-fw" data-mode="auto" title="System Settings"></i>
+  </button>
+  <ul class="dropdown-menu dropdown-menu-end">
+    <li><button class="dropdown-item d-flex align-items-center theme-change-button" data-mode="auto"><i class="fa-solid fa-circle-half-stroke fa-lg fa-fw me-1"></i>System Settings</button></li>
+    <li><button class="dropdown-item d-flex align-items-center theme-change-button" data-mode="light"><i class="fa-solid fa-sun fa-lg fa-fw me-1"></i>Light</button></li>
+    <li><button class="dropdown-item d-flex align-items-center theme-change-button" data-mode="dark"><i class="fa-solid fa-moon fa-lg fa-fw me-1"></i>Dark</button></li>
+  </ul>
+</div></div>
+        
+          <div class="navbar-item"><ul class="navbar-icon-links"
+    aria-label="Icon Links">
+        <li class="nav-item">
+          
+          
+          
+          
+          
+          
+          
+          
+          <a href="https://github.com/pyOMA-dev/pyOMA-Monitoring" title="GitHub" class="nav-link pst-navbar-icon" rel="noopener" target="_blank" data-bs-toggle="tooltip" data-bs-placement="bottom"><i class="fa-brands fa-github fa-lg" aria-hidden="true"></i><span class="visually-hidden">GitHub</span></a>
+        </li>
+</ul></div>
+        
+      </div>
+    
+  </div>
+  
+    <div class="sidebar-primary-items__start sidebar-primary__section">
+        <div class="sidebar-primary-item pst-sidebar-collapse"><button id="pst-collapse-sidebar-button" aria-expanded="true" aria-controls="pst-primary-sidebar"><svg class="pst-icon svg-inline--fa" role="img" aria-hidden="true" focusable="false" viewBox="0 0 16 16" xmlns="http://www.w3.org/2000/svg">
+    <path fill="currentColor" d="M3 15.5C2.36232 15.5 1.74874 15.2564 1.28478 14.8189C0.820828 14.3815 0.541576 13.7832 0.504167 13.1467L0.5 13L0.5 3C0.499965 2.36232 0.743605 1.74874 1.18107 1.28478C1.61854 0.820828 2.21676 0.541576 2.85333 0.504167L3 0.5L13 0.5C13.6377 0.499965 14.2513 0.743605 14.7152 1.18107C15.1792 1.61854 15.4584 2.21676 15.4958 2.85333L15.5 3L15.5 13C15.5 13.6377 15.2564 14.2513 14.8189 14.7152C14.3815 15.1792 13.7832 15.4584 13.1467 15.4958L13 15.5L3 15.5ZM3 13.8333L10.5 13.8333L10.5 2.16667L3 2.16667C2.79589 2.16669 2.59889 2.24163 2.44636 2.37726C2.29383 2.5129 2.19638 2.69979 2.1725 2.9025L2.16667 3L2.16667 13C2.16669 13.2041 2.24163 13.4011 2.37726 13.5536C2.5129 13.7062 2.69979 13.8036 2.9025 13.8275L3 13.8333ZM6.65583 10.325L6.5775 10.2558L4.91083 8.58917C4.76735 8.44567 4.68116 8.25476 4.66843 8.05223C4.65569 7.84971 4.71729 7.6495 4.84167 7.48917L4.91083 7.41083L6.5775 5.74417C6.72747 5.59471 6.9287 5.50794 7.14032 5.50148C7.35194 5.49502 7.55809 5.56935 7.7169 5.70937C7.8757 5.8494 7.97525 6.04463 7.99533 6.25539C8.01541 6.46616 7.95451 6.67667 7.825 6.84417L7.75583 6.9225L6.67917 8L7.75583 9.0775C7.89931 9.22099 7.98551 9.41191 7.99824 9.61443C8.01097 9.81695 7.94938 10.0172 7.825 10.1775L7.75583 10.2558C7.61234 10.3993 7.42142 10.4855 7.2189 10.4982C7.01638 10.511 6.81617 10.4494 6.65583 10.325Z"/>
+  </svg>
+  <span class="pst-collapse-sidebar-label">Collapse Sidebar</span>
+  <span class="pst-expand-sidebar-label">Expand Sidebar</span>
+</button></div>
+        <div class="sidebar-primary-item">
+
+<nav class="bd-docs-nav bd-links"
+     aria-label="Section Navigation">
+  <p class="bd-links__title" role="heading" aria-level="1">Section Navigation</p>
+  <div class="bd-toc-item navbar-nav"></div>
+</nav></div>
+    </div>
+  
+  
+  <div class="sidebar-primary-items__end sidebar-primary__section">
+      <div class="sidebar-primary-item">
+<div id="ethical-ad-placement"
+      class="flat"
+      data-ea-publisher="readthedocs"
+      data-ea-type="readthedocs-sidebar"
+      data-ea-manual="true">
+</div></div>
+  </div>
+
+
+      </div>
+      
+      <main id="main-content" class="bd-main" role="main">
+        
+        
+          <div class="bd-content">
+            <div class="bd-article-container">
+              
+              <div class="bd-header-article d-print-none">
+<div class="header-article-items header-article__inner">
+  
+    <div class="header-article-items__start">
+      
+        <div class="header-article-item">
+
+<nav aria-label="Breadcrumb" class="d-print-none">
+  <ul class="bd-breadcrumbs">
+    
+    <li class="breadcrumb-item breadcrumb-home">
+      <a href="index.html" class="nav-link" aria-label="Home">
+        <i class="fa-solid fa-home"></i>
+      </a>
+    </li>
+    <li class="breadcrumb-item active" aria-current="page"><span class="ellipsis">API Reference</span></li>
+  </ul>
+</nav>
+</div>
+      
+    </div>
+  
+  
+</div>
+</div>
+              
+              
+              
+                
+<div id="searchbox"></div>
+                <article class="bd-article">
+                  
+  <section id="api-reference">
+<h1>API Reference<a class="headerlink" href="#api-reference" title="Link to this heading">#</a></h1>
+<p>This page provides the autogenerated API reference for the public modules of
+pyOMA-Monitoring.  Site-specific modules (<code class="docutils literal notranslate"><span class="pre">site_tower.py</span></code> and similar) are
+intentionally omitted from the public reference; see <a class="reference internal" href="configuration.html"><span class="doc">Configuration Guide</span></a> for
+the template-based guide to writing one.</p>
+<nav class="contents local" id="modules">
+<p class="topic-title">Modules</p>
+<ul class="simple">
+<li><p><a class="reference internal" href="#module-monitoring" id="id3">monitoring — engine functions</a></p></li>
+<li><p><a class="reference internal" href="#module-time_convention" id="id4">time_convention — timezone policy</a></p></li>
+<li><p><a class="reference internal" href="#module-config" id="id5">config — YAML loader</a></p></li>
+<li><p><a class="reference internal" href="#module-MultiLock" id="id6">MultiLock — concurrent file access</a></p></li>
+<li><p><a class="reference internal" href="#module-site_example" id="id7">site_example — site template</a></p></li>
+</ul>
+</nav>
+<section id="module-monitoring">
+<span id="monitoring-engine-functions"></span><h2><a class="toc-backref" href="#id3" role="doc-backlink">monitoring — engine functions</a><a class="headerlink" href="#module-monitoring" title="Link to this heading">#</a></h2>
+<p>A data-organization, -storage and analysis scheme for long-term tower monitoring</p>
+<p>store binary files on hard disk
+time synchronization must be achieved prior to analysis:</p>
+<blockquote>
+<div><dl>
+<dt>cases</dt><dd><p>pc/controller is ahead of controller/pc
+daylight saving
+clock of pc/controller changed
+available information:</p>
+<blockquote>
+<div><p>timestamp controller,  → Reference, because it does not change often and there is no daylight saving, though it may not relate to the “real time”
+timestamp pc,
+filetime controller,
+filetime pc</p>
+</div></blockquote>
+</dd>
+</dl>
+</div></blockquote>
+<p>correct (and synchronize) files and store as binary on hard disk
+store results in a database structure and link to the file on disk; preferred data-organization:
+using different averages 1m, 10m and 1 hour should be possible</p>
+<blockquote>
+<div><p>→ create multiple databases</p>
+</div></blockquote>
+<p>Coordinates: time (synchronized to controller time but in local timezone (w/ daylight saving), channels
+Variables:</p>
+<p>File Information:
+file_name (‘time’,)
+file_size (‘time’,)
+file_time (‘time’,)
+start_time (‘time’,)</p>
+<p>Content Information:
+num_channels (‘time’,)
+units (‘channels’,)
+sample_rate (‘time’,)
+duration (‘time’,) (in seconds)
+length (‘time’,) (in samples)
+error (‘time’, ‘channels’)</p>
+<p>Statistical Description of the recorded signal:
+mean (‘time’, ‘channels’)
+min (‘time’, ‘channels’)
+max (‘time’, ‘channels’)
+var (‘time’, ‘channels’)
+skewness (‘time’, ‘channels’)
+kurtosis (‘time’, ‘channels’)
+q05 (‘time’, ‘channels’)
+q50 (‘time’, ‘channels’)
+q95 (‘time’, ‘channels’)
+rms (‘time’, ‘channels’)</p>
+<p>Coordinates: time, channels
+Variables:</p>
+<p>Content Information:
+num_channels (‘time’,)
+sample_rate (‘time’,)
+length (‘time’,)
+error (‘time’, ‘channels’)</p>
+<p>Statistical Description of the sliced and processed signal:
+mean (‘time’, ‘channels’)
+min (‘time’, ‘channels’)
+max (‘time’, ‘channels’)
+var (‘time’, ‘channels’)
+skewness (‘time’, ‘channels’)
+kurtosis (‘time’, ‘channels’)
+q05 (‘time’, ‘channels’)
+q50 (‘time’, ‘channels’)
+q95 (‘time’, ‘channels’)
+rms (‘time’, ‘channels’)</p>
+<p>Coordinates: time, channels, modes
+Variables:</p>
+<p>Content information of the sliced signal:
+num_channels (‘time’,)
+sample_rate (‘time’,)
+length (‘time’,)
+error (‘time’, ‘channels’)</p>
+<p>Operational Modal Analysis
+num_modes (‘time’,)
+frequencies (‘time’, ‘modes’)
+damping (‘time’, ‘modes’)
+model_orders (‘time’, ‘modes’)
+std_damping (‘time’, ‘modes’)
+std_frequencies (‘time’, ‘modes’)
+var_svd_psd (‘time’, ‘channels’)
+modeshapes (‘time’, ‘modes’, ‘channels’)
+MPC (‘time’, ‘modes’)
+MPD (‘time’, ‘modes’)</p>
+<p>Statistical description of the singular value PSD:
+max_svd_psd (‘time’, ‘channels’)
+mean_svd_psd (‘time’, ‘channels’)
+min_svd_psd (‘time’, ‘channels’)
+skewness_svd_psd (‘time’, ‘channels’)
+kurtosis_svd_psd (‘time’, ‘channels’)
+q05_svd_psd (‘time’, ‘channels’)
+q50_svd_psd (‘time’, ‘channels’)
+q95_svd_psd (‘time’, ‘channels’)
+rms_svd_psd (‘time’, ‘channels’)
+energy_svd_psd (‘time’, ‘channels’)</p>
+<p>Statistical Description of the sliced and processed signal:
+mean (‘time’, ‘channels’)
+min (‘time’, ‘channels’)
+max (‘time’, ‘channels’)
+var (‘time’, ‘channels’)
+skewness (‘time’, ‘channels’)
+kurtosis (‘time’, ‘channels’)
+q05 (‘time’, ‘channels’)
+q50 (‘time’, ‘channels’)
+q95 (‘time’, ‘channels’)
+rms (‘time’, ‘channels’)
+_____________________________________________________________________</p>
+<dl class="py class">
+<dt class="sig sig-object py" id="monitoring.Site">
+<em class="property"><span class="k"><span class="pre">class</span></span><span class="w"> </span></em><span class="sig-prename descclassname"><span class="pre">monitoring.</span></span><span class="sig-name descname"><span class="pre">Site</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">name</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">str</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">transforms</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">Dict</span><span class="p"><span class="pre">[</span></span><span class="pre">str</span><span class="p"><span class="pre">,</span></span><span class="w"> </span><span class="pre">Callable</span><span class="p"><span class="pre">]</span></span></span></em>, <em class="sig-param"><span class="n"><span class="pre">setup_prep</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">Dict</span><span class="p"><span class="pre">[</span></span><span class="pre">str</span><span class="p"><span class="pre">,</span></span><span class="w"> </span><span class="pre">Callable</span><span class="p"><span class="pre">]</span></span></span></em>, <em class="sig-param"><span class="n"><span class="pre">error_rules</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">Dict</span><span class="p"><span class="pre">[</span></span><span class="pre">str</span><span class="p"><span class="pre">,</span></span><span class="w"> </span><span class="pre">dict</span><span class="p"><span class="pre">]</span></span></span></em>, <em class="sig-param"><span class="n"><span class="pre">sync_policy</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">Callable</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">modal_bands</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">List</span><span class="p"><span class="pre">[</span></span><span class="pre">tuple</span><span class="p"><span class="pre">]</span></span></span></em>, <em class="sig-param"><span class="n"><span class="pre">file_list_fn</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">Callable</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">channel_mean_fn</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">Callable</span><span class="w"> </span><span class="p"><span class="pre">|</span></span><span class="w"> </span><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">preproc_channels</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">Dict</span><span class="p"><span class="pre">[</span></span><span class="pre">str</span><span class="p"><span class="pre">,</span></span><span class="w"> </span><span class="pre">list</span><span class="p"><span class="pre">]</span></span></span></em>, <em class="sig-param"><span class="n"><span class="pre">db_root_path</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">str</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">slice_root_path</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">str</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">modal_conf_dir</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">str</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">file_root_path</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">str</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">origins</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">Dict</span><span class="p"><span class="pre">[</span></span><span class="pre">str</span><span class="p"><span class="pre">,</span></span><span class="w"> </span><span class="pre">str</span><span class="p"><span class="pre">]</span></span></span></em>, <em class="sig-param"><span class="n"><span class="pre">subpaths</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">Dict</span><span class="p"><span class="pre">[</span></span><span class="pre">str</span><span class="p"><span class="pre">,</span></span><span class="w"> </span><span class="pre">str</span><span class="p"><span class="pre">]</span></span></span></em>, <em class="sig-param"><span class="n"><span class="pre">all_channels</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">Dict</span><span class="p"><span class="pre">[</span></span><span class="pre">str</span><span class="p"><span class="pre">,</span></span><span class="w"> </span><span class="pre">list</span><span class="p"><span class="pre">]</span></span></span></em>, <em class="sig-param"><span class="n"><span class="pre">optional_channels</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">Dict</span><span class="p"><span class="pre">[</span></span><span class="pre">str</span><span class="p"><span class="pre">,</span></span><span class="w"> </span><span class="pre">list</span><span class="p"><span class="pre">]</span></span></span></em>, <em class="sig-param"><span class="n"><span class="pre">dtstarts</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">Dict</span><span class="p"><span class="pre">[</span></span><span class="pre">str</span><span class="p"><span class="pre">,</span></span><span class="w"> </span><span class="pre">object</span><span class="p"><span class="pre">]</span></span></span></em>, <em class="sig-param"><span class="n"><span class="pre">ranges</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">Dict</span><span class="p"><span class="pre">[</span></span><span class="pre">str</span><span class="p"><span class="pre">,</span></span><span class="w"> </span><span class="pre">tuple</span><span class="p"><span class="pre">]</span></span></span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/monitoring.html#Site"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#monitoring.Site" title="Link to this definition">#</a></dt>
+<dd><p>Bases: <code class="xref py py-class docutils literal notranslate"><span class="pre">object</span></code></p>
+<p>Contract between the generic engine and a site-specific implementation.</p>
+<p>All callables are pure functions with no side-effects on the engine state.
+Path / channel / range fields carry site-specific configuration that was
+previously read directly from config.py by the engine.</p>
+<dl class="py attribute">
+<dt class="sig sig-object py" id="monitoring.Site.all_channels">
+<span class="sig-name descname"><span class="pre">all_channels</span></span><em class="property"><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="pre">Dict</span><span class="p"><span class="pre">[</span></span><span class="pre">str</span><span class="p"><span class="pre">,</span></span><span class="w"> </span><span class="pre">list</span><span class="p"><span class="pre">]</span></span></em><a class="headerlink" href="#monitoring.Site.all_channels" title="Link to this definition">#</a></dt>
+<dd></dd></dl>
+
+<dl class="py attribute">
+<dt class="sig sig-object py" id="monitoring.Site.channel_mean_fn">
+<span class="sig-name descname"><span class="pre">channel_mean_fn</span></span><em class="property"><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="pre">Callable</span><span class="w"> </span><span class="p"><span class="pre">|</span></span><span class="w"> </span><span class="pre">None</span></em><a class="headerlink" href="#monitoring.Site.channel_mean_fn" title="Link to this definition">#</a></dt>
+<dd></dd></dl>
+
+<dl class="py attribute">
+<dt class="sig sig-object py" id="monitoring.Site.db_root_path">
+<span class="sig-name descname"><span class="pre">db_root_path</span></span><em class="property"><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="pre">str</span></em><a class="headerlink" href="#monitoring.Site.db_root_path" title="Link to this definition">#</a></dt>
+<dd></dd></dl>
+
+<dl class="py attribute">
+<dt class="sig sig-object py" id="monitoring.Site.dtstarts">
+<span class="sig-name descname"><span class="pre">dtstarts</span></span><em class="property"><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="pre">Dict</span><span class="p"><span class="pre">[</span></span><span class="pre">str</span><span class="p"><span class="pre">,</span></span><span class="w"> </span><span class="pre">object</span><span class="p"><span class="pre">]</span></span></em><a class="headerlink" href="#monitoring.Site.dtstarts" title="Link to this definition">#</a></dt>
+<dd></dd></dl>
+
+<dl class="py attribute">
+<dt class="sig sig-object py" id="monitoring.Site.error_rules">
+<span class="sig-name descname"><span class="pre">error_rules</span></span><em class="property"><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="pre">Dict</span><span class="p"><span class="pre">[</span></span><span class="pre">str</span><span class="p"><span class="pre">,</span></span><span class="w"> </span><span class="pre">dict</span><span class="p"><span class="pre">]</span></span></em><a class="headerlink" href="#monitoring.Site.error_rules" title="Link to this definition">#</a></dt>
+<dd></dd></dl>
+
+<dl class="py attribute">
+<dt class="sig sig-object py" id="monitoring.Site.file_list_fn">
+<span class="sig-name descname"><span class="pre">file_list_fn</span></span><em class="property"><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="pre">Callable</span></em><a class="headerlink" href="#monitoring.Site.file_list_fn" title="Link to this definition">#</a></dt>
+<dd></dd></dl>
+
+<dl class="py attribute">
+<dt class="sig sig-object py" id="monitoring.Site.file_root_path">
+<span class="sig-name descname"><span class="pre">file_root_path</span></span><em class="property"><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="pre">str</span></em><a class="headerlink" href="#monitoring.Site.file_root_path" title="Link to this definition">#</a></dt>
+<dd></dd></dl>
+
+<dl class="py attribute">
+<dt class="sig sig-object py" id="monitoring.Site.modal_bands">
+<span class="sig-name descname"><span class="pre">modal_bands</span></span><em class="property"><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="pre">List</span><span class="p"><span class="pre">[</span></span><span class="pre">tuple</span><span class="p"><span class="pre">]</span></span></em><a class="headerlink" href="#monitoring.Site.modal_bands" title="Link to this definition">#</a></dt>
+<dd></dd></dl>
+
+<dl class="py attribute">
+<dt class="sig sig-object py" id="monitoring.Site.modal_conf_dir">
+<span class="sig-name descname"><span class="pre">modal_conf_dir</span></span><em class="property"><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="pre">str</span></em><a class="headerlink" href="#monitoring.Site.modal_conf_dir" title="Link to this definition">#</a></dt>
+<dd></dd></dl>
+
+<dl class="py attribute">
+<dt class="sig sig-object py" id="monitoring.Site.name">
+<span class="sig-name descname"><span class="pre">name</span></span><em class="property"><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="pre">str</span></em><a class="headerlink" href="#monitoring.Site.name" title="Link to this definition">#</a></dt>
+<dd></dd></dl>
+
+<dl class="py attribute">
+<dt class="sig sig-object py" id="monitoring.Site.optional_channels">
+<span class="sig-name descname"><span class="pre">optional_channels</span></span><em class="property"><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="pre">Dict</span><span class="p"><span class="pre">[</span></span><span class="pre">str</span><span class="p"><span class="pre">,</span></span><span class="w"> </span><span class="pre">list</span><span class="p"><span class="pre">]</span></span></em><a class="headerlink" href="#monitoring.Site.optional_channels" title="Link to this definition">#</a></dt>
+<dd></dd></dl>
+
+<dl class="py attribute">
+<dt class="sig sig-object py" id="monitoring.Site.origins">
+<span class="sig-name descname"><span class="pre">origins</span></span><em class="property"><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="pre">Dict</span><span class="p"><span class="pre">[</span></span><span class="pre">str</span><span class="p"><span class="pre">,</span></span><span class="w"> </span><span class="pre">str</span><span class="p"><span class="pre">]</span></span></em><a class="headerlink" href="#monitoring.Site.origins" title="Link to this definition">#</a></dt>
+<dd></dd></dl>
+
+<dl class="py attribute">
+<dt class="sig sig-object py" id="monitoring.Site.preproc_channels">
+<span class="sig-name descname"><span class="pre">preproc_channels</span></span><em class="property"><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="pre">Dict</span><span class="p"><span class="pre">[</span></span><span class="pre">str</span><span class="p"><span class="pre">,</span></span><span class="w"> </span><span class="pre">list</span><span class="p"><span class="pre">]</span></span></em><a class="headerlink" href="#monitoring.Site.preproc_channels" title="Link to this definition">#</a></dt>
+<dd></dd></dl>
+
+<dl class="py attribute">
+<dt class="sig sig-object py" id="monitoring.Site.ranges">
+<span class="sig-name descname"><span class="pre">ranges</span></span><em class="property"><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="pre">Dict</span><span class="p"><span class="pre">[</span></span><span class="pre">str</span><span class="p"><span class="pre">,</span></span><span class="w"> </span><span class="pre">tuple</span><span class="p"><span class="pre">]</span></span></em><a class="headerlink" href="#monitoring.Site.ranges" title="Link to this definition">#</a></dt>
+<dd></dd></dl>
+
+<dl class="py attribute">
+<dt class="sig sig-object py" id="monitoring.Site.setup_prep">
+<span class="sig-name descname"><span class="pre">setup_prep</span></span><em class="property"><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="pre">Dict</span><span class="p"><span class="pre">[</span></span><span class="pre">str</span><span class="p"><span class="pre">,</span></span><span class="w"> </span><span class="pre">Callable</span><span class="p"><span class="pre">]</span></span></em><a class="headerlink" href="#monitoring.Site.setup_prep" title="Link to this definition">#</a></dt>
+<dd></dd></dl>
+
+<dl class="py attribute">
+<dt class="sig sig-object py" id="monitoring.Site.slice_root_path">
+<span class="sig-name descname"><span class="pre">slice_root_path</span></span><em class="property"><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="pre">str</span></em><a class="headerlink" href="#monitoring.Site.slice_root_path" title="Link to this definition">#</a></dt>
+<dd></dd></dl>
+
+<dl class="py attribute">
+<dt class="sig sig-object py" id="monitoring.Site.subpaths">
+<span class="sig-name descname"><span class="pre">subpaths</span></span><em class="property"><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="pre">Dict</span><span class="p"><span class="pre">[</span></span><span class="pre">str</span><span class="p"><span class="pre">,</span></span><span class="w"> </span><span class="pre">str</span><span class="p"><span class="pre">]</span></span></em><a class="headerlink" href="#monitoring.Site.subpaths" title="Link to this definition">#</a></dt>
+<dd></dd></dl>
+
+<dl class="py attribute">
+<dt class="sig sig-object py" id="monitoring.Site.sync_policy">
+<span class="sig-name descname"><span class="pre">sync_policy</span></span><em class="property"><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="pre">Callable</span></em><a class="headerlink" href="#monitoring.Site.sync_policy" title="Link to this definition">#</a></dt>
+<dd></dd></dl>
+
+<dl class="py attribute">
+<dt class="sig sig-object py" id="monitoring.Site.transforms">
+<span class="sig-name descname"><span class="pre">transforms</span></span><em class="property"><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="pre">Dict</span><span class="p"><span class="pre">[</span></span><span class="pre">str</span><span class="p"><span class="pre">,</span></span><span class="w"> </span><span class="pre">Callable</span><span class="p"><span class="pre">]</span></span></em><a class="headerlink" href="#monitoring.Site.transforms" title="Link to this definition">#</a></dt>
+<dd></dd></dl>
+
+</dd></dl>
+
+<dl class="py function">
+<dt class="sig sig-object py" id="monitoring.close_to_utc_transition">
+<span class="sig-prename descclassname"><span class="pre">monitoring.</span></span><span class="sig-name descname"><span class="pre">close_to_utc_transition</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">file_time</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">close_hours</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">3</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/monitoring.html#close_to_utc_transition"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#monitoring.close_to_utc_transition" title="Link to this definition">#</a></dt>
+<dd><p>Return <code class="docutils literal notranslate"><span class="pre">True</span></code> when <em>file_time</em> is near a DST transition.</p>
+<p>Thin wrapper around <code class="xref py py-meth docutils literal notranslate"><span class="pre">TimeConvention.is_near_dst_transition()</span></code> that
+also emits an <code class="docutils literal notranslate"><span class="pre">INFO</span></code> log message when the guard fires.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>file_time</strong> (<em>datetime.datetime</em>) – The timestamp to check.</p></li>
+<li><p><strong>close_hours</strong> (<em>int</em><em>, </em><em>optional</em>) – Half-width of the exclusion window in hours.  Defaults to 3.</p></li>
+</ul>
+</dd>
+<dt class="field-even">Returns<span class="colon">:</span></dt>
+<dd class="field-even"><p><code class="docutils literal notranslate"><span class="pre">True</span></code> when <em>file_time</em> is within ±*close_hours* of any DST
+transition in the project timezone.</p>
+</dd>
+<dt class="field-odd">Return type<span class="colon">:</span></dt>
+<dd class="field-odd"><p>bool</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py function">
+<dt class="sig sig-object py" id="monitoring.compute_gap_lengths">
+<span class="sig-prename descclassname"><span class="pre">monitoring.</span></span><span class="sig-name descname"><span class="pre">compute_gap_lengths</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">file_info</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/monitoring.html#compute_gap_lengths"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#monitoring.compute_gap_lengths" title="Link to this definition">#</a></dt>
+<dd><p>check file_gaps (assumes files are sorted in time)
+this function only works reliably if all files have been read in before,
+therefore it can not be pre-computed and is re-computed every time the script is run</p>
+<p>in Peaks_*, when the file compression script starts, all data written afterwards to the currently active file was lost
+therefore we have a gap of some minutes every night around 1 AM CET/CEST
+other gaps may be due to pc restarts, controller restarts, …</p>
+<p>Peaks_* files have to be interleaved sometime, when the recording stopped eg in channel 2 and continued in the next file in channel 3
+then there is a gap of (-1) sample which is removed during interleaving</p>
+</dd></dl>
+
+<dl class="py function">
+<dt class="sig sig-object py" id="monitoring.create_file_info">
+<span class="sig-prename descclassname"><span class="pre">monitoring.</span></span><span class="sig-name descname"><span class="pre">create_file_info</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">origin</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">str</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">chunksize</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">int</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">50</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">skip_existing</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">bool</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">True</span></span></em>, <em class="sig-param"><span class="o"><span class="pre">**</span></span><span class="n"><span class="pre">kwargs</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/monitoring.html#create_file_info"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#monitoring.create_file_info" title="Link to this definition">#</a></dt>
+<dd><p>file_name, file_size, file_creation_time, num_channels, headers, units, sample_rate, type (qstation, labview), start_time,&lt;- 1st run
+length (in samples), per channel: {errors, mean, min, max, var, skewness, kurtosis, q05, q95, q50, rms} &lt;- 1st run
+next_file, gap_length (in_samples) &lt;- 2nd run</p>
+</dd></dl>
+
+<dl class="py function">
+<dt class="sig sig-object py" id="monitoring.create_modal_results">
+<span class="sig-prename descclassname"><span class="pre">monitoring.</span></span><span class="sig-name descname"><span class="pre">create_modal_results</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">quantity</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">str</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">duration</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">Timedelta</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">stats</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">Dataset</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">chunksize</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">int</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">2</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">skip_existing</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">bool</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">True</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">check_errors</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">bool</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">True</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">filter_errors</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">bool</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">True</span></span></em>, <em class="sig-param"><span class="o"><span class="pre">**</span></span><span class="n"><span class="pre">kwargs</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/monitoring.html#create_modal_results"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#monitoring.create_modal_results" title="Link to this definition">#</a></dt>
+<dd><p>Run VarSSI-Ref modal analysis for every time step in <em>stats</em>.</p>
+<p>For each time step that is not already in the master database the
+function calls, in order:</p>
+<ol class="arabic simple">
+<li><p><a class="reference internal" href="#monitoring.get_slice_preprocessed" title="monitoring.get_slice_preprocessed"><code class="xref py py-func docutils literal notranslate"><span class="pre">get_slice_preprocessed()</span></code></a> — bandpass-filter and decimate the
+raw slice.</p></li>
+<li><p><a class="reference internal" href="#monitoring.describe_stats" title="monitoring.describe_stats"><code class="xref py py-func docutils literal notranslate"><span class="pre">describe_stats()</span></code></a> — compute per-channel signal statistics.</p></li>
+<li><p><a class="reference internal" href="#monitoring.modal_analysis_single" title="monitoring.modal_analysis_single"><code class="xref py py-func docutils literal notranslate"><span class="pre">modal_analysis_single()</span></code></a> — run VarSSI-Ref, cluster the
+stabilization diagram, and auto-select physical poles.</p></li>
+</ol>
+<p>Results are accumulated in a per-process NetCDF file and then merged
+into the master database under <a class="reference internal" href="#module-MultiLock" title="MultiLock"><code class="xref py py-class docutils literal notranslate"><span class="pre">MultiLock</span></code></a>.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>quantity</strong> (<em>str</em>) – Quantity tag (e.g. <code class="docutils literal notranslate"><span class="pre">'accel'</span></code>, <code class="docutils literal notranslate"><span class="pre">'strain_rosettes'</span></code>).</p></li>
+<li><p><strong>duration</strong> (<em>pandas.Timedelta</em>) – Analysis window length.</p></li>
+<li><p><strong>stats</strong> (<em>xarray.Dataset</em>) – Statistics dataset (from <a class="reference internal" href="#monitoring.get_stats" title="monitoring.get_stats"><code class="xref py py-func docutils literal notranslate"><span class="pre">get_stats()</span></code></a>) providing the list of
+time steps to process and error flags to filter on.</p></li>
+<li><p><strong>chunksize</strong> (<em>int</em><em>, </em><em>optional</em>) – Number of windows to accumulate before flushing the per-process
+NetCDF file to disk.  Defaults to 2.</p></li>
+<li><p><strong>skip_existing</strong> (<em>bool</em><em>, </em><em>optional</em>) – When <code class="docutils literal notranslate"><span class="pre">True</span></code> (default), skip time steps already present in the
+master database.</p></li>
+<li><p><strong>check_errors</strong> (<em>bool</em><em>, </em><em>optional</em>) – When <code class="docutils literal notranslate"><span class="pre">True</span></code> (default), call <code class="xref py py-func docutils literal notranslate"><span class="pre">check_and_mark_errors()</span></code> on
+<em>stats</em> before iterating.</p></li>
+<li><p><strong>filter_errors</strong> (<em>bool</em><em>, </em><em>optional</em>) – When <code class="docutils literal notranslate"><span class="pre">True</span></code> (default), skip time steps that have any error flag.</p></li>
+<li><p><strong>**kwargs</strong> – Supported keys: <code class="docutils literal notranslate"><span class="pre">dtstart</span></code>, <code class="docutils literal notranslate"><span class="pre">until</span></code>, <code class="docutils literal notranslate"><span class="pre">missing</span></code>,
+<code class="docutils literal notranslate"><span class="pre">num_workers</span></code>, <code class="docutils literal notranslate"><span class="pre">this_worker</span></code>.</p></li>
+</ul>
+</dd>
+<dt class="field-even">Returns<span class="colon">:</span></dt>
+<dd class="field-even"><p>The updated master modal-results dataset.</p>
+</dd>
+<dt class="field-odd">Return type<span class="colon">:</span></dt>
+<dd class="field-odd"><p>xarray.Dataset</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py function">
+<dt class="sig sig-object py" id="monitoring.create_stats">
+<span class="sig-prename descclassname"><span class="pre">monitoring.</span></span><span class="sig-name descname"><span class="pre">create_stats</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">quantity</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">str</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">duration</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">Timedelta</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">file_info</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">Dataset</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">chunksize</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">int</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">10</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">skip_existing</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">bool</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">False</span></span></em>, <em class="sig-param"><span class="o"><span class="pre">**</span></span><span class="n"><span class="pre">kwargs</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/monitoring.html#create_stats"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#monitoring.create_stats" title="Link to this definition">#</a></dt>
+<dd><p>mean, min, max, var, skewness, kurtosis, q05, q95, q50, rms</p>
+</dd></dl>
+
+<dl class="py function">
+<dt class="sig sig-object py" id="monitoring.describe_stats">
+<span class="sig-prename descclassname"><span class="pre">monitoring.</span></span><span class="sig-name descname"><span class="pre">describe_stats</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">measurement</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">headers</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">quantity</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/monitoring.html#describe_stats"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#monitoring.describe_stats" title="Link to this definition">#</a></dt>
+<dd><p>Compute per-channel descriptive statistics for a measurement array.</p>
+<p>For each column of <em>measurement</em> the following statistics are computed:
+mean, min, max, variance, skewness, kurtosis, 5th/50th/95th percentiles,
+and RMS.  An <code class="docutils literal notranslate"><span class="pre">error</span></code> flag is set when a channel contains only NaN values,
+has min == max (flatline), or violates the plausibility range defined in
+the active site’s <code class="docutils literal notranslate"><span class="pre">ranges</span></code> dict.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>measurement</strong> (<em>numpy.ndarray</em><em>, </em><em>shape</em><em> (</em><em>n_samples</em><em>, </em><em>n_channels</em><em>)</em>) – Raw or preprocessed signal matrix.  May contain <code class="docutils literal notranslate"><span class="pre">NaN</span></code> values.</p></li>
+<li><p><strong>headers</strong> (<em>list</em><em> of </em><em>str</em><em>, </em><em>optional</em>) – Channel names in the same order as columns in <em>measurement</em>.  Used
+to look up plausibility ranges and site-specific circular-mean
+functions.  Defaults to empty strings.</p></li>
+<li><p><strong>quantity</strong> (<em>str</em><em>, </em><em>optional</em>) – Quantity tag (e.g. <code class="docutils literal notranslate"><span class="pre">'accel'</span></code>) used to look up
+<code class="docutils literal notranslate"><span class="pre">error_rules</span></code> (kurtosis thresholds) in the active site.</p></li>
+</ul>
+</dd>
+<dt class="field-even">Returns<span class="colon">:</span></dt>
+<dd class="field-even"><p>Keys: <code class="docutils literal notranslate"><span class="pre">'mean'</span></code>, <code class="docutils literal notranslate"><span class="pre">'min'</span></code>, <code class="docutils literal notranslate"><span class="pre">'max'</span></code>, <code class="docutils literal notranslate"><span class="pre">'var'</span></code>, <code class="docutils literal notranslate"><span class="pre">'skewness'</span></code>,
+<code class="docutils literal notranslate"><span class="pre">'kurtosis'</span></code>, <code class="docutils literal notranslate"><span class="pre">'q05'</span></code>, <code class="docutils literal notranslate"><span class="pre">'q50'</span></code>, <code class="docutils literal notranslate"><span class="pre">'q95'</span></code>, <code class="docutils literal notranslate"><span class="pre">'rms'</span></code>,
+<code class="docutils literal notranslate"><span class="pre">'error'</span></code>.  Each value is a 1-D <code class="docutils literal notranslate"><span class="pre">numpy.ndarray</span></code> of length
+<code class="docutils literal notranslate"><span class="pre">n_channels</span></code>.</p>
+</dd>
+<dt class="field-odd">Return type<span class="colon">:</span></dt>
+<dd class="field-odd"><p>dict</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py function">
+<dt class="sig sig-object py" id="monitoring.get_active_site">
+<span class="sig-prename descclassname"><span class="pre">monitoring.</span></span><span class="sig-name descname"><span class="pre">get_active_site</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><a class="reference internal" href="#monitoring.Site" title="monitoring.Site"><span class="pre">Site</span></a><span class="w"> </span><span class="p"><span class="pre">|</span></span><span class="w"> </span><span class="pre">None</span></span></span><a class="reference internal" href="_modules/monitoring.html#get_active_site"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#monitoring.get_active_site" title="Link to this definition">#</a></dt>
+<dd><p>Return the currently active site, or <code class="docutils literal notranslate"><span class="pre">None</span></code> if none is set.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Returns<span class="colon">:</span></dt>
+<dd class="field-odd"><p>The active <a class="reference internal" href="#monitoring.Site" title="monitoring.Site"><code class="xref py py-class docutils literal notranslate"><span class="pre">Site</span></code></a> instance, or <code class="docutils literal notranslate"><span class="pre">None</span></code> if
+<a class="reference internal" href="#monitoring.set_active_site" title="monitoring.set_active_site"><code class="xref py py-func docutils literal notranslate"><span class="pre">set_active_site()</span></code></a> has not been called yet.</p>
+</dd>
+<dt class="field-even">Return type<span class="colon">:</span></dt>
+<dd class="field-even"><p><a class="reference internal" href="#monitoring.Site" title="monitoring.Site">Site</a> or None</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py function">
+<dt class="sig sig-object py" id="monitoring.get_file_info">
+<span class="sig-prename descclassname"><span class="pre">monitoring.</span></span><span class="sig-name descname"><span class="pre">get_file_info</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">origin</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">str</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">create_new</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">bool</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">False</span></span></em>, <em class="sig-param"><span class="o"><span class="pre">**</span></span><span class="n"><span class="pre">kwargs</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/monitoring.html#get_file_info"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#monitoring.get_file_info" title="Link to this definition">#</a></dt>
+<dd><p>Load or (re-)create the file-info database for <em>origin</em>.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>origin</strong> (<em>str</em>) – Origin tag identifying which sensor group to query.</p></li>
+<li><p><strong>create_new</strong> (<em>bool</em><em>, </em><em>optional</em>) – When <code class="docutils literal notranslate"><span class="pre">True</span></code>, call <a class="reference internal" href="#monitoring.create_file_info" title="monitoring.create_file_info"><code class="xref py py-func docutils literal notranslate"><span class="pre">create_file_info()</span></code></a> instead of reading
+from disk.  Defaults to <code class="docutils literal notranslate"><span class="pre">False</span></code>.</p></li>
+<li><p><strong>**kwargs</strong> – Forwarded to <a class="reference internal" href="#monitoring.create_file_info" title="monitoring.create_file_info"><code class="xref py py-func docutils literal notranslate"><span class="pre">create_file_info()</span></code></a> when <em>create_new</em> is
+<code class="docutils literal notranslate"><span class="pre">True</span></code>.</p></li>
+</ul>
+</dd>
+<dt class="field-even">Returns<span class="colon">:</span></dt>
+<dd class="field-even"><p>The file-info dataset with an additional <code class="docutils literal notranslate"><span class="pre">gap_length</span></code> variable
+(samples between consecutive files), or <code class="docutils literal notranslate"><span class="pre">None</span></code> if the on-disk
+database is newly created and empty.</p>
+</dd>
+<dt class="field-odd">Return type<span class="colon">:</span></dt>
+<dd class="field-odd"><p>xarray.Dataset or None</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py function">
+<dt class="sig sig-object py" id="monitoring.get_file_list">
+<span class="sig-prename descclassname"><span class="pre">monitoring.</span></span><span class="sig-name descname"><span class="pre">get_file_list</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">origin</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">reduced</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">False</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">file_info</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/monitoring.html#get_file_list"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#monitoring.get_file_list" title="Link to this definition">#</a></dt>
+<dd><p>Return a list of raw data file paths for the given origin.</p>
+<p>Delegates to the active site’s <code class="docutils literal notranslate"><span class="pre">file_list_fn</span></code> callback.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>origin</strong> (<em>str</em>) – Origin tag (e.g. <code class="docutils literal notranslate"><span class="pre">'accel'</span></code>, <code class="docutils literal notranslate"><span class="pre">'wind'</span></code>).</p></li>
+<li><p><strong>reduced</strong> (<em>bool</em><em>, </em><em>optional</em>) – When <code class="docutils literal notranslate"><span class="pre">True</span></code>, the callback should return only files not already
+present in <em>file_info</em> (incremental update mode).</p></li>
+<li><p><strong>file_info</strong> (<em>xarray.Dataset</em><em> or </em><em>None</em><em>, </em><em>optional</em>) – The current file-info database; used by the callback when
+<em>reduced</em> is <code class="docutils literal notranslate"><span class="pre">True</span></code> to filter already-indexed files.</p></li>
+</ul>
+</dd>
+<dt class="field-even">Returns<span class="colon">:</span></dt>
+<dd class="field-even"><p>Absolute paths to the raw data files.</p>
+</dd>
+<dt class="field-odd">Return type<span class="colon">:</span></dt>
+<dd class="field-odd"><p>list of str</p>
+</dd>
+<dt class="field-even">Raises<span class="colon">:</span></dt>
+<dd class="field-even"><p><strong>RuntimeError</strong> – When no site has been registered (<code class="docutils literal notranslate"><span class="pre">_active_site</span></code> is <code class="docutils literal notranslate"><span class="pre">None</span></code>)
+    or the site has no <code class="docutils literal notranslate"><span class="pre">file_list_fn</span></code>.</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py function">
+<dt class="sig sig-object py" id="monitoring.get_modal_results">
+<span class="sig-prename descclassname"><span class="pre">monitoring.</span></span><span class="sig-name descname"><span class="pre">get_modal_results</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">quantity</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">str</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">duration</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">Timedelta</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">stats</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">Dataset</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">create_new</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">bool</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">False</span></span></em>, <em class="sig-param"><span class="o"><span class="pre">**</span></span><span class="n"><span class="pre">kwargs</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/monitoring.html#get_modal_results"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#monitoring.get_modal_results" title="Link to this definition">#</a></dt>
+<dd><p>Load or (re-)create the modal-results database for <em>quantity</em>.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>quantity</strong> (<em>str</em>) – Quantity tag (e.g. <code class="docutils literal notranslate"><span class="pre">'accel'</span></code>, <code class="docutils literal notranslate"><span class="pre">'strain_rosettes'</span></code>).</p></li>
+<li><p><strong>duration</strong> (<em>pandas.Timedelta</em>) – Analysis window length used to locate the database file.</p></li>
+<li><p><strong>stats</strong> (<em>xarray.Dataset</em><em> or </em><em>None</em><em>, </em><em>optional</em>) – Statistics dataset required when <em>create_new</em> is <code class="docutils literal notranslate"><span class="pre">True</span></code>.</p></li>
+<li><p><strong>create_new</strong> (<em>bool</em><em>, </em><em>optional</em>) – When <code class="docutils literal notranslate"><span class="pre">True</span></code>, run <a class="reference internal" href="#monitoring.create_modal_results" title="monitoring.create_modal_results"><code class="xref py py-func docutils literal notranslate"><span class="pre">create_modal_results()</span></code></a> instead of reading
+from disk.  Defaults to <code class="docutils literal notranslate"><span class="pre">False</span></code>.</p></li>
+<li><p><strong>**kwargs</strong> – Forwarded to <a class="reference internal" href="#monitoring.create_modal_results" title="monitoring.create_modal_results"><code class="xref py py-func docutils literal notranslate"><span class="pre">create_modal_results()</span></code></a> when <em>create_new</em> is
+<code class="docutils literal notranslate"><span class="pre">True</span></code>.</p></li>
+</ul>
+</dd>
+<dt class="field-even">Returns<span class="colon">:</span></dt>
+<dd class="field-even"><p>Modal-results dataset with variables <code class="docutils literal notranslate"><span class="pre">frequencies</span></code>, <code class="docutils literal notranslate"><span class="pre">damping</span></code>,
+<code class="docutils literal notranslate"><span class="pre">modeshapes</span></code>, <code class="docutils literal notranslate"><span class="pre">MPC</span></code>, <code class="docutils literal notranslate"><span class="pre">MPD</span></code>, <code class="docutils literal notranslate"><span class="pre">num_modes</span></code>, <code class="docutils literal notranslate"><span class="pre">model_orders</span></code>,
+and associated per-channel PSD statistics, indexed by
+<code class="docutils literal notranslate"><span class="pre">(time,</span> <span class="pre">modes,</span> <span class="pre">channels)</span></code>.</p>
+</dd>
+<dt class="field-odd">Return type<span class="colon">:</span></dt>
+<dd class="field-odd"><p>xarray.Dataset</p>
+</dd>
+<dt class="field-even">Raises<span class="colon">:</span></dt>
+<dd class="field-even"><p><strong>RuntimeError</strong> – When <em>create_new</em> is <code class="docutils literal notranslate"><span class="pre">True</span></code> but <em>stats</em> is <code class="docutils literal notranslate"><span class="pre">None</span></code>.</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py function">
+<dt class="sig sig-object py" id="monitoring.get_site">
+<span class="sig-prename descclassname"><span class="pre">monitoring.</span></span><span class="sig-name descname"><span class="pre">get_site</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">name</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">str</span></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><a class="reference internal" href="#monitoring.Site" title="monitoring.Site"><span class="pre">Site</span></a></span></span><a class="reference internal" href="_modules/monitoring.html#get_site"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#monitoring.get_site" title="Link to this definition">#</a></dt>
+<dd><p>Retrieve a previously registered site by name.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><p><strong>name</strong> (<em>str</em>) – The <code class="docutils literal notranslate"><span class="pre">site.name</span></code> used when <code class="docutils literal notranslate"><span class="pre">register_site</span></code> was called.</p>
+</dd>
+<dt class="field-even">Returns<span class="colon">:</span></dt>
+<dd class="field-even"><p>The registered <a class="reference internal" href="#monitoring.Site" title="monitoring.Site"><code class="xref py py-class docutils literal notranslate"><span class="pre">Site</span></code></a> instance.</p>
+</dd>
+<dt class="field-odd">Return type<span class="colon">:</span></dt>
+<dd class="field-odd"><p><a class="reference internal" href="#monitoring.Site" title="monitoring.Site">Site</a></p>
+</dd>
+<dt class="field-even">Raises<span class="colon">:</span></dt>
+<dd class="field-even"><p><strong>KeyError</strong> – When no site with <em>name</em> has been registered.</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py function">
+<dt class="sig sig-object py" id="monitoring.get_slice">
+<span class="sig-prename descclassname"><span class="pre">monitoring.</span></span><span class="sig-name descname"><span class="pre">get_slice</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">start_time</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">duration</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">quantity</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">file_info</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">upsample_fs</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/monitoring.html#get_slice"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#monitoring.get_slice" title="Link to this definition">#</a></dt>
+<dd><p>channels ‘Tagessekunden’ and ‘Time’ are always dropped</p>
+</dd></dl>
+
+<dl class="py function">
+<dt class="sig sig-object py" id="monitoring.get_slice_corrected">
+<span class="sig-prename descclassname"><span class="pre">monitoring.</span></span><span class="sig-name descname"><span class="pre">get_slice_corrected</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">start_time</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">Timestamp</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">duration</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">Timedelta</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">quantity</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">str</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">file_info</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">Dataset</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="o"><span class="pre">**</span></span><span class="n"><span class="pre">kwargs</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/monitoring.html#get_slice_corrected"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#monitoring.get_slice_corrected" title="Link to this definition">#</a></dt>
+<dd><p>Return a site-transformed signal slice, loading from cache when possible.</p>
+<p>First checks whether a pre-processed <code class="docutils literal notranslate"><span class="pre">.npz</span></code> slice already exists on
+disk (under <code class="docutils literal notranslate"><span class="pre">slice_root_path/&lt;duration&gt;-minutes/slices_&lt;quantity&gt;/</span></code>).
+If it does, the cached slice is returned directly.  Otherwise, the raw
+slice is obtained via <a class="reference internal" href="#monitoring.get_slice" title="monitoring.get_slice"><code class="xref py py-func docutils literal notranslate"><span class="pre">get_slice()</span></code></a>, the site’s <code class="docutils literal notranslate"><span class="pre">transforms</span></code>
+callback is applied, and the result is saved for future calls.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>start_time</strong> (<em>pandas.Timestamp</em>) – Berlin-aware start of the requested window.</p></li>
+<li><p><strong>duration</strong> (<em>pandas.Timedelta</em>) – Length of the requested window.</p></li>
+<li><p><strong>quantity</strong> (<em>str</em>) – Quantity tag (e.g. <code class="docutils literal notranslate"><span class="pre">'accel'</span></code>, <code class="docutils literal notranslate"><span class="pre">'strain_rosettes'</span></code>).</p></li>
+<li><p><strong>file_info</strong> (<em>xarray.Dataset</em><em> or </em><em>None</em><em>, </em><em>optional</em>) – File-info dataset required when the cache is empty and a raw slice
+must be assembled.  May be <code class="docutils literal notranslate"><span class="pre">None</span></code> if a cached slice exists.</p></li>
+<li><p><strong>**kwargs</strong> – Forwarded to the site’s <code class="docutils literal notranslate"><span class="pre">transforms</span></code> callback.</p></li>
+</ul>
+</dd>
+<dt class="field-even">Returns<span class="colon">:</span></dt>
+<dd class="field-even"><p><code class="docutils literal notranslate"><span class="pre">(start_time,</span> <span class="pre">headers,</span> <span class="pre">units,</span> <span class="pre">end_time,</span> <span class="pre">sample_rate,</span> <span class="pre">measurement)</span></code>
+or <code class="docutils literal notranslate"><span class="pre">None</span></code> when no data are available for the requested window.</p>
+</dd>
+<dt class="field-odd">Return type<span class="colon">:</span></dt>
+<dd class="field-odd"><p>tuple or None</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py function">
+<dt class="sig sig-object py" id="monitoring.get_slice_preprocessed">
+<span class="sig-prename descclassname"><span class="pre">monitoring.</span></span><span class="sig-name descname"><span class="pre">get_slice_preprocessed</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">start_time</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">Timestamp</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">duration</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">quantity</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">file_info</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="o"><span class="pre">**</span></span><span class="n"><span class="pre">kwargs</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/monitoring.html#get_slice_preprocessed"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#monitoring.get_slice_preprocessed" title="Link to this definition">#</a></dt>
+<dd><p>remove channels, detrend, filter bandpass and decimate</p>
+</dd></dl>
+
+<dl class="py function">
+<dt class="sig sig-object py" id="monitoring.get_stats">
+<span class="sig-prename descclassname"><span class="pre">monitoring.</span></span><span class="sig-name descname"><span class="pre">get_stats</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">quantity</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">str</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">duration</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">Timedelta</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">file_info</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">Dataset</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">create_new</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">bool</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">False</span></span></em>, <em class="sig-param"><span class="o"><span class="pre">**</span></span><span class="n"><span class="pre">kwargs</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/monitoring.html#get_stats"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#monitoring.get_stats" title="Link to this definition">#</a></dt>
+<dd><p>Load or (re-)create the statistics database for <em>quantity</em>.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>quantity</strong> (<em>str</em>) – Quantity tag (e.g. <code class="docutils literal notranslate"><span class="pre">'accel'</span></code>, <code class="docutils literal notranslate"><span class="pre">'wind'</span></code>).</p></li>
+<li><p><strong>duration</strong> (<em>pandas.Timedelta</em>) – Analysis window length (e.g. <code class="docutils literal notranslate"><span class="pre">pd.Timedelta('2h')</span></code> for 120-minute
+statistics).</p></li>
+<li><p><strong>file_info</strong> (<em>xarray.Dataset</em><em> or </em><em>None</em><em>, </em><em>optional</em>) – File-info dataset required when <em>create_new</em> is <code class="docutils literal notranslate"><span class="pre">True</span></code>.</p></li>
+<li><p><strong>create_new</strong> (<em>bool</em><em>, </em><em>optional</em>) – When <code class="docutils literal notranslate"><span class="pre">True</span></code>, run <a class="reference internal" href="#monitoring.create_stats" title="monitoring.create_stats"><code class="xref py py-func docutils literal notranslate"><span class="pre">create_stats()</span></code></a> instead of reading from
+the existing NetCDF file.  Defaults to <code class="docutils literal notranslate"><span class="pre">False</span></code>.</p></li>
+<li><p><strong>**kwargs</strong> – Forwarded to <a class="reference internal" href="#monitoring.create_stats" title="monitoring.create_stats"><code class="xref py py-func docutils literal notranslate"><span class="pre">create_stats()</span></code></a> when <em>create_new</em> is <code class="docutils literal notranslate"><span class="pre">True</span></code>.</p></li>
+</ul>
+</dd>
+<dt class="field-even">Returns<span class="colon">:</span></dt>
+<dd class="field-even"><p>Statistics dataset with variables <code class="docutils literal notranslate"><span class="pre">mean</span></code>, <code class="docutils literal notranslate"><span class="pre">min</span></code>, <code class="docutils literal notranslate"><span class="pre">max</span></code>,
+<code class="docutils literal notranslate"><span class="pre">var</span></code>, <code class="docutils literal notranslate"><span class="pre">skewness</span></code>, <code class="docutils literal notranslate"><span class="pre">kurtosis</span></code>, <code class="docutils literal notranslate"><span class="pre">q05</span></code>, <code class="docutils literal notranslate"><span class="pre">q50</span></code>, <code class="docutils literal notranslate"><span class="pre">q95</span></code>,
+<code class="docutils literal notranslate"><span class="pre">rms</span></code>, and <code class="docutils literal notranslate"><span class="pre">error</span></code> indexed by <code class="docutils literal notranslate"><span class="pre">(time,</span> <span class="pre">channels)</span></code>.</p>
+</dd>
+<dt class="field-odd">Return type<span class="colon">:</span></dt>
+<dd class="field-odd"><p>xarray.Dataset</p>
+</dd>
+<dt class="field-even">Raises<span class="colon">:</span></dt>
+<dd class="field-even"><p><strong>RuntimeError</strong> – When <em>create_new</em> is <code class="docutils literal notranslate"><span class="pre">True</span></code> but <em>file_info</em> is <code class="docutils literal notranslate"><span class="pre">None</span></code>.</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py function">
+<dt class="sig sig-object py" id="monitoring.get_synchronized_time">
+<span class="sig-prename descclassname"><span class="pre">monitoring.</span></span><span class="sig-name descname"><span class="pre">get_synchronized_time</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">start_time</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">file_time</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">duration</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/monitoring.html#get_synchronized_time"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#monitoring.get_synchronized_time" title="Link to this definition">#</a></dt>
+<dd><p>Return the synchronised start time via the active site’s sync policy.</p>
+</dd></dl>
+
+<dl class="py function">
+<dt class="sig sig-object py" id="monitoring.modal_analysis_single">
+<span class="sig-prename descclassname"><span class="pre">monitoring.</span></span><span class="sig-name descname"><span class="pre">modal_analysis_single</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">start_time</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">data_slice</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">quantity</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">duration</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/monitoring.html#modal_analysis_single"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#monitoring.modal_analysis_single" title="Link to this definition">#</a></dt>
+<dd><p>Run VarSSI-Ref on a single preprocessed slice and return pole results.</p>
+<p>Loads or computes three sequential artefacts (cached per window):</p>
+<ol class="arabic simple">
+<li><p><code class="docutils literal notranslate"><span class="pre">prep_data.npz</span></code> — <code class="xref py py-class docutils literal notranslate"><span class="pre">PreProcessSignals</span></code>
+state including the singular-value PSD.</p></li>
+<li><p><code class="docutils literal notranslate"><span class="pre">modal_data.npz</span></code> — <code class="xref py py-class docutils literal notranslate"><span class="pre">VarSSIRef</span></code> state
+matrix.</p></li>
+<li><p><code class="docutils literal notranslate"><span class="pre">stabil_data.npz</span></code> — <code class="xref py py-class docutils literal notranslate"><span class="pre">StabilCluster</span></code>
+state with automatic clearing, classification, and pole selection.</p></li>
+</ol>
+<p>A stabilization-diagram PNG is also written to the result folder.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>start_time</strong> (<em>pandas.Timestamp</em>) – Berlin-aware start of the analysis window (used to name result files
+and locate the configuration directory).</p></li>
+<li><p><strong>data_slice</strong> (<em>tuple</em>) – <code class="docutils literal notranslate"><span class="pre">(start_time,</span> <span class="pre">headers,</span> <span class="pre">units,</span> <span class="pre">end_time,</span> <span class="pre">sample_rate,</span> <span class="pre">measurement)</span></code>
+as returned by <a class="reference internal" href="#monitoring.get_slice_preprocessed" title="monitoring.get_slice_preprocessed"><code class="xref py py-func docutils literal notranslate"><span class="pre">get_slice_preprocessed()</span></code></a>.</p></li>
+<li><p><strong>quantity</strong> (<em>str</em>) – Quantity tag (e.g. <code class="docutils literal notranslate"><span class="pre">'accel'</span></code>); used to locate the
+<code class="docutils literal notranslate"><span class="pre">modal_conf_dir/&lt;quantity&gt;/</span></code> configuration directory.</p></li>
+<li><p><strong>duration</strong> (<em>pandas.Timedelta</em>) – Window length; determines the result subfolder name.</p></li>
+</ul>
+</dd>
+<dt class="field-even">Returns<span class="colon">:</span></dt>
+<dd class="field-even"><p><code class="docutils literal notranslate"><span class="pre">[model_orders,</span> <span class="pre">frequencies,</span> <span class="pre">std_frequencies,</span> <span class="pre">damping,</span> <span class="pre">std_damping,</span>
+<span class="pre">MPC,</span> <span class="pre">MP,</span> <span class="pre">MPD,</span> <span class="pre">MC,</span> <span class="pre">modeshapes,</span> <span class="pre">s_vals_psd]</span></code> as returned by
+<code class="xref py py-meth docutils literal notranslate"><span class="pre">return_results()</span></code> plus
+the singular-value PSD matrix.</p>
+</dd>
+<dt class="field-odd">Return type<span class="colon">:</span></dt>
+<dd class="field-odd"><p>list</p>
+</dd>
+<dt class="field-even">Raises<span class="colon">:</span></dt>
+<dd class="field-even"><p><strong>RuntimeError</strong> – When no <code class="docutils literal notranslate"><span class="pre">setup_prep</span></code> callback is registered for <em>quantity</em>.</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py function">
+<dt class="sig sig-object py" id="monitoring.read_file">
+<span class="sig-prename descclassname"><span class="pre">monitoring.</span></span><span class="sig-name descname"><span class="pre">read_file</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">path</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/monitoring.html#read_file"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#monitoring.read_file" title="Link to this definition">#</a></dt>
+<dd><p>read binary file from path
+return array, start_time, duration, headers,
+path may be a csv,dat or bin file
+or a bzip2ed version of it
+or an incomplete path refering to the 8 files generated by illumisense (common path part of these files, ends in underscore, has not extension)</p>
+<blockquote>
+<div><p>illumisense files may be .txt or .txt.bz2</p>
+</div></blockquote>
+<p>we first try to read a .npz version for this file, if it exists
+then we try to open the bz2 file and pass the file descriptor to the following function
+then we  call the respective function to read the file</p>
+<p>the illumisense reader must handle bz2 internally</p>
+<dl class="simple">
+<dt>Short comparison of slowdown and space saving using bz2. packed files</dt><dd><p>time        speedup/slowdown [%]  filesize    space saving [%]</p>
+</dd>
+</dl>
+<p>.dat        1,64E-07    100,00                14400768
+.dat.bz2    1,27E-06    12,91                 10300268    28,47</p>
+<p>.csv        1,85E-07    100,00                40320184
+.csv.bz2    9,55E-07    19,37                  9115468    77,39</p>
+<p>.txt        8,32E-07    100,00              3260560549
+.txt.bz2    2,29E-06    36,30                217251268    93,34
+.npz        3,92E-08    2125,37</p>
+<p>.bin        1,26E-04    100,00                34195960
+.bin.bz2    1,26E-04    100,00                 2882224    91,57
+.npz        4,90E-07    25617,82</p>
+</dd></dl>
+
+<dl class="py function">
+<dt class="sig sig-object py" id="monitoring.register_site">
+<span class="sig-prename descclassname"><span class="pre">monitoring.</span></span><span class="sig-name descname"><span class="pre">register_site</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">site</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference internal" href="#monitoring.Site" title="monitoring.Site"><span class="pre">Site</span></a></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><span class="pre">None</span></span></span><a class="reference internal" href="_modules/monitoring.html#register_site"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#monitoring.register_site" title="Link to this definition">#</a></dt>
+<dd><p>Add <em>site</em> to the module-level site registry under <code class="docutils literal notranslate"><span class="pre">site.name</span></code>.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><p><strong>site</strong> (<a class="reference internal" href="#monitoring.Site" title="monitoring.Site"><em>Site</em></a>) – A fully configured <a class="reference internal" href="#monitoring.Site" title="monitoring.Site"><code class="xref py py-class docutils literal notranslate"><span class="pre">Site</span></code></a> dataclass instance.</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py function">
+<dt class="sig sig-object py" id="monitoring.round_dt">
+<span class="sig-prename descclassname"><span class="pre">monitoring.</span></span><span class="sig-name descname"><span class="pre">round_dt</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">dt</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">datetime64</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">duration</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">timedelta64</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">ceil</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">bool</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">True</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">floor</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">bool</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">False</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/monitoring.html#round_dt"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#monitoring.round_dt" title="Link to this definition">#</a></dt>
+<dd><p>Round <em>dt</em> up (or down) to the nearest multiple of <em>duration</em>.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>dt</strong> (<em>numpy.datetime64</em>) – The datetime to round.</p></li>
+<li><p><strong>duration</strong> (<em>numpy.timedelta64</em>) – Rounding grid size (e.g. <code class="docutils literal notranslate"><span class="pre">np.timedelta64(120,</span> <span class="pre">'m')</span></code> for 2-hour
+intervals).</p></li>
+<li><p><strong>ceil</strong> (<em>bool</em><em>, </em><em>optional</em>) – Round toward the next grid point (default <code class="docutils literal notranslate"><span class="pre">True</span></code>).</p></li>
+<li><p><strong>floor</strong> (<em>bool</em><em>, </em><em>optional</em>) – Round toward the previous grid point.  Setting this to <code class="docutils literal notranslate"><span class="pre">True</span></code>
+forces <em>ceil</em> to <code class="docutils literal notranslate"><span class="pre">False</span></code>.</p></li>
+</ul>
+</dd>
+<dt class="field-even">Returns<span class="colon">:</span></dt>
+<dd class="field-even"><p><em>dt</em> rounded to the nearest <em>duration</em> boundary.</p>
+</dd>
+<dt class="field-odd">Return type<span class="colon">:</span></dt>
+<dd class="field-odd"><p>numpy.datetime64</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py function">
+<dt class="sig sig-object py" id="monitoring.save_ds">
+<span class="sig-prename descclassname"><span class="pre">monitoring.</span></span><span class="sig-name descname"><span class="pre">save_ds</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">new_ds</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">current_ds</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">savepath</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">what</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">'modal'</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">reload_current</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">False</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/monitoring.html#save_ds"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#monitoring.save_ds" title="Link to this definition">#</a></dt>
+<dd><dl class="simple">
+<dt>defined behaviour:</dt><dd><dl class="simple">
+<dt>when creating new results:</dt><dd><p>save to a unique netcdf file for each process in order to avoid loosing data
+unique netcdf files will be merged later</p>
+</dd>
+<dt>when updating results:</dt><dd><p>iterate over stats and existing modal results
+regenerate where necessary
+save to a unique netcdf file for each process</p>
+</dd>
+<dt>upon process exit</dt><dd><p>lock main netcdf
+merge main netcdf with processes netcdf while dropping conflicting indexes from main file</p>
+</dd>
+</dl>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py function">
+<dt class="sig sig-object py" id="monitoring.set_active_site">
+<span class="sig-prename descclassname"><span class="pre">monitoring.</span></span><span class="sig-name descname"><span class="pre">set_active_site</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">site</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference internal" href="#monitoring.Site" title="monitoring.Site"><span class="pre">Site</span></a></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><span class="pre">None</span></span></span><a class="reference internal" href="_modules/monitoring.html#set_active_site"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#monitoring.set_active_site" title="Link to this definition">#</a></dt>
+<dd><p>Mark <em>site</em> as the process-level active site.</p>
+<p>All engine functions that depend on site configuration (channel lists,
+path roots, callbacks) read <code class="docutils literal notranslate"><span class="pre">_active_site</span></code> instead of reaching into
+<code class="docutils literal notranslate"><span class="pre">config.py</span></code> directly.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><p><strong>site</strong> (<a class="reference internal" href="#monitoring.Site" title="monitoring.Site"><em>Site</em></a>) – A <a class="reference internal" href="#monitoring.Site" title="monitoring.Site"><code class="xref py py-class docutils literal notranslate"><span class="pre">Site</span></code></a> instance that has already been passed to
+<a class="reference internal" href="#monitoring.register_site" title="monitoring.register_site"><code class="xref py py-func docutils literal notranslate"><span class="pre">register_site()</span></code></a>.</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py function">
+<dt class="sig sig-object py" id="monitoring.split_modepairs">
+<span class="sig-prename descclassname"><span class="pre">monitoring.</span></span><span class="sig-name descname"><span class="pre">split_modepairs</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">modal</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/monitoring.html#split_modepairs"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#monitoring.split_modepairs" title="Link to this definition">#</a></dt>
+<dd><p>Reorder raw poles into named mode-pair slots defined by the active site.</p>
+<p>For each frequency band in <code class="docutils literal notranslate"><span class="pre">site.modal_bands</span></code>, the function:</p>
+<ol class="arabic simple">
+<li><p>Selects time steps where <strong>exactly two</strong> poles fall inside the band.</p></li>
+<li><p>Assigns the lower-frequency pole to slot <code class="docutils literal notranslate"><span class="pre">2*i</span></code> and the
+higher-frequency pole to slot <code class="docutils literal notranslate"><span class="pre">2*i+1</span></code> (where <em>i</em> is the band index).</p></li>
+<li><p>Merges all per-band results into a single dataset with a new
+<code class="docutils literal notranslate"><span class="pre">modes</span></code> coordinate of size <code class="docutils literal notranslate"><span class="pre">2</span> <span class="pre">*</span> <span class="pre">len(modal_bands)</span></code>.</p></li>
+</ol>
+<p>All other dataset variables (damping, modeshapes, MPC, etc.) are
+reordered to match the new mode assignment.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><p><strong>modal</strong> (<em>xarray.Dataset</em>) – Raw modal-results dataset as returned by <a class="reference internal" href="#monitoring.get_modal_results" title="monitoring.get_modal_results"><code class="xref py py-func docutils literal notranslate"><span class="pre">get_modal_results()</span></code></a>,
+with a sparse <code class="docutils literal notranslate"><span class="pre">modes</span></code> dimension.</p>
+</dd>
+<dt class="field-even">Returns<span class="colon">:</span></dt>
+<dd class="field-even"><p>Dataset with a dense <code class="docutils literal notranslate"><span class="pre">modes</span></code> coordinate of length
+<code class="docutils literal notranslate"><span class="pre">2</span> <span class="pre">*</span> <span class="pre">len(site.modal_bands)</span></code>, aligned across all time steps.</p>
+</dd>
+<dt class="field-odd">Return type<span class="colon">:</span></dt>
+<dd class="field-odd"><p>xarray.Dataset</p>
+</dd>
+</dl>
+</dd></dl>
+
+</section>
+<section id="module-time_convention">
+<span id="time-convention-timezone-policy"></span><h2><a class="toc-backref" href="#id4" role="doc-backlink">time_convention — timezone policy</a><a class="headerlink" href="#module-time_convention" title="Link to this heading">#</a></h2>
+<p>Single source of truth for timezone/format conversions in the monitoring pipeline.</p>
+<p>All methods are vectorised: they accept and return arrays / Series / xarray objects.
+No per-scalar wrappers are created.</p>
+<dl class="py class">
+<dt class="sig sig-object py" id="time_convention.TimeConvention">
+<em class="property"><span class="k"><span class="pre">class</span></span><span class="w"> </span></em><span class="sig-prename descclassname"><span class="pre">time_convention.</span></span><span class="sig-name descname"><span class="pre">TimeConvention</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">tz</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">str</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">'Europe/Berlin'</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/time_convention.html#TimeConvention"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#time_convention.TimeConvention" title="Link to this definition">#</a></dt>
+<dd><p>Bases: <code class="xref py py-class docutils literal notranslate"><span class="pre">object</span></code></p>
+<p>Centralised timezone policy and conversion helpers.</p>
+<p>Owns the project timezone and the canonical on-disk storage format.</p>
+<p>The storage format uses two encodings for the same instant:</p>
+<ul class="simple">
+<li><p><code class="docutils literal notranslate"><span class="pre">time</span></code> coordinate — tz-naive UTC <code class="docutils literal notranslate"><span class="pre">datetime64[ns]</span></code> (xarray index).</p></li>
+<li><p><code class="docutils literal notranslate"><span class="pre">start_time</span></code> / <code class="docutils literal notranslate"><span class="pre">file_time</span></code> variables — float64 POSIX seconds.</p></li>
+</ul>
+<dl class="py attribute">
+<dt class="sig sig-object py" id="time_convention.TimeConvention.tz">
+<span class="sig-name descname"><span class="pre">tz</span></span><a class="headerlink" href="#time_convention.TimeConvention.tz" title="Link to this definition">#</a></dt>
+<dd><p>The project timezone, e.g. <code class="docutils literal notranslate"><span class="pre">pytz.timezone('Europe/Berlin')</span></code>.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Type<span class="colon">:</span></dt>
+<dd class="field-odd"><p>pytz.BaseTzInfo</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="time_convention.TimeConvention.gap_lengths">
+<span class="sig-name descname"><span class="pre">gap_lengths</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">start_times</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">durations</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">sample_rates</span></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><span class="pre">ndarray</span></span></span><a class="reference internal" href="_modules/time_convention.html#TimeConvention.gap_lengths"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#time_convention.TimeConvention.gap_lengths" title="Link to this definition">#</a></dt>
+<dd><p>Compute gap lengths in samples between consecutive files.</p>
+<p>Calculates, for each file <em>i</em>, how many samples are missing between the
+end of file <em>i</em> and the start of file <a href="#id1"><span class="problematic" id="id2">*</span></a>i*+1.  The last element is
+always <code class="docutils literal notranslate"><span class="pre">np.nan</span></code> because there is no next file.</p>
+<p>Two correctness issues from the original implementation are fixed here:</p>
+<ul class="simple">
+<li><p><strong>Bug 1 (unit)</strong> — the duration column (float seconds) is multiplied
+by <code class="docutils literal notranslate"><span class="pre">np.timedelta64(1,</span> <span class="pre">'s')</span></code> rather than <code class="docutils literal notranslate"><span class="pre">'us'</span></code>, so 3600 s adds
+one hour, not 3.6 ms.</p></li>
+<li><p><strong>Bug 2 (NaT sentinel)</strong> — <code class="docutils literal notranslate"><span class="pre">.shift(time=-1)</span></code> fills the last element
+with <code class="docutils literal notranslate"><span class="pre">NaT</span></code>; casting <code class="docutils literal notranslate"><span class="pre">NaT</span></code> directly to <code class="docutils literal notranslate"><span class="pre">int64</span></code> yields
+<code class="docutils literal notranslate"><span class="pre">INT64_MIN</span></code> (≈ −9.2×10¹⁸), which would propagate as an enormous
+negative gap.  Elements equal to <code class="docutils literal notranslate"><span class="pre">INT64_MIN</span></code> are masked to
+<code class="docutils literal notranslate"><span class="pre">np.nan</span></code> before scaling.</p></li>
+</ul>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>start_times</strong> (<em>xarray.DataArray</em>) – Float64 POSIX start times in <strong>seconds</strong> (the <code class="docutils literal notranslate"><span class="pre">start_time</span></code>
+variable from the file-info database).</p></li>
+<li><p><strong>durations</strong> (<em>xarray.DataArray</em>) – Float64 recording durations in <strong>seconds</strong>.</p></li>
+<li><p><strong>sample_rates</strong> (<em>xarray.DataArray</em>) – Float64 sample rates in Hz.</p></li>
+</ul>
+</dd>
+<dt class="field-even">Returns<span class="colon">:</span></dt>
+<dd class="field-even"><p>Gap lengths in <strong>samples</strong>.  The last element is <code class="docutils literal notranslate"><span class="pre">np.nan</span></code>.
+Negative values indicate file overlap; zero means perfectly
+consecutive.</p>
+</dd>
+<dt class="field-odd">Return type<span class="colon">:</span></dt>
+<dd class="field-odd"><p>numpy.ndarray</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="time_convention.TimeConvention.is_near_dst_transition">
+<span class="sig-name descname"><span class="pre">is_near_dst_transition</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">t</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">hours</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">int</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">3</span></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><span class="pre">bool</span></span></span><a class="reference internal" href="_modules/time_convention.html#TimeConvention.is_near_dst_transition"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#time_convention.TimeConvention.is_near_dst_transition" title="Link to this definition">#</a></dt>
+<dd><p>Return <code class="docutils literal notranslate"><span class="pre">True</span></code> if <em>t</em> is within ±*hours* of any DST transition.</p>
+<p>Used in <code class="docutils literal notranslate"><span class="pre">monitoring.close_to_utc_transition</span></code> to skip files recorded
+during the ±3-hour window around clock changes, where device timestamps
+are unreliable.</p>
+<p>The comparison strips <code class="docutils literal notranslate"><span class="pre">tzinfo</span></code> from <em>t</em> before comparing against the
+naive UTC transition times stored in <code class="docutils literal notranslate"><span class="pre">pytz</span></code>, matching the original
+behaviour of the inline check this method replaces.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>t</strong> (<em>datetime.datetime</em>) – A datetime object (timezone-aware or timezone-naive).</p></li>
+<li><p><strong>hours</strong> (<em>int</em><em>, </em><em>optional</em>) – Half-width of the exclusion window in hours.  Defaults to 3.</p></li>
+</ul>
+</dd>
+<dt class="field-even">Returns<span class="colon">:</span></dt>
+<dd class="field-even"><p><code class="docutils literal notranslate"><span class="pre">True</span></code> if <em>t</em> falls within <em>hours</em> of any DST transition in the
+project timezone; <code class="docutils literal notranslate"><span class="pre">False</span></code> otherwise.</p>
+</dd>
+<dt class="field-odd">Return type<span class="colon">:</span></dt>
+<dd class="field-odd"><p>bool</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="time_convention.TimeConvention.make_index">
+<span class="sig-name descname"><span class="pre">make_index</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">dtstart</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">until</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">minutes</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">int</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/time_convention.html#TimeConvention.make_index"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#time_convention.TimeConvention.make_index" title="Link to this definition">#</a></dt>
+<dd><p>Build the regular time index used by <code class="docutils literal notranslate"><span class="pre">create_stats</span></code> and <code class="docutils literal notranslate"><span class="pre">create_modal_results</span></code>.</p>
+<p>Generates a <code class="docutils literal notranslate"><span class="pre">dateutil.rrule</span></code> sequence with step <em>minutes</em> from
+<em>dtstart</em> to <em>until</em> (inclusive) and returns it in two parallel forms:
+a list of Berlin-aware <code class="docutils literal notranslate"><span class="pre">pd.Timestamp</span></code> objects (for local-time
+display and slice naming) and a NumPy array of tz-naive UTC
+<code class="docutils literal notranslate"><span class="pre">datetime64[ns]</span></code> values (for xarray database lookup).</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>dtstart</strong> (<em>datetime-like</em>) – Start of the iteration range (Berlin-naive or Berlin-aware).</p></li>
+<li><p><strong>until</strong> (<em>datetime-like</em>) – End of the iteration range, inclusive (same timezone convention
+as <em>dtstart</em>).</p></li>
+<li><p><strong>minutes</strong> (<em>int</em>) – Step size in minutes (e.g. 30, 60, 120).</p></li>
+</ul>
+</dd>
+<dt class="field-even">Returns<span class="colon">:</span></dt>
+<dd class="field-even"><p><ul class="simple">
+<li><p><strong>aware_list</strong> (<em>list of pd.Timestamp</em>) – Berlin-aware timestamps at every step from <em>dtstart</em> to <em>until</em>.</p></li>
+<li><p><strong>naive_array</strong> (<em>numpy.ndarray of datetime64[ns]</em>) – Corresponding tz-naive UTC <code class="docutils literal notranslate"><span class="pre">datetime64[ns]</span></code> values, suitable for
+set-difference operations against the database <code class="docutils literal notranslate"><span class="pre">time</span></code> coordinate.</p></li>
+</ul>
+</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="time_convention.TimeConvention.posix_to_datetime64">
+<span class="sig-name descname"><span class="pre">posix_to_datetime64</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">posix_s</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/time_convention.html#TimeConvention.posix_to_datetime64"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#time_convention.TimeConvention.posix_to_datetime64" title="Link to this definition">#</a></dt>
+<dd><p>Convert float POSIX seconds to <code class="docutils literal notranslate"><span class="pre">datetime64[s]</span></code> (vectorised).</p>
+<p>Convenience wrapper around <code class="docutils literal notranslate"><span class="pre">.astype('datetime64[s]')</span></code> that accepts
+both plain NumPy arrays and xarray <code class="docutils literal notranslate"><span class="pre">DataArray</span></code> objects.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><p><strong>posix_s</strong> (<em>float</em><em>, </em><em>array-like</em><em>, or </em><em>xarray.DataArray</em>) – POSIX timestamp(s) in seconds since the Unix epoch (1970-01-01 UTC).</p>
+</dd>
+<dt class="field-even">Returns<span class="colon">:</span></dt>
+<dd class="field-even"><p><code class="docutils literal notranslate"><span class="pre">datetime64[s]</span></code> representation of the same instant(s).</p>
+</dd>
+<dt class="field-odd">Return type<span class="colon">:</span></dt>
+<dd class="field-odd"><p>numpy.ndarray or xarray.DataArray</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="time_convention.TimeConvention.to_local">
+<span class="sig-name descname"><span class="pre">to_local</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">stored</span></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><span class="pre">Timestamp</span></span></span><a class="reference internal" href="_modules/time_convention.html#TimeConvention.to_local"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#time_convention.TimeConvention.to_local" title="Link to this definition">#</a></dt>
+<dd><p>Convert a stored tz-naive coordinate back to a Berlin-aware Timestamp.</p>
+<p>Used in <code class="docutils literal notranslate"><span class="pre">create_stats</span></code> and <code class="docutils literal notranslate"><span class="pre">create_modal_results</span></code> to recover a
+Berlin-aware <code class="docutils literal notranslate"><span class="pre">pd.Timestamp</span></code> from the UTC-naive value that is stored
+in the database.</p>
+<div class="admonition note">
+<p class="admonition-title">Note</p>
+<p>This applies the “double-localisation” pattern: the stored UTC-naive
+value is <em>re-localised</em> as Berlin (not converted from UTC).  Times
+that fall inside the spring-forward DST gap (02:00–02:59 on the last
+Sunday in March in <code class="docutils literal notranslate"><span class="pre">Europe/Berlin</span></code>) map to <code class="docutils literal notranslate"><span class="pre">NaT</span></code> rather than
+raising, because <code class="docutils literal notranslate"><span class="pre">nonexistent='NaT'</span></code> is passed to <code class="docutils literal notranslate"><span class="pre">tz_localize</span></code>.</p>
+</div>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><p><strong>stored</strong> (<em>numpy.datetime64</em><em>, </em><em>pd.Timestamp</em><em>, or </em><em>str</em>) – A tz-naive datetime value as stored in the database <code class="docutils literal notranslate"><span class="pre">time</span></code>
+coordinate.</p>
+</dd>
+<dt class="field-even">Returns<span class="colon">:</span></dt>
+<dd class="field-even"><p>Berlin-aware timestamp, or <code class="docutils literal notranslate"><span class="pre">NaT</span></code> if <em>stored</em> falls inside a DST
+spring-forward gap.</p>
+</dd>
+<dt class="field-odd">Return type<span class="colon">:</span></dt>
+<dd class="field-odd"><p>pd.Timestamp</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="time_convention.TimeConvention.to_posix">
+<span class="sig-name descname"><span class="pre">to_posix</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">dt</span></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><span class="pre">float</span></span></span><a class="reference internal" href="_modules/time_convention.html#TimeConvention.to_posix"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#time_convention.TimeConvention.to_posix" title="Link to this definition">#</a></dt>
+<dd><p>Convert a timezone-aware datetime to float POSIX seconds.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><p><strong>dt</strong> (<em>datetime.datetime</em><em> or </em><em>pd.Timestamp</em>) – A timezone-aware datetime.</p>
+</dd>
+<dt class="field-even">Returns<span class="colon">:</span></dt>
+<dd class="field-even"><p>Seconds since the Unix epoch (1970-01-01 00:00:00 UTC), including
+fractional seconds.</p>
+</dd>
+<dt class="field-odd">Return type<span class="colon">:</span></dt>
+<dd class="field-odd"><p>float</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="time_convention.TimeConvention.to_storage_coord">
+<span class="sig-name descname"><span class="pre">to_storage_coord</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">aware</span></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><span class="pre">datetime64</span></span></span><a class="reference internal" href="_modules/time_convention.html#TimeConvention.to_storage_coord"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#time_convention.TimeConvention.to_storage_coord" title="Link to this definition">#</a></dt>
+<dd><p>Convert a timezone-aware datetime to a tz-naive UTC <code class="docutils literal notranslate"><span class="pre">datetime64</span></code>.</p>
+<p>This is the canonical conversion used before writing a time coordinate
+to the NetCDF database.  It is equivalent to:</p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">pd</span><span class="o">.</span><span class="n">Timestamp</span><span class="p">(</span><span class="n">aware</span><span class="p">)</span><span class="o">.</span><span class="n">tz_convert</span><span class="p">(</span><span class="s1">&#39;UTC&#39;</span><span class="p">)</span><span class="o">.</span><span class="n">tz_localize</span><span class="p">(</span><span class="kc">None</span><span class="p">)</span><span class="o">.</span><span class="n">to_datetime64</span><span class="p">()</span>
+</pre></div>
+</div>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><p><strong>aware</strong> (<em>datetime.datetime</em><em> or </em><em>pd.Timestamp</em>) – A timezone-aware datetime.  <code class="docutils literal notranslate"><span class="pre">pytz</span></code>-aware and <code class="docutils literal notranslate"><span class="pre">dateutil</span></code>-aware
+objects are both accepted.</p>
+</dd>
+<dt class="field-even">Returns<span class="colon">:</span></dt>
+<dd class="field-even"><p>Tz-naive UTC <code class="docutils literal notranslate"><span class="pre">datetime64</span></code> suitable for use as an xarray
+<code class="docutils literal notranslate"><span class="pre">time</span></code> coordinate.</p>
+</dd>
+<dt class="field-odd">Return type<span class="colon">:</span></dt>
+<dd class="field-odd"><p>numpy.datetime64</p>
+</dd>
+</dl>
+</dd></dl>
+
+</dd></dl>
+
+</section>
+<section id="module-config">
+<span id="config-yaml-loader"></span><h2><a class="toc-backref" href="#id5" role="doc-backlink">config — YAML loader</a><a class="headerlink" href="#module-config" title="Link to this heading">#</a></h2>
+<p>YAML-based configuration loader for the tower monitoring pipeline.</p>
+<p>All static site configuration lives in <code class="docutils literal notranslate"><span class="pre">config.yaml</span></code> next to this file.
+This module loads that file, validates its structure, and re-exports every
+value as a module-level attribute so that existing code using
+<code class="docutils literal notranslate"><span class="pre">import</span> <span class="pre">config;</span> <span class="pre">config.origins</span></code> continues to work without modification.</p>
+<p>Runtime-only state (<code class="docutils literal notranslate"><span class="pre">file_cache</span></code>, <code class="docutils literal notranslate"><span class="pre">ds_cache</span></code>, <code class="docutils literal notranslate"><span class="pre">pid</span></code>) is also
+initialised here and is <em>not</em> part of the YAML file.</p>
+<dl class="py function">
+<dt class="sig sig-object py" id="config.load_config">
+<span class="sig-prename descclassname"><span class="pre">config.</span></span><span class="sig-name descname"><span class="pre">load_config</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">path</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">str</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">'/home/womo1998/dev/pyOMA-Monitoring/pyoma-monitoring/config.yaml'</span></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><span class="pre">dict</span></span></span><a class="reference internal" href="_modules/config.html#load_config"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#config.load_config" title="Link to this definition">#</a></dt>
+<dd><p>Load <em>path</em> as YAML and return the validated configuration dict.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><p><strong>path</strong> – Path to a YAML file with the structure defined in <code class="docutils literal notranslate"><span class="pre">config.yaml</span></code>.</p>
+</dd>
+<dt class="field-even">Raises<span class="colon">:</span></dt>
+<dd class="field-even"><ul class="simple">
+<li><p><strong>FileNotFoundError</strong> – When <em>path</em> does not exist.</p></li>
+<li><p><strong>yaml.YAMLError</strong> – When the file is not valid YAML.</p></li>
+<li><p><strong>ValueError</strong> – When required keys are missing or values have wrong types.</p></li>
+</ul>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py function">
+<dt class="sig sig-object py" id="config.validate_config">
+<span class="sig-prename descclassname"><span class="pre">config.</span></span><span class="sig-name descname"><span class="pre">validate_config</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">cfg</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">dict</span></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><span class="pre">None</span></span></span><a class="reference internal" href="_modules/config.html#validate_config"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#config.validate_config" title="Link to this definition">#</a></dt>
+<dd><p>Validate the structure of a loaded configuration dict.</p>
+<p>Raises <code class="xref py py-exc docutils literal notranslate"><span class="pre">ValueError</span></code> with a descriptive message on the first
+violation found.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><p><strong>cfg</strong> – Dict produced by <a class="reference internal" href="#config.load_config" title="config.load_config"><code class="xref py py-func docutils literal notranslate"><span class="pre">load_config()</span></code></a> (or <code class="docutils literal notranslate"><span class="pre">yaml.safe_load</span></code>).</p>
+</dd>
+</dl>
+</dd></dl>
+
+</section>
+<section id="module-MultiLock">
+<span id="multilock-concurrent-file-access"></span><h2><a class="toc-backref" href="#id6" role="doc-backlink">MultiLock — concurrent file access</a><a class="headerlink" href="#module-MultiLock" title="Link to this heading">#</a></h2>
+<p>File-based advisory lock for safe concurrent NetCDF database access.</p>
+<p>Wraps <code class="docutils literal notranslate"><span class="pre">simpleflock</span></code> with an additional per-process lock file layer so that
+multiple worker processes can safely read and write the same NetCDF database
+without data corruption.</p>
+<dl class="py class">
+<dt class="sig sig-object py" id="MultiLock.MultiLock">
+<em class="property"><span class="k"><span class="pre">class</span></span><span class="w"> </span></em><span class="sig-prename descclassname"><span class="pre">MultiLock.</span></span><span class="sig-name descname"><span class="pre">MultiLock</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">path</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/MultiLock.html#MultiLock"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#MultiLock.MultiLock" title="Link to this definition">#</a></dt>
+<dd><p>Bases: <code class="xref py py-class docutils literal notranslate"><span class="pre">object</span></code></p>
+<p>Context manager that provides exclusive access to a file path.</p>
+<p>Layers a per-process <code class="docutils literal notranslate"><span class="pre">.pid.lock</span></code> sentinel file on top of
+<code class="docutils literal notranslate"><span class="pre">simpleflock</span></code> to close the race window where <code class="docutils literal notranslate"><span class="pre">simpleflock</span></code> can
+briefly grant the system lock to two processes simultaneously.  The
+calling process:</p>
+<ol class="arabic simple">
+<li><p>Acquires the <code class="docutils literal notranslate"><span class="pre">simpleflock</span></code> system lock on <code class="docutils literal notranslate"><span class="pre">&lt;path&gt;.lock</span></code>.</p></li>
+<li><p>Creates its own <code class="docutils literal notranslate"><span class="pre">&lt;path&gt;.&lt;pid&gt;.lock</span></code> sentinel file.</p></li>
+<li><p>Releases the system lock.</p></li>
+<li><p>Loops until no <em>other</em> sentinel files exist, sleeping a random
+sub-second interval on each iteration to break ties.</p></li>
+</ol>
+<p>This guarantees that at most one process holds the advisory lock at any
+time, even when the underlying <code class="docutils literal notranslate"><span class="pre">simpleflock</span></code> implementation has a
+brief grant-to-two bug.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><p><strong>path</strong> (<em>str</em><em> or </em><em>os.PathLike</em>) – Absolute path to the file being protected (typically a NetCDF
+database such as <code class="docutils literal notranslate"><span class="pre">modal_accel.nc</span></code>).</p>
+</dd>
+</dl>
+<p class="rubric">Examples</p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="k">with</span> <span class="n">MultiLock</span><span class="p">(</span><span class="s1">&#39;/path/to/database.nc&#39;</span><span class="p">):</span>
+    <span class="n">ds</span> <span class="o">=</span> <span class="n">xr</span><span class="o">.</span><span class="n">open_dataset</span><span class="p">(</span><span class="s1">&#39;/path/to/database.nc&#39;</span><span class="p">)</span>
+    <span class="c1"># modify ds …</span>
+    <span class="n">ds</span><span class="o">.</span><span class="n">to_netcdf</span><span class="p">(</span><span class="s1">&#39;/path/to/database.nc&#39;</span><span class="p">)</span>
+</pre></div>
+</div>
+</dd></dl>
+
+</section>
+<section id="module-site_example">
+<span id="site-example-site-template"></span><h2><a class="toc-backref" href="#id7" role="doc-backlink">site_example — site template</a><a class="headerlink" href="#module-site_example" title="Link to this heading">#</a></h2>
+<p>Example / template site module for pyOMA-Monitoring.</p>
+<p>Copy this file, rename it <code class="docutils literal notranslate"><span class="pre">site_&lt;yoursite&gt;.py</span></code>, and fill in every
+<code class="docutils literal notranslate"><span class="pre">raise</span> <span class="pre">NotImplementedError</span></code> stub with your site-specific logic.  Import the
+finished module once (e.g. at the top of <code class="docutils literal notranslate"><span class="pre">daily.py</span></code>) to register and activate
+your site in the monitoring engine:</p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="kn">import</span><span class="w"> </span><span class="nn">site_mysite</span>  <span class="c1"># registers on import</span>
+</pre></div>
+</div>
+<p>All engine functions in <code class="docutils literal notranslate"><span class="pre">monitoring.py</span></code> will then use your callbacks
+automatically.</p>
+<dl class="py data">
+<dt class="sig sig-object py" id="site_example.EXAMPLE_ALL_CHANNELS">
+<span class="sig-prename descclassname"><span class="pre">site_example.</span></span><span class="sig-name descname"><span class="pre">EXAMPLE_ALL_CHANNELS</span></span><em class="property"><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="pre">Dict</span><span class="p"><span class="pre">[</span></span><span class="pre">str</span><span class="p"><span class="pre">,</span></span><span class="w"> </span><span class="pre">List</span><span class="p"><span class="pre">[</span></span><span class="pre">str</span><span class="p"><span class="pre">]</span></span><span class="p"><span class="pre">]</span></span></em><em class="property"><span class="w"> </span><span class="p"><span class="pre">=</span></span><span class="w"> </span><span class="pre">{'accel':</span> <span class="pre">['Accel_01',</span> <span class="pre">'Accel_02']}</span></em><a class="headerlink" href="#site_example.EXAMPLE_ALL_CHANNELS" title="Link to this definition">#</a></dt>
+<dd><p>Map <em>quantity</em> → list of channel names that <em>must</em> be present in every slice.</p>
+</dd></dl>
+
+<dl class="py data">
+<dt class="sig sig-object py" id="site_example.EXAMPLE_DB_ROOT_PATH">
+<span class="sig-prename descclassname"><span class="pre">site_example.</span></span><span class="sig-name descname"><span class="pre">EXAMPLE_DB_ROOT_PATH</span></span><em class="property"><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="pre">str</span></em><em class="property"><span class="w"> </span><span class="p"><span class="pre">=</span></span><span class="w"> </span><span class="pre">'/path/to/results/db/'</span></em><a class="headerlink" href="#site_example.EXAMPLE_DB_ROOT_PATH" title="Link to this definition">#</a></dt>
+<dd><p>Absolute path to the root directory that holds the result databases
+(<code class="docutils literal notranslate"><span class="pre">file_info_*.nc</span></code>, <code class="docutils literal notranslate"><span class="pre">stats_*.nc</span></code>, <code class="docutils literal notranslate"><span class="pre">modal_*.nc</span></code>).</p>
+</dd></dl>
+
+<dl class="py data">
+<dt class="sig sig-object py" id="site_example.EXAMPLE_DTSTARTS">
+<span class="sig-prename descclassname"><span class="pre">site_example.</span></span><span class="sig-name descname"><span class="pre">EXAMPLE_DTSTARTS</span></span><em class="property"><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="pre">Dict</span><span class="p"><span class="pre">[</span></span><span class="pre">str</span><span class="p"><span class="pre">,</span></span><span class="w"> </span><span class="pre">object</span><span class="p"><span class="pre">]</span></span></em><em class="property"><span class="w"> </span><span class="p"><span class="pre">=</span></span><span class="w"> </span><span class="pre">{'accel':</span> <span class="pre">'2020-01-01'}</span></em><a class="headerlink" href="#site_example.EXAMPLE_DTSTARTS" title="Link to this definition">#</a></dt>
+<dd><p>Map <em>origin tag</em> → earliest available datetime (ISO string or
+<code class="docutils literal notranslate"><span class="pre">datetime.datetime</span></code>).  Slices before this timestamp are skipped.</p>
+</dd></dl>
+
+<dl class="py data">
+<dt class="sig sig-object py" id="site_example.EXAMPLE_ERROR_RULES">
+<span class="sig-prename descclassname"><span class="pre">site_example.</span></span><span class="sig-name descname"><span class="pre">EXAMPLE_ERROR_RULES</span></span><em class="property"><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="pre">Dict</span><span class="p"><span class="pre">[</span></span><span class="pre">str</span><span class="p"><span class="pre">,</span></span><span class="w"> </span><span class="pre">dict</span><span class="p"><span class="pre">]</span></span></em><em class="property"><span class="w"> </span><span class="p"><span class="pre">=</span></span><span class="w"> </span><span class="pre">{'accel':</span> <span class="pre">{'kurtosis_max':</span> <span class="pre">5,</span> <span class="pre">'kurtosis_min':</span> <span class="pre">-2}}</span></em><a class="headerlink" href="#site_example.EXAMPLE_ERROR_RULES" title="Link to this definition">#</a></dt>
+<dd><p>Map <em>quantity</em> → dict of kurtosis thresholds used by <code class="docutils literal notranslate"><span class="pre">describe_stats</span></code>.
+Slices whose kurtosis falls outside <code class="docutils literal notranslate"><span class="pre">[kurtosis_min,</span> <span class="pre">kurtosis_max]</span></code> are
+flagged as erroneous.  Omit a quantity to apply no kurtosis check.</p>
+</dd></dl>
+
+<dl class="py data">
+<dt class="sig sig-object py" id="site_example.EXAMPLE_FILE_ROOT_PATH">
+<span class="sig-prename descclassname"><span class="pre">site_example.</span></span><span class="sig-name descname"><span class="pre">EXAMPLE_FILE_ROOT_PATH</span></span><em class="property"><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="pre">str</span></em><em class="property"><span class="w"> </span><span class="p"><span class="pre">=</span></span><span class="w"> </span><span class="pre">'/path/to/raw_data/'</span></em><a class="headerlink" href="#site_example.EXAMPLE_FILE_ROOT_PATH" title="Link to this definition">#</a></dt>
+<dd><p>Absolute path to the root directory that holds the raw measurement files.</p>
+</dd></dl>
+
+<dl class="py data">
+<dt class="sig sig-object py" id="site_example.EXAMPLE_MODAL_BANDS">
+<span class="sig-prename descclassname"><span class="pre">site_example.</span></span><span class="sig-name descname"><span class="pre">EXAMPLE_MODAL_BANDS</span></span><em class="property"><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="pre">List</span><span class="p"><span class="pre">[</span></span><span class="pre">Tuple</span><span class="p"><span class="pre">[</span></span><span class="pre">float</span><span class="p"><span class="pre">,</span></span><span class="w"> </span><span class="pre">float</span><span class="p"><span class="pre">]</span></span><span class="p"><span class="pre">]</span></span></em><em class="property"><span class="w"> </span><span class="p"><span class="pre">=</span></span><span class="w"> </span><span class="pre">[(0.5,</span> <span class="pre">1.0)]</span></em><a class="headerlink" href="#site_example.EXAMPLE_MODAL_BANDS" title="Link to this definition">#</a></dt>
+<dd><p>List of <code class="docutils literal notranslate"><span class="pre">(f_lo,</span> <span class="pre">f_hi)</span></code> Hz bands passed to <code class="docutils literal notranslate"><span class="pre">split_modepairs</span></code> when
+assigning poles to named modes.  Add one tuple per expected mode.</p>
+</dd></dl>
+
+<dl class="py data">
+<dt class="sig sig-object py" id="site_example.EXAMPLE_MODAL_CONF_DIR">
+<span class="sig-prename descclassname"><span class="pre">site_example.</span></span><span class="sig-name descname"><span class="pre">EXAMPLE_MODAL_CONF_DIR</span></span><em class="property"><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="pre">str</span></em><em class="property"><span class="w"> </span><span class="p"><span class="pre">=</span></span><span class="w"> </span><span class="pre">'/path/to/modal_conf/'</span></em><a class="headerlink" href="#site_example.EXAMPLE_MODAL_CONF_DIR" title="Link to this definition">#</a></dt>
+<dd><p>Absolute path to the directory that contains the OMA configuration files
+(<code class="docutils literal notranslate"><span class="pre">nodes</span></code>, <code class="docutils literal notranslate"><span class="pre">lines</span></code>, <code class="docutils literal notranslate"><span class="pre">master_slaves</span></code>, <code class="docutils literal notranslate"><span class="pre">ssi_config</span></code>, …).</p>
+</dd></dl>
+
+<dl class="py data">
+<dt class="sig sig-object py" id="site_example.EXAMPLE_OPTIONAL_CHANNELS">
+<span class="sig-prename descclassname"><span class="pre">site_example.</span></span><span class="sig-name descname"><span class="pre">EXAMPLE_OPTIONAL_CHANNELS</span></span><em class="property"><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="pre">Dict</span><span class="p"><span class="pre">[</span></span><span class="pre">str</span><span class="p"><span class="pre">,</span></span><span class="w"> </span><span class="pre">List</span><span class="p"><span class="pre">[</span></span><span class="pre">str</span><span class="p"><span class="pre">]</span></span><span class="p"><span class="pre">]</span></span></em><em class="property"><span class="w"> </span><span class="p"><span class="pre">=</span></span><span class="w"> </span><span class="pre">{'accel':</span> <span class="pre">[]}</span></em><a class="headerlink" href="#site_example.EXAMPLE_OPTIONAL_CHANNELS" title="Link to this definition">#</a></dt>
+<dd><p>Map <em>quantity</em> → list of channel names that <em>may</em> be present (not required).</p>
+</dd></dl>
+
+<dl class="py data">
+<dt class="sig sig-object py" id="site_example.EXAMPLE_ORIGINS">
+<span class="sig-prename descclassname"><span class="pre">site_example.</span></span><span class="sig-name descname"><span class="pre">EXAMPLE_ORIGINS</span></span><em class="property"><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="pre">Dict</span><span class="p"><span class="pre">[</span></span><span class="pre">str</span><span class="p"><span class="pre">,</span></span><span class="w"> </span><span class="pre">str</span><span class="p"><span class="pre">]</span></span></em><em class="property"><span class="w"> </span><span class="p"><span class="pre">=</span></span><span class="w"> </span><span class="pre">{'accel':</span> <span class="pre">'accel'}</span></em><a class="headerlink" href="#site_example.EXAMPLE_ORIGINS" title="Link to this definition">#</a></dt>
+<dd><p>Map <em>quantity</em> → <em>origin tag</em>.  The origin tag is the key used in
+<code class="xref py py-attr docutils literal notranslate"><span class="pre">subpaths</span></code>, <code class="xref py py-attr docutils literal notranslate"><span class="pre">all_channels</span></code>, and <code class="xref py py-attr docutils literal notranslate"><span class="pre">dtstarts</span></code>.
+Add one entry per measured quantity.</p>
+<p>Example:</p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">EXAMPLE_ORIGINS</span> <span class="o">=</span> <span class="p">{</span>
+    <span class="s2">&quot;accel&quot;</span><span class="p">:</span> <span class="s2">&quot;accel&quot;</span><span class="p">,</span>
+    <span class="s2">&quot;wind&quot;</span><span class="p">:</span>  <span class="s2">&quot;wind&quot;</span><span class="p">,</span>
+<span class="p">}</span>
+</pre></div>
+</div>
+</dd></dl>
+
+<dl class="py data">
+<dt class="sig sig-object py" id="site_example.EXAMPLE_PREPROC_CHANNELS">
+<span class="sig-prename descclassname"><span class="pre">site_example.</span></span><span class="sig-name descname"><span class="pre">EXAMPLE_PREPROC_CHANNELS</span></span><em class="property"><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="pre">Dict</span><span class="p"><span class="pre">[</span></span><span class="pre">str</span><span class="p"><span class="pre">,</span></span><span class="w"> </span><span class="pre">List</span><span class="p"><span class="pre">[</span></span><span class="pre">str</span><span class="p"><span class="pre">]</span></span><span class="p"><span class="pre">]</span></span></em><em class="property"><span class="w"> </span><span class="p"><span class="pre">=</span></span><span class="w"> </span><span class="pre">{'accel':</span> <span class="pre">['Accel_01',</span> <span class="pre">'Accel_02']}</span></em><a class="headerlink" href="#site_example.EXAMPLE_PREPROC_CHANNELS" title="Link to this definition">#</a></dt>
+<dd><p>Map <em>quantity</em> → list of channel names kept after the band-pass /
+decimation pre-processing step.  Only relevant for quantities that go
+through OMA (typically <code class="docutils literal notranslate"><span class="pre">&quot;accel&quot;</span></code> and strain-type quantities).</p>
+</dd></dl>
+
+<dl class="py data">
+<dt class="sig sig-object py" id="site_example.EXAMPLE_RANGES">
+<span class="sig-prename descclassname"><span class="pre">site_example.</span></span><span class="sig-name descname"><span class="pre">EXAMPLE_RANGES</span></span><em class="property"><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="pre">Dict</span><span class="p"><span class="pre">[</span></span><span class="pre">str</span><span class="p"><span class="pre">,</span></span><span class="w"> </span><span class="pre">Tuple</span><span class="p"><span class="pre">[</span></span><span class="pre">float</span><span class="p"><span class="pre">,</span></span><span class="w"> </span><span class="pre">float</span><span class="p"><span class="pre">]</span></span><span class="p"><span class="pre">]</span></span></em><em class="property"><span class="w"> </span><span class="p"><span class="pre">=</span></span><span class="w"> </span><span class="pre">{'Accel_01':</span> <span class="pre">(-20.0,</span> <span class="pre">20.0)}</span></em><a class="headerlink" href="#site_example.EXAMPLE_RANGES" title="Link to this definition">#</a></dt>
+<dd><p>Map <em>channel name</em> → <code class="docutils literal notranslate"><span class="pre">(min,</span> <span class="pre">max)</span></code> plausibility range.  Samples outside
+this interval cause the affected time slice to be flagged as erroneous.</p>
+</dd></dl>
+
+<dl class="py data">
+<dt class="sig sig-object py" id="site_example.EXAMPLE_SLICE_ROOT_PATH">
+<span class="sig-prename descclassname"><span class="pre">site_example.</span></span><span class="sig-name descname"><span class="pre">EXAMPLE_SLICE_ROOT_PATH</span></span><em class="property"><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="pre">str</span></em><em class="property"><span class="w"> </span><span class="p"><span class="pre">=</span></span><span class="w"> </span><span class="pre">'/path/to/slices/'</span></em><a class="headerlink" href="#site_example.EXAMPLE_SLICE_ROOT_PATH" title="Link to this definition">#</a></dt>
+<dd><p>Absolute path to the root directory used for pre-processed signal slices.</p>
+</dd></dl>
+
+<dl class="py data">
+<dt class="sig sig-object py" id="site_example.EXAMPLE_SUBPATHS">
+<span class="sig-prename descclassname"><span class="pre">site_example.</span></span><span class="sig-name descname"><span class="pre">EXAMPLE_SUBPATHS</span></span><em class="property"><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="pre">Dict</span><span class="p"><span class="pre">[</span></span><span class="pre">str</span><span class="p"><span class="pre">,</span></span><span class="w"> </span><span class="pre">str</span><span class="p"><span class="pre">]</span></span></em><em class="property"><span class="w"> </span><span class="p"><span class="pre">=</span></span><span class="w"> </span><span class="pre">{'accel':</span> <span class="pre">'accel/'}</span></em><a class="headerlink" href="#site_example.EXAMPLE_SUBPATHS" title="Link to this definition">#</a></dt>
+<dd><p>Map <em>origin tag</em> → relative sub-path under <a class="reference internal" href="#site_example.EXAMPLE_FILE_ROOT_PATH" title="site_example.EXAMPLE_FILE_ROOT_PATH"><code class="xref py py-data docutils literal notranslate"><span class="pre">EXAMPLE_FILE_ROOT_PATH</span></code></a>.</p>
+</dd></dl>
+
+<dl class="py function">
+<dt class="sig sig-object py" id="site_example.register_example_site">
+<span class="sig-prename descclassname"><span class="pre">site_example.</span></span><span class="sig-name descname"><span class="pre">register_example_site</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><span class="pre">None</span></span></span><a class="reference internal" href="_modules/site_example.html#register_example_site"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#site_example.register_example_site" title="Link to this definition">#</a></dt>
+<dd><p>Register and activate the example site in the monitoring engine.</p>
+<p>Called automatically when this module is imported.  Safe to call multiple
+times — it simply overwrites the registry entry for <code class="docutils literal notranslate"><span class="pre">&quot;example&quot;</span></code>.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Raises<span class="colon">:</span></dt>
+<dd class="field-odd"><p><strong>NotImplementedError</strong> – Any stub callback that has not been implemented yet will raise this
+    error at runtime when the engine first invokes it.</p>
+</dd>
+</dl>
+</dd></dl>
+
+</section>
+</section>
+
+
+                </article>
+              
+              
+              
+              
+              
+                <footer class="prev-next-footer d-print-none">
+                  
+<div class="prev-next-area">
+    <a class="left-prev"
+       href="site_module.html"
+       title="previous page">
+      <i class="fa-solid fa-angle-left"></i>
+      <div class="prev-next-info">
+        <p class="prev-next-subtitle">previous</p>
+        <p class="prev-next-title">Writing a Site Module</p>
+      </div>
+    </a>
+</div>
+                </footer>
+              
+            </div>
+            
+            
+              
+                <dialog id="pst-secondary-sidebar-modal"></dialog>
+                <div id="pst-secondary-sidebar" class="bd-sidebar-secondary bd-toc"><div class="sidebar-secondary-items sidebar-secondary__inner">
+
+
+  <div class="sidebar-secondary-item">
+<div
+    id="pst-page-navigation-heading-2"
+    class="page-toc tocsection onthispage">
+    <i class="fa-solid fa-list"></i> On this page
+  </div>
+  <nav id="pst-page-toc-nav" class="page-toc" aria-labelledby="pst-page-navigation-heading-2">
+    <ul class="pst-show_toc_level nav section-nav flex-column">
+<li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#module-monitoring">monitoring — engine functions</a><ul class="nav section-nav flex-column">
+<li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#monitoring.Site"><code class="docutils literal notranslate"><span class="pre">Site</span></code></a><ul class="nav section-nav flex-column">
+<li class="toc-h4 nav-item toc-entry"><a class="reference internal nav-link" href="#monitoring.Site.all_channels"><code class="docutils literal notranslate"><span class="pre">Site.all_channels</span></code></a></li>
+<li class="toc-h4 nav-item toc-entry"><a class="reference internal nav-link" href="#monitoring.Site.channel_mean_fn"><code class="docutils literal notranslate"><span class="pre">Site.channel_mean_fn</span></code></a></li>
+<li class="toc-h4 nav-item toc-entry"><a class="reference internal nav-link" href="#monitoring.Site.db_root_path"><code class="docutils literal notranslate"><span class="pre">Site.db_root_path</span></code></a></li>
+<li class="toc-h4 nav-item toc-entry"><a class="reference internal nav-link" href="#monitoring.Site.dtstarts"><code class="docutils literal notranslate"><span class="pre">Site.dtstarts</span></code></a></li>
+<li class="toc-h4 nav-item toc-entry"><a class="reference internal nav-link" href="#monitoring.Site.error_rules"><code class="docutils literal notranslate"><span class="pre">Site.error_rules</span></code></a></li>
+<li class="toc-h4 nav-item toc-entry"><a class="reference internal nav-link" href="#monitoring.Site.file_list_fn"><code class="docutils literal notranslate"><span class="pre">Site.file_list_fn</span></code></a></li>
+<li class="toc-h4 nav-item toc-entry"><a class="reference internal nav-link" href="#monitoring.Site.file_root_path"><code class="docutils literal notranslate"><span class="pre">Site.file_root_path</span></code></a></li>
+<li class="toc-h4 nav-item toc-entry"><a class="reference internal nav-link" href="#monitoring.Site.modal_bands"><code class="docutils literal notranslate"><span class="pre">Site.modal_bands</span></code></a></li>
+<li class="toc-h4 nav-item toc-entry"><a class="reference internal nav-link" href="#monitoring.Site.modal_conf_dir"><code class="docutils literal notranslate"><span class="pre">Site.modal_conf_dir</span></code></a></li>
+<li class="toc-h4 nav-item toc-entry"><a class="reference internal nav-link" href="#monitoring.Site.name"><code class="docutils literal notranslate"><span class="pre">Site.name</span></code></a></li>
+<li class="toc-h4 nav-item toc-entry"><a class="reference internal nav-link" href="#monitoring.Site.optional_channels"><code class="docutils literal notranslate"><span class="pre">Site.optional_channels</span></code></a></li>
+<li class="toc-h4 nav-item toc-entry"><a class="reference internal nav-link" href="#monitoring.Site.origins"><code class="docutils literal notranslate"><span class="pre">Site.origins</span></code></a></li>
+<li class="toc-h4 nav-item toc-entry"><a class="reference internal nav-link" href="#monitoring.Site.preproc_channels"><code class="docutils literal notranslate"><span class="pre">Site.preproc_channels</span></code></a></li>
+<li class="toc-h4 nav-item toc-entry"><a class="reference internal nav-link" href="#monitoring.Site.ranges"><code class="docutils literal notranslate"><span class="pre">Site.ranges</span></code></a></li>
+<li class="toc-h4 nav-item toc-entry"><a class="reference internal nav-link" href="#monitoring.Site.setup_prep"><code class="docutils literal notranslate"><span class="pre">Site.setup_prep</span></code></a></li>
+<li class="toc-h4 nav-item toc-entry"><a class="reference internal nav-link" href="#monitoring.Site.slice_root_path"><code class="docutils literal notranslate"><span class="pre">Site.slice_root_path</span></code></a></li>
+<li class="toc-h4 nav-item toc-entry"><a class="reference internal nav-link" href="#monitoring.Site.subpaths"><code class="docutils literal notranslate"><span class="pre">Site.subpaths</span></code></a></li>
+<li class="toc-h4 nav-item toc-entry"><a class="reference internal nav-link" href="#monitoring.Site.sync_policy"><code class="docutils literal notranslate"><span class="pre">Site.sync_policy</span></code></a></li>
+<li class="toc-h4 nav-item toc-entry"><a class="reference internal nav-link" href="#monitoring.Site.transforms"><code class="docutils literal notranslate"><span class="pre">Site.transforms</span></code></a></li>
+</ul>
+</li>
+<li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#monitoring.close_to_utc_transition"><code class="docutils literal notranslate"><span class="pre">close_to_utc_transition()</span></code></a></li>
+<li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#monitoring.compute_gap_lengths"><code class="docutils literal notranslate"><span class="pre">compute_gap_lengths()</span></code></a></li>
+<li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#monitoring.create_file_info"><code class="docutils literal notranslate"><span class="pre">create_file_info()</span></code></a></li>
+<li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#monitoring.create_modal_results"><code class="docutils literal notranslate"><span class="pre">create_modal_results()</span></code></a></li>
+<li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#monitoring.create_stats"><code class="docutils literal notranslate"><span class="pre">create_stats()</span></code></a></li>
+<li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#monitoring.describe_stats"><code class="docutils literal notranslate"><span class="pre">describe_stats()</span></code></a></li>
+<li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#monitoring.get_active_site"><code class="docutils literal notranslate"><span class="pre">get_active_site()</span></code></a></li>
+<li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#monitoring.get_file_info"><code class="docutils literal notranslate"><span class="pre">get_file_info()</span></code></a></li>
+<li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#monitoring.get_file_list"><code class="docutils literal notranslate"><span class="pre">get_file_list()</span></code></a></li>
+<li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#monitoring.get_modal_results"><code class="docutils literal notranslate"><span class="pre">get_modal_results()</span></code></a></li>
+<li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#monitoring.get_site"><code class="docutils literal notranslate"><span class="pre">get_site()</span></code></a></li>
+<li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#monitoring.get_slice"><code class="docutils literal notranslate"><span class="pre">get_slice()</span></code></a></li>
+<li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#monitoring.get_slice_corrected"><code class="docutils literal notranslate"><span class="pre">get_slice_corrected()</span></code></a></li>
+<li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#monitoring.get_slice_preprocessed"><code class="docutils literal notranslate"><span class="pre">get_slice_preprocessed()</span></code></a></li>
+<li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#monitoring.get_stats"><code class="docutils literal notranslate"><span class="pre">get_stats()</span></code></a></li>
+<li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#monitoring.get_synchronized_time"><code class="docutils literal notranslate"><span class="pre">get_synchronized_time()</span></code></a></li>
+<li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#monitoring.modal_analysis_single"><code class="docutils literal notranslate"><span class="pre">modal_analysis_single()</span></code></a></li>
+<li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#monitoring.read_file"><code class="docutils literal notranslate"><span class="pre">read_file()</span></code></a></li>
+<li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#monitoring.register_site"><code class="docutils literal notranslate"><span class="pre">register_site()</span></code></a></li>
+<li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#monitoring.round_dt"><code class="docutils literal notranslate"><span class="pre">round_dt()</span></code></a></li>
+<li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#monitoring.save_ds"><code class="docutils literal notranslate"><span class="pre">save_ds()</span></code></a></li>
+<li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#monitoring.set_active_site"><code class="docutils literal notranslate"><span class="pre">set_active_site()</span></code></a></li>
+<li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#monitoring.split_modepairs"><code class="docutils literal notranslate"><span class="pre">split_modepairs()</span></code></a></li>
+</ul>
+</li>
+<li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#module-time_convention">time_convention — timezone policy</a><ul class="nav section-nav flex-column">
+<li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#time_convention.TimeConvention"><code class="docutils literal notranslate"><span class="pre">TimeConvention</span></code></a><ul class="nav section-nav flex-column">
+<li class="toc-h4 nav-item toc-entry"><a class="reference internal nav-link" href="#time_convention.TimeConvention.tz"><code class="docutils literal notranslate"><span class="pre">TimeConvention.tz</span></code></a></li>
+<li class="toc-h4 nav-item toc-entry"><a class="reference internal nav-link" href="#time_convention.TimeConvention.gap_lengths"><code class="docutils literal notranslate"><span class="pre">TimeConvention.gap_lengths()</span></code></a></li>
+<li class="toc-h4 nav-item toc-entry"><a class="reference internal nav-link" href="#time_convention.TimeConvention.is_near_dst_transition"><code class="docutils literal notranslate"><span class="pre">TimeConvention.is_near_dst_transition()</span></code></a></li>
+<li class="toc-h4 nav-item toc-entry"><a class="reference internal nav-link" href="#time_convention.TimeConvention.make_index"><code class="docutils literal notranslate"><span class="pre">TimeConvention.make_index()</span></code></a></li>
+<li class="toc-h4 nav-item toc-entry"><a class="reference internal nav-link" href="#time_convention.TimeConvention.posix_to_datetime64"><code class="docutils literal notranslate"><span class="pre">TimeConvention.posix_to_datetime64()</span></code></a></li>
+<li class="toc-h4 nav-item toc-entry"><a class="reference internal nav-link" href="#time_convention.TimeConvention.to_local"><code class="docutils literal notranslate"><span class="pre">TimeConvention.to_local()</span></code></a></li>
+<li class="toc-h4 nav-item toc-entry"><a class="reference internal nav-link" href="#time_convention.TimeConvention.to_posix"><code class="docutils literal notranslate"><span class="pre">TimeConvention.to_posix()</span></code></a></li>
+<li class="toc-h4 nav-item toc-entry"><a class="reference internal nav-link" href="#time_convention.TimeConvention.to_storage_coord"><code class="docutils literal notranslate"><span class="pre">TimeConvention.to_storage_coord()</span></code></a></li>
+</ul>
+</li>
+</ul>
+</li>
+<li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#module-config">config — YAML loader</a><ul class="nav section-nav flex-column">
+<li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#config.load_config"><code class="docutils literal notranslate"><span class="pre">load_config()</span></code></a></li>
+<li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#config.validate_config"><code class="docutils literal notranslate"><span class="pre">validate_config()</span></code></a></li>
+</ul>
+</li>
+<li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#module-MultiLock">MultiLock — concurrent file access</a><ul class="nav section-nav flex-column">
+<li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#MultiLock.MultiLock"><code class="docutils literal notranslate"><span class="pre">MultiLock</span></code></a></li>
+</ul>
+</li>
+<li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#module-site_example">site_example — site template</a><ul class="nav section-nav flex-column">
+<li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#site_example.EXAMPLE_ALL_CHANNELS"><code class="docutils literal notranslate"><span class="pre">EXAMPLE_ALL_CHANNELS</span></code></a></li>
+<li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#site_example.EXAMPLE_DB_ROOT_PATH"><code class="docutils literal notranslate"><span class="pre">EXAMPLE_DB_ROOT_PATH</span></code></a></li>
+<li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#site_example.EXAMPLE_DTSTARTS"><code class="docutils literal notranslate"><span class="pre">EXAMPLE_DTSTARTS</span></code></a></li>
+<li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#site_example.EXAMPLE_ERROR_RULES"><code class="docutils literal notranslate"><span class="pre">EXAMPLE_ERROR_RULES</span></code></a></li>
+<li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#site_example.EXAMPLE_FILE_ROOT_PATH"><code class="docutils literal notranslate"><span class="pre">EXAMPLE_FILE_ROOT_PATH</span></code></a></li>
+<li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#site_example.EXAMPLE_MODAL_BANDS"><code class="docutils literal notranslate"><span class="pre">EXAMPLE_MODAL_BANDS</span></code></a></li>
+<li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#site_example.EXAMPLE_MODAL_CONF_DIR"><code class="docutils literal notranslate"><span class="pre">EXAMPLE_MODAL_CONF_DIR</span></code></a></li>
+<li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#site_example.EXAMPLE_OPTIONAL_CHANNELS"><code class="docutils literal notranslate"><span class="pre">EXAMPLE_OPTIONAL_CHANNELS</span></code></a></li>
+<li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#site_example.EXAMPLE_ORIGINS"><code class="docutils literal notranslate"><span class="pre">EXAMPLE_ORIGINS</span></code></a></li>
+<li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#site_example.EXAMPLE_PREPROC_CHANNELS"><code class="docutils literal notranslate"><span class="pre">EXAMPLE_PREPROC_CHANNELS</span></code></a></li>
+<li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#site_example.EXAMPLE_RANGES"><code class="docutils literal notranslate"><span class="pre">EXAMPLE_RANGES</span></code></a></li>
+<li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#site_example.EXAMPLE_SLICE_ROOT_PATH"><code class="docutils literal notranslate"><span class="pre">EXAMPLE_SLICE_ROOT_PATH</span></code></a></li>
+<li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#site_example.EXAMPLE_SUBPATHS"><code class="docutils literal notranslate"><span class="pre">EXAMPLE_SUBPATHS</span></code></a></li>
+<li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#site_example.register_example_site"><code class="docutils literal notranslate"><span class="pre">register_example_site()</span></code></a></li>
+</ul>
+</li>
+</ul>
+  </nav></div>
+
+  <div class="sidebar-secondary-item">
+
+  <div class="tocsection sourcelink">
+    <a href="_sources/api_reference.rst.txt">
+      <i class="fa-solid fa-file-lines"></i> Show Source
+    </a>
+  </div>
+</div>
+
+</div></div>
+              
+            
+          </div>
+          <footer class="bd-footer-content">
+            
+          </footer>
+        
+      </main>
+    </div>
+  </div>
+  
+  <!-- Scripts loaded after <body> so the DOM is not blocked -->
+  <script defer src="_static/scripts/bootstrap.js?digest=a95f357e85573c9b56d5"></script>
+<script defer src="_static/scripts/pydata-sphinx-theme.js?digest=a95f357e85573c9b56d5"></script>
+
+  <footer class="bd-footer">
+<div class="bd-footer__inner bd-page-width">
+  
+    <div class="footer-items__start">
+      
+        <div class="footer-item">
+
+  <p class="copyright">
+    
+      © Copyright 2024-2025, Simon Marwitz, Volkmar Zabel.
+      <br/>
+    
+  </p>
+</div>
+      
+        <div class="footer-item">
+
+  <p class="sphinx-version">
+    Created using <a href="https://www.sphinx-doc.org/">Sphinx</a> 8.2.3.
+    <br/>
+  </p>
+</div>
+      
+    </div>
+  
+  
+  
+    <div class="footer-items__end">
+      
+        <div class="footer-item">
+<p class="theme-version">
+  <!-- # L10n: Setting the PST URL as an argument as this does not need to be localized -->
+  Built with the <a href="https://pydata-sphinx-theme.readthedocs.io/en/stable/index.html">PyData Sphinx Theme</a> 0.19.0.
+</p></div>
+      
+    </div>
+  
+</div>
+
+  </footer>
+  </body>
+</html>

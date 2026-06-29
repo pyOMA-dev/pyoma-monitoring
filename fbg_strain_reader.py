@@ -52,6 +52,23 @@ namesChannels = [['12_z1','12_z2','12_z3','13_z1','13_z2','13_z3','15_Temp','15_
 
 # FUNCTION: convert labview timestamp to python date object
 def timestamp_labview2python(bTimeStamp):
+    """Convert a raw 16-byte LabVIEW timestamp to a Python ``datetime`` in UTC.
+
+    LabVIEW timestamps are 128-bit values: a signed 64-bit integer (whole
+    seconds since 01 Jan 1904 UTC) followed by an unsigned 64-bit fraction of
+    a second.
+
+    Parameters
+    ----------
+    bTimeStamp : bytes
+        16 raw bytes read from the binary file header.
+
+    Returns
+    -------
+    datetime.datetime or None
+        UTC-naive ``datetime`` object, or ``None`` when *bTimeStamp* is
+        falsy (e.g. ``b''`` at EOF).
+    """
     if bTimeStamp:
         # GET labview timestamp (128bit = i64 (seconds) + u64 (partition of second))
         labview_timestamp=struct.unpack('>qQ', bTimeStamp)
@@ -60,7 +77,45 @@ def timestamp_labview2python(bTimeStamp):
         return d # in UTC
 
 def read_bin(inFileName, stats_only=False, wavepower=False, indices_only=False, path=None):
-    
+    """Read a LabVIEW FBG binary file and return per-channel wavelength arrays.
+
+    Parses the proprietary binary format produced by the tower's LabVIEW
+    interrogator DAQ system.  Each data block contains a channel index,
+    a sample index, and a fixed-length wavelength vector; missing peaks are
+    represented as ``NaN``.
+
+    Parameters
+    ----------
+    inFileName : str or file-like
+        Path to the ``.bin`` binary file, or an already-opened
+        ``bz2.BZ2File`` wrapping it.
+    stats_only : bool, optional
+        When ``True``, return only the header metadata without reading the
+        full measurement data (fast mode for file-info scan).  Defaults to
+        ``False``.
+    wavepower : bool, optional
+        When ``True``, also return reflected power values.  Defaults to
+        ``False``.
+    indices_only : bool, optional
+        When ``True``, return sample index arrays instead of interpolated
+        wavelengths.  Defaults to ``False``.
+    path : str or None, optional
+        Original file path (used for cache lookup when *inFileName* is a
+        file-like object).
+
+    Returns
+    -------
+    headers : list of str
+        Channel names derived from the interrogator channel order.
+    units : list of str
+        Unit strings (``'nm'`` for wavelengths, ``'°C'`` for temperatures).
+    start_time : datetime.datetime
+        Timezone-aware start timestamp (see :func:`localize`).
+    sample_rate : float
+        Sample rate in Hz inferred from the file timing.
+    measurement : numpy.ndarray, shape (n_samples, n_channels)
+        Wavelength (or power/index) matrix; ``NaN`` for missing peaks.
+    """
     if isinstance(inFileName, str):
         bfile = open(inFileName , 'rb')
         path=inFileName
@@ -270,20 +325,37 @@ def read_bin(inFileName, stats_only=False, wavepower=False, indices_only=False, 
         return headers, ['nm' for header in headers], localize(startTimestamp), samples/4, a
     
 def localize(startTimestamp):
-    '''
-    the start time, e.g. the time stamp that is written down inside the file 
-    is recorded in local time with daylight saving, if turned on
-    on 2016-12-15 strain recordings started, labview timestamps are in UTC
-    on 2017-10-29 last daylight savings clock change occured, since then PC was running on CET 
-    on 2018-01-15 illumisense recordings started, timestamps are in local time, i.e. CET
-    on 2019-4-25 pc was set to UTC, timestamps are in CET
-    
-    2016-12-15 - 2017-10-29 startTimestamp in 'Europe/Berlin' with DST (CET/CEST)
-    2017-10-29 - 2019-04-25 startTimestamp in CET (without DST)
-    2019-04-25 - ...        startTimestamp in UTC
-    
-    print(returned_timestamp.astimezone(pytz.utc))
-    '''
+    """Return a timezone-aware datetime by applying the tower DAQ clock history.
+
+    The tower DAQ system has had three distinct clock configurations, each
+    requiring a different timezone interpretation of the tz-naive timestamp
+    stored inside the file:
+
+    ==================  ==============================
+    Period              Clock timezone
+    ==================  ==============================
+    before 2018-01-15   UTC (LabVIEW DAQ)
+    2018-01-15 to       ``Europe/Berlin`` (with DST)
+    2017-10-29 …        CET only (no DST) after
+    2019-04-25 onward   UTC
+    ==================  ==============================
+
+    Parameters
+    ----------
+    startTimestamp : datetime.datetime
+        Tz-naive UTC datetime as decoded from the binary file header or as
+        stored by the illumisense system.
+
+    Returns
+    -------
+    datetime.datetime
+        Timezone-aware datetime in the correct timezone for the recording era.
+
+    Raises
+    ------
+    AssertionError
+        When *startTimestamp* already carries tzinfo.
+    """
     assert not startTimestamp.tzinfo
     if startTimestamp < datetime.datetime(2018,1,15): # labview recording
         return utc.localize(startTimestamp)  # pylint: disable=no-value-for-parameter
@@ -296,7 +368,48 @@ def localize(startTimestamp):
             return utc.localize(startTimestamp)  # pylint: disable=no-value-for-parameter
     
 def manipulate_data(measurement, start_time, sample_rate, previous_a=None, previous_delta=None, previous_start_time=None):
-    
+    """Remove FBG wavelength jumps, fill NaN gaps, and compute strain deltas.
+
+    Processes raw per-channel wavelength arrays from :func:`read_bin` in
+    three stages:
+
+    1. **Jump removal** — identifies channels where the peak-picking
+       algorithm jumped between two lobes of a broad Bragg peak.  Corrects
+       these jumps within the file and, if a previous file is provided, also
+       across the file boundary.
+    2. **NaN interpolation** — fills missing samples (marked as ``NaN``)
+       using cubic spline interpolation anchored on the surrounding valid
+       samples.
+    3. **Delta computation** — subtracts the initial wavelength from each
+       channel to obtain relative wavelength shifts (Δλ in nm), which are
+       proportional to strain and temperature.
+
+    Parameters
+    ----------
+    measurement : numpy.ndarray, shape (n_samples, n_channels)
+        Raw wavelength matrix as returned by :func:`read_bin`; ``NaN``
+        entries represent missing peaks.
+    start_time : datetime.datetime
+        Timezone-aware start timestamp of this file.
+    sample_rate : float
+        Sample rate in Hz.
+    previous_a : numpy.ndarray or None, optional
+        Last row of the previous file's wavelength matrix, used to detect
+        and correct cross-file jumps.  ``None`` skips cross-file correction.
+    previous_delta : numpy.ndarray or None, optional
+        Last row of the previous file's delta array, used to stitch the
+        delta baseline across files.
+    previous_start_time : datetime.datetime or None, optional
+        Start time of the previous file; used to compute the expected
+        wavelength at the junction.
+
+    Returns
+    -------
+    measurement : numpy.ndarray, shape (n_samples, n_channels)
+        Corrected absolute wavelength matrix (nm).
+    deltas : numpy.ndarray, shape (n_samples, n_channels)
+        Wavelength shift Δλ relative to the initial reference wavelength (nm).
+    """
     import scipy.interpolate
     from operator import itemgetter
     from itertools import groupby
@@ -1307,7 +1420,33 @@ def manipulate_data(measurement, start_time, sample_rate, previous_a=None, previ
 #     plot.show() 
 
 def read_strain_txt(path):
-    
+    """Read an illumisense multi-channel strain TXT export.
+
+    Reads the three ``.txt`` (or ``.txt.bz2``) files produced for a single
+    recording window (suffixes ``strain-2``, ``strain-3``, ``strain-4``)
+    from the illumisense interrogator, concatenates the channel data
+    horizontally, and returns the combined measurement matrix with metadata.
+
+    Parameters
+    ----------
+    path : str
+        Common path prefix for the three strain files (ends with a time
+        stamp and underscore, e.g.
+        ``'/data/strain/2019-03-12_01-00_'``).
+
+    Returns
+    -------
+    headers : list of str
+        Channel names from the illumisense settings section.
+    units : list of str
+        Unit strings (typically ``'nm'`` or ``'µstrain'``).
+    start_time : datetime.datetime
+        Timezone-aware start timestamp read from the file metadata.
+    sample_rate : float
+        Sample rate in Hz from the file's ``Sample Speed`` header.
+    measurement : numpy.ndarray, shape (n_samples, n_channels)
+        Combined measurement matrix from all three strain files.
+    """
     comb_df = []
     comb_headers= []
     comb_units = []
@@ -1462,6 +1601,13 @@ def read_strain_txt(path):
 
         
 def read_spec(file):
+    """Read an illumisense spectrum file and plot the first spectrum.
+
+    Parameters
+    ----------
+    file : str or file-like
+        Path to the spectrum text file (tab-separated, 40 header rows).
+    """
     data = pd.read_table(file, skiprows=40, decimal=',')
     mat = data.iloc[:,3:515].as_matrix()
     pow_val = mat[slice(0,None,2),:]

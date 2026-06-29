@@ -38,12 +38,44 @@ berlin_dst = pytz.timezone('Europe/Berlin')
 # ---------------------------------------------------------------------------
 
 def calc_xy(az, r=1):
+    """Convert polar coordinates to Cartesian coordinates.
+
+    Parameters
+    ----------
+    az : float or array-like
+        Azimuth angle in radians.
+    r : float or array-like, optional
+        Radius (magnitude).  Defaults to 1 (unit vector).
+
+    Returns
+    -------
+    x : numpy.ndarray
+        Cartesian x-component.
+    y : numpy.ndarray
+        Cartesian y-component.
+    """
     x = r * np.cos(az)
     y = r * np.sin(az)
     return x, y
 
 
 def calc_ar(x, y):
+    """Convert Cartesian coordinates to polar coordinates.
+
+    Parameters
+    ----------
+    x : float or array-like
+        Cartesian x-component.
+    y : float or array-like
+        Cartesian y-component.
+
+    Returns
+    -------
+    az : numpy.ndarray
+        Azimuth angle in radians, in the range ``(-π, π]``.
+    r : numpy.ndarray
+        Radius (Euclidean norm).
+    """
     xy = x ** 2 + y ** 2
     r = np.sqrt(xy)
     az = np.arctan2(y, x)
@@ -51,6 +83,30 @@ def calc_ar(x, y):
 
 
 def orthogonal_lsq(azr=None, xy=None, rad=False):
+    """Find the dominant wind direction via orthogonal least-squares (SVD).
+
+    Fits a line through the origin to a 2-D point cloud by computing the
+    singular-value decomposition of the data matrix and returning the angle
+    of the first right singular vector.  The sign is resolved so that the
+    majority of points project positively along the returned direction.
+
+    Parameters
+    ----------
+    azr : tuple of (array-like, array-like) or None, optional
+        ``(azimuth, radius)`` pair.  *azimuth* is in degrees unless *rad*
+        is ``True``.  Exactly one of *azr* and *xy* must be provided.
+    xy : tuple of (array-like, array-like) or None, optional
+        ``(x, y)`` Cartesian pair.
+    rad : bool, optional
+        When ``True``, *azr* azimuth is treated as radians.  Defaults to
+        ``False`` (degrees).
+
+    Returns
+    -------
+    angle : float
+        Dominant direction angle in degrees (or radians when *rad* is
+        ``True``).
+    """
     assert azr is not None or xy is not None
 
     if azr is not None:
@@ -327,6 +383,38 @@ def strain_manipulate_transform(
 
 def _tower_wind_transform(start_time, headers, units, end_time, sample_rate, measurement,
                            quantity=None, **kwargs):
+    """Apply the tower wind transformation as the engine ``transforms`` callback.
+
+    Thin adapter that calls :func:`wind_transform` with the slice tuple and
+    discards any keyword arguments the engine passes (e.g. ``quantity``,
+    ``start_time_local``, ``duration``).
+
+    Parameters
+    ----------
+    start_time : datetime.datetime
+        Actual start of the slice (unused, forwarded).
+    headers : list of str
+        Channel names; must include ``'Wg'`` and ``'Wr'`` (and optionally
+        ``'Wg_top'`` / ``'Wr_top'``).
+    units : list of str
+        Units corresponding to *headers*.
+    end_time : datetime.datetime
+        End of the slice (unused, forwarded).
+    sample_rate : float
+        Sample rate in Hz (unused, forwarded).
+    measurement : numpy.ndarray
+        Raw measurement matrix, shape ``(n_samples, n_channels)``.
+    quantity : str or None, optional
+        Ignored; present to match the engine callback signature.
+    **kwargs
+        Ignored; absorbs ``start_time_local``, ``duration``, etc.
+
+    Returns
+    -------
+    tuple
+        ``(start_time, new_headers, new_units, end_time, sample_rate,
+        measurement)`` with Wg/Wr replaced by Wg, Wr, Wx, Wy.
+    """
     return wind_transform(start_time, headers, units, end_time, sample_rate, measurement)
 
 
@@ -377,6 +465,27 @@ def _tower_strain_transform(start_time, headers, units, end_time, sample_rate, m
 # ---------------------------------------------------------------------------
 
 def _tower_setup_accel(headers):
+    """Return the OMA channel-to-DOF mapping for acceleration data.
+
+    Called by :func:`monitoring.modal_analysis_single` as the
+    ``setup_prep['accel']`` callback.
+
+    Parameters
+    ----------
+    headers : list of str
+        Channel names in the order they appear in the preprocessed slice.
+
+    Returns
+    -------
+    ref_channels : list of int
+        Indices of reference channels (``Accel_01`` and ``Accel_02``).
+    accel_channels : list of int
+        Indices of all acceleration channels (all columns).
+    disp_channels : list of int
+        Indices of displacement channels (empty for this site).
+    chan_dofs_dict : dict
+        Mapping from channel name to ``[node_id, azimuth_deg, elevation_deg]``.
+    """
     ref_channels = [headers.index('Accel_01'), headers.index('Accel_02')]
     accel_channels = list(range(len(headers)))
     disp_channels = []
@@ -398,6 +507,27 @@ def _tower_setup_accel(headers):
 
 
 def _tower_setup_strain_rosettes(headers):
+    """Return the OMA channel-to-DOF mapping for strain-rosette data.
+
+    Called by :func:`monitoring.modal_analysis_single` as the
+    ``setup_prep['strain_rosettes']`` callback.
+
+    Parameters
+    ----------
+    headers : list of str
+        Channel names in the order they appear in the preprocessed slice.
+
+    Returns
+    -------
+    ref_channels : list of int
+        Indices of reference channels (the four ``*_zt`` diagonal gauges).
+    accel_channels : list of int
+        Indices of acceleration channels (empty for strain data).
+    disp_channels : list of int
+        Indices of all strain channels (all columns).
+    chan_dofs_dict : dict
+        Mapping from channel name to ``[dof_label, azimuth_deg, elevation_deg]``.
+    """
     ref_channels = [
         headers.index('A_zt'),
         headers.index('B_zt'),

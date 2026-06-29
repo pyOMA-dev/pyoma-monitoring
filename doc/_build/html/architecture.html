@@ -1,0 +1,758 @@
+
+<!DOCTYPE html>
+
+
+<html lang="en" data-content_root="./" >
+
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" /><meta name="viewport" content="width=device-width, initial-scale=1" />
+
+    <title>Architecture &#8212; pyOMA-Monitoring  documentation</title>
+  
+  
+  
+  <script data-cfasync="false">
+    document.documentElement.dataset.mode = localStorage.getItem("mode") || "";
+    document.documentElement.dataset.theme = localStorage.getItem("theme") || "";
+  </script>
+  <!--
+    this give us a css class that will be invisible only if js is disabled
+  -->
+  <noscript>
+    <style>
+      .pst-js-only { display: none !important; }
+
+    </style>
+  </noscript>
+  
+  <!-- Loaded before other Sphinx assets -->
+  <link href="_static/styles/theme.css?digest=a95f357e85573c9b56d5" rel="stylesheet" />
+<link href="_static/styles/pydata-sphinx-theme.css?digest=a95f357e85573c9b56d5" rel="stylesheet" />
+
+    <link rel="stylesheet" type="text/css" href="_static/pygments.css?v=8f2a1f02" />
+    <link rel="stylesheet" type="text/css" href="_static/mystnb.11b39860a7a0cbfd473a3ad8a317855267ff0bd372690045ca344a6b62be495e.css" />
+    <link rel="stylesheet" type="text/css" href="_static/autoclasstoc.css?v=08871587" />
+  
+  <!-- So that users can add custom icons -->
+  <script defer src="_static/scripts/fontawesome.js?digest=a95f357e85573c9b56d5"></script>
+  <!-- Pre-loaded scripts that we'll load fully later -->
+  <link rel="preload" as="script" href="_static/scripts/bootstrap.js?digest=a95f357e85573c9b56d5" />
+<link rel="preload" as="script" href="_static/scripts/pydata-sphinx-theme.js?digest=a95f357e85573c9b56d5" />
+
+    <script src="_static/documentation_options.js?v=5929fcd5"></script>
+    <script src="_static/doctools.js?v=9bcbadda"></script>
+    <script src="_static/sphinx_highlight.js?v=dc90522c"></script>
+    <script>DOCUMENTATION_OPTIONS.pagename = 'architecture';</script>
+    <script>DOCUMENTATION_OPTIONS.search_as_you_type = false;</script>
+    <link rel="index" title="Index" href="genindex.html" />
+    <link rel="search" title="Search" href="search.html" />
+    <link rel="next" title="The Daily Processing Pipeline" href="pipeline.html" />
+    <link rel="prev" title="pyOMA-Monitoring" href="index.html" />
+  <meta name="viewport" content="width=device-width, initial-scale=1"/>
+  <meta name="docsearch:language" content="en"/>
+  <meta name="docsearch:version" content="" />
+  
+    
+    <script src="_static/searchtools.js"></script>
+    <script src="_static/language_data.js"></script>
+    <script src="searchindex.js"></script>
+  
+  </head>
+  <body data-default-mode="">
+  
+  
+  <div id="pst-skip-link" class="skip-link d-print-none"><a href="#main-content">Skip to main content</a></div>
+
+  
+  <div id="pst-scroll-pixel-helper"></div>
+  
+  <button type="button" class="btn rounded-pill" id="pst-back-to-top">
+    <i class="fa-solid fa-arrow-up"></i>Back to top</button>
+  
+  
+  
+  
+  <dialog id="pst-search-dialog">
+    
+<form class="bd-search d-flex align-items-center"
+      action="search.html"
+      method="get">
+  <i class="fa-solid fa-magnifying-glass"></i>
+  <input type="search"
+         class="form-control"
+         name="q"
+         placeholder="Search the docs ..."
+         aria-label="Search the docs ..."
+         autocomplete="off"
+         autocorrect="off"
+         autocapitalize="off"
+         spellcheck="false"/>
+  <span class="search-button__kbd-shortcut"><kbd class="kbd-shortcut__modifier">Ctrl</kbd>+<kbd>K</kbd></span>
+</form>
+  </dialog>
+
+  <div class="pst-async-banner-revealer d-none">
+  <aside id="bd-header-version-warning" class="d-none d-print-none" aria-label="Version warning"></aside>
+</div>
+
+  
+    <header id="pst-header" class="bd-header navbar navbar-expand-lg bd-navbar d-print-none">
+<div class="bd-header__inner bd-page-width">
+  <button class="pst-navbar-icon sidebar-toggle primary-toggle" aria-label="Site navigation">
+    <span class="fa-solid fa-bars"></span>
+  </button>
+  
+  
+  <div class=" navbar-header-items__start">
+    
+      <div class="navbar-item">
+
+  
+    
+  
+
+<a class="navbar-brand logo" href="index.html">
+  
+  
+  
+  
+  
+    
+    
+      
+    
+    
+    <img src="_static/logo.png" class="logo__image only-light" alt="pyOMA-Monitoring  documentation - Home"/>
+    <img src="_static/logo.png" class="logo__image only-dark pst-js-only" alt="pyOMA-Monitoring  documentation - Home"/>
+  
+  
+</a></div>
+    
+  </div>
+  
+  <div class=" navbar-header-items">
+    
+    <div class="me-auto navbar-header-items__center">
+      
+        <div class="navbar-item">
+<nav>
+  <ul class="bd-navbar-elements navbar-nav">
+    
+<li class="nav-item current active">
+  <a class="nav-link nav-internal" href="#">
+    Architecture
+  </a>
+</li>
+
+
+<li class="nav-item ">
+  <a class="nav-link nav-internal" href="pipeline.html">
+    The Daily Processing Pipeline
+  </a>
+</li>
+
+
+<li class="nav-item ">
+  <a class="nav-link nav-internal" href="configuration.html">
+    Configuration Guide
+  </a>
+</li>
+
+
+<li class="nav-item ">
+  <a class="nav-link nav-internal" href="site_module.html">
+    Writing a Site Module
+  </a>
+</li>
+
+
+<li class="nav-item ">
+  <a class="nav-link nav-internal" href="api_reference.html">
+    API Reference
+  </a>
+</li>
+
+  </ul>
+</nav></div>
+      
+    </div>
+    
+    
+    <div class="navbar-header-items__end">
+      
+        <div class="navbar-item navbar-persistent--container">
+          
+
+<button class="btn search-button-field search-button__button pst-js-only" title="Search" aria-label="Search" data-bs-placement="bottom" data-bs-toggle="tooltip">
+ <i class="fa-solid fa-magnifying-glass"></i>
+ <span class="search-button__default-text">Search</span>
+ <span class="search-button__kbd-shortcut"><kbd class="kbd-shortcut__modifier">Ctrl</kbd>+<kbd class="kbd-shortcut__modifier">K</kbd></span>
+</button>
+        </div>
+      
+      
+        <div class="navbar-item">
+
+<div class="theme-switch-container dropdown pst-js-only" data-bs-toggle="tooltip" data-bs-placement="bottom" title="Color mode">
+  <button class="btn btn-sm nav-link pst-navbar-icon theme-switch-button dropdown-toggle" aria-label="Color mode" data-bs-toggle="dropdown">
+    <i class="theme-switch fa-solid fa-sun fa-lg fa-fw" data-mode="light" title="Light"></i>
+    <i class="theme-switch fa-solid fa-moon fa-lg fa-fw" data-mode="dark" title="Dark"></i>
+    <i class="theme-switch fa-solid fa-circle-half-stroke fa-lg fa-fw" data-mode="auto" title="System Settings"></i>
+  </button>
+  <ul class="dropdown-menu dropdown-menu-end">
+    <li><button class="dropdown-item d-flex align-items-center theme-change-button" data-mode="auto"><i class="fa-solid fa-circle-half-stroke fa-lg fa-fw me-1"></i>System Settings</button></li>
+    <li><button class="dropdown-item d-flex align-items-center theme-change-button" data-mode="light"><i class="fa-solid fa-sun fa-lg fa-fw me-1"></i>Light</button></li>
+    <li><button class="dropdown-item d-flex align-items-center theme-change-button" data-mode="dark"><i class="fa-solid fa-moon fa-lg fa-fw me-1"></i>Dark</button></li>
+  </ul>
+</div></div>
+      
+        <div class="navbar-item"><ul class="navbar-icon-links"
+    aria-label="Icon Links">
+        <li class="nav-item">
+          
+          
+          
+          
+          
+          
+          
+          
+          <a href="https://github.com/pyOMA-dev/pyOMA-Monitoring" title="GitHub" class="nav-link pst-navbar-icon" rel="noopener" target="_blank" data-bs-toggle="tooltip" data-bs-placement="bottom"><i class="fa-brands fa-github fa-lg" aria-hidden="true"></i><span class="visually-hidden">GitHub</span></a>
+        </li>
+</ul></div>
+      
+    </div>
+    
+  </div>
+  
+  
+    <div class="navbar-persistent--mobile">
+
+<button class="btn search-button-field search-button__button pst-js-only" title="Search" aria-label="Search" data-bs-placement="bottom" data-bs-toggle="tooltip">
+ <i class="fa-solid fa-magnifying-glass"></i>
+ <span class="search-button__default-text">Search</span>
+ <span class="search-button__kbd-shortcut"><kbd class="kbd-shortcut__modifier">Ctrl</kbd>+<kbd class="kbd-shortcut__modifier">K</kbd></span>
+</button>
+    </div>
+  
+
+  
+    <button class="pst-navbar-icon sidebar-toggle secondary-toggle" aria-label="On this page">
+      <span class="fa-solid fa-outdent"></span>
+    </button>
+  
+</div>
+
+    </header>
+  
+
+  <div class="bd-container">
+    <div class="bd-container__inner bd-page-width">
+      
+      
+      
+      <dialog id="pst-primary-sidebar-modal"></dialog>
+      <div id="pst-primary-sidebar" class="bd-sidebar-primary bd-sidebar">
+        
+
+  
+  <div class="sidebar-header-items sidebar-primary__section">
+    
+    
+      <div class="sidebar-header-items__center">
+        
+          
+          
+            <div class="navbar-item">
+<nav>
+  <ul class="bd-navbar-elements navbar-nav">
+    
+<li class="nav-item current active">
+  <a class="nav-link nav-internal" href="#">
+    Architecture
+  </a>
+</li>
+
+
+<li class="nav-item ">
+  <a class="nav-link nav-internal" href="pipeline.html">
+    The Daily Processing Pipeline
+  </a>
+</li>
+
+
+<li class="nav-item ">
+  <a class="nav-link nav-internal" href="configuration.html">
+    Configuration Guide
+  </a>
+</li>
+
+
+<li class="nav-item ">
+  <a class="nav-link nav-internal" href="site_module.html">
+    Writing a Site Module
+  </a>
+</li>
+
+
+<li class="nav-item ">
+  <a class="nav-link nav-internal" href="api_reference.html">
+    API Reference
+  </a>
+</li>
+
+  </ul>
+</nav></div>
+          
+        
+      </div>
+    
+    
+    
+      <div class="sidebar-header-items__end">
+        
+          <div class="navbar-item">
+
+<div class="theme-switch-container dropdown pst-js-only" data-bs-toggle="tooltip" data-bs-placement="bottom" title="Color mode">
+  <button class="btn btn-sm nav-link pst-navbar-icon theme-switch-button dropdown-toggle" aria-label="Color mode" data-bs-toggle="dropdown">
+    <i class="theme-switch fa-solid fa-sun fa-lg fa-fw" data-mode="light" title="Light"></i>
+    <i class="theme-switch fa-solid fa-moon fa-lg fa-fw" data-mode="dark" title="Dark"></i>
+    <i class="theme-switch fa-solid fa-circle-half-stroke fa-lg fa-fw" data-mode="auto" title="System Settings"></i>
+  </button>
+  <ul class="dropdown-menu dropdown-menu-end">
+    <li><button class="dropdown-item d-flex align-items-center theme-change-button" data-mode="auto"><i class="fa-solid fa-circle-half-stroke fa-lg fa-fw me-1"></i>System Settings</button></li>
+    <li><button class="dropdown-item d-flex align-items-center theme-change-button" data-mode="light"><i class="fa-solid fa-sun fa-lg fa-fw me-1"></i>Light</button></li>
+    <li><button class="dropdown-item d-flex align-items-center theme-change-button" data-mode="dark"><i class="fa-solid fa-moon fa-lg fa-fw me-1"></i>Dark</button></li>
+  </ul>
+</div></div>
+        
+          <div class="navbar-item"><ul class="navbar-icon-links"
+    aria-label="Icon Links">
+        <li class="nav-item">
+          
+          
+          
+          
+          
+          
+          
+          
+          <a href="https://github.com/pyOMA-dev/pyOMA-Monitoring" title="GitHub" class="nav-link pst-navbar-icon" rel="noopener" target="_blank" data-bs-toggle="tooltip" data-bs-placement="bottom"><i class="fa-brands fa-github fa-lg" aria-hidden="true"></i><span class="visually-hidden">GitHub</span></a>
+        </li>
+</ul></div>
+        
+      </div>
+    
+  </div>
+  
+    <div class="sidebar-primary-items__start sidebar-primary__section">
+        <div class="sidebar-primary-item pst-sidebar-collapse"><button id="pst-collapse-sidebar-button" aria-expanded="true" aria-controls="pst-primary-sidebar"><svg class="pst-icon svg-inline--fa" role="img" aria-hidden="true" focusable="false" viewBox="0 0 16 16" xmlns="http://www.w3.org/2000/svg">
+    <path fill="currentColor" d="M3 15.5C2.36232 15.5 1.74874 15.2564 1.28478 14.8189C0.820828 14.3815 0.541576 13.7832 0.504167 13.1467L0.5 13L0.5 3C0.499965 2.36232 0.743605 1.74874 1.18107 1.28478C1.61854 0.820828 2.21676 0.541576 2.85333 0.504167L3 0.5L13 0.5C13.6377 0.499965 14.2513 0.743605 14.7152 1.18107C15.1792 1.61854 15.4584 2.21676 15.4958 2.85333L15.5 3L15.5 13C15.5 13.6377 15.2564 14.2513 14.8189 14.7152C14.3815 15.1792 13.7832 15.4584 13.1467 15.4958L13 15.5L3 15.5ZM3 13.8333L10.5 13.8333L10.5 2.16667L3 2.16667C2.79589 2.16669 2.59889 2.24163 2.44636 2.37726C2.29383 2.5129 2.19638 2.69979 2.1725 2.9025L2.16667 3L2.16667 13C2.16669 13.2041 2.24163 13.4011 2.37726 13.5536C2.5129 13.7062 2.69979 13.8036 2.9025 13.8275L3 13.8333ZM6.65583 10.325L6.5775 10.2558L4.91083 8.58917C4.76735 8.44567 4.68116 8.25476 4.66843 8.05223C4.65569 7.84971 4.71729 7.6495 4.84167 7.48917L4.91083 7.41083L6.5775 5.74417C6.72747 5.59471 6.9287 5.50794 7.14032 5.50148C7.35194 5.49502 7.55809 5.56935 7.7169 5.70937C7.8757 5.8494 7.97525 6.04463 7.99533 6.25539C8.01541 6.46616 7.95451 6.67667 7.825 6.84417L7.75583 6.9225L6.67917 8L7.75583 9.0775C7.89931 9.22099 7.98551 9.41191 7.99824 9.61443C8.01097 9.81695 7.94938 10.0172 7.825 10.1775L7.75583 10.2558C7.61234 10.3993 7.42142 10.4855 7.2189 10.4982C7.01638 10.511 6.81617 10.4494 6.65583 10.325Z"/>
+  </svg>
+  <span class="pst-collapse-sidebar-label">Collapse Sidebar</span>
+  <span class="pst-expand-sidebar-label">Expand Sidebar</span>
+</button></div>
+        <div class="sidebar-primary-item">
+
+<nav class="bd-docs-nav bd-links"
+     aria-label="Section Navigation">
+  <p class="bd-links__title" role="heading" aria-level="1">Section Navigation</p>
+  <div class="bd-toc-item navbar-nav"></div>
+</nav></div>
+    </div>
+  
+  
+  <div class="sidebar-primary-items__end sidebar-primary__section">
+      <div class="sidebar-primary-item">
+<div id="ethical-ad-placement"
+      class="flat"
+      data-ea-publisher="readthedocs"
+      data-ea-type="readthedocs-sidebar"
+      data-ea-manual="true">
+</div></div>
+  </div>
+
+
+      </div>
+      
+      <main id="main-content" class="bd-main" role="main">
+        
+        
+          <div class="bd-content">
+            <div class="bd-article-container">
+              
+              <div class="bd-header-article d-print-none">
+<div class="header-article-items header-article__inner">
+  
+    <div class="header-article-items__start">
+      
+        <div class="header-article-item">
+
+<nav aria-label="Breadcrumb" class="d-print-none">
+  <ul class="bd-breadcrumbs">
+    
+    <li class="breadcrumb-item breadcrumb-home">
+      <a href="index.html" class="nav-link" aria-label="Home">
+        <i class="fa-solid fa-home"></i>
+      </a>
+    </li>
+    <li class="breadcrumb-item active" aria-current="page"><span class="ellipsis">Architecture</span></li>
+  </ul>
+</nav>
+</div>
+      
+    </div>
+  
+  
+</div>
+</div>
+              
+              
+              
+                
+<div id="searchbox"></div>
+                <article class="bd-article">
+                  
+  <section id="architecture">
+<h1>Architecture<a class="headerlink" href="#architecture" title="Link to this heading">#</a></h1>
+<p>This page explains three design decisions that underpin the monitoring
+pipeline: the xarray result database schema, the timestamp handling
+convention, and the engine / site separation.  Each section is anchored by
+a diagram and goes one level deeper than the overview in pyOMA’s
+<a class="reference external" href="https://py-oma.readthedocs.io/en/latest/continuous_monitoring.html">continuous monitoring page</a>.</p>
+<section id="the-xarray-result-database">
+<span id="arch-xarray"></span><h2>The xarray result database<a class="headerlink" href="#the-xarray-result-database" title="Link to this heading">#</a></h2>
+<figure class="align-center" id="id1">
+<a class="reference internal image-reference" href="_images/xarray_database.png"><img alt="Structure of the xarray result database" src="_images/xarray_database.png" style="width: 600px;" />
+</a>
+<figcaption>
+<p><span class="caption-text">Structure of the xarray result database — three sparse named dimensions
+(time, modes, channels).  Red slabs represent the file-info and statistics
+databases; blue slabs represent the modal-results database.
+<em>(After Marwitz &amp; Zabel, ISMA 2018.)</em></span><a class="headerlink" href="#id1" title="Link to this image">#</a></p>
+</figcaption>
+</figure>
+<p>The pipeline maintains three families of NetCDF files, all managed through
+<a class="reference external" href="https://xarray.pydata.org">xarray</a>:</p>
+<div class="pst-scrollable-table-container"><table class="table">
+<colgroup>
+<col style="width: 30.0%" />
+<col style="width: 20.0%" />
+<col style="width: 50.0%" />
+</colgroup>
+<thead>
+<tr class="row-odd"><th class="head"><p>File pattern</p></th>
+<th class="head"><p>Engine</p></th>
+<th class="head"><p>Contents</p></th>
+</tr>
+</thead>
+<tbody>
+<tr class="row-even"><td><p><code class="docutils literal notranslate"><span class="pre">file_info_&lt;origin&gt;.nc</span></code></p></td>
+<td><p>NETCDF4</p></td>
+<td><p>One row per raw file: <code class="docutils literal notranslate"><span class="pre">file_name</span></code>, <code class="docutils literal notranslate"><span class="pre">file_size</span></code>,
+<code class="docutils literal notranslate"><span class="pre">file_time</span></code> (POSIX float), <code class="docutils literal notranslate"><span class="pre">start_time</span></code> (POSIX float),
+<code class="docutils literal notranslate"><span class="pre">sample_rate</span></code>, <code class="docutils literal notranslate"><span class="pre">duration</span></code> (seconds), per-channel statistics
+(mean, min, max, var, skewness, kurtosis, q05, q50, q95, rms,
+error), and computed <code class="docutils literal notranslate"><span class="pre">gap_length</span></code> (samples).</p></td>
+</tr>
+<tr class="row-odd"><td><p><code class="docutils literal notranslate"><span class="pre">&lt;dur&gt;-minutes/stats_&lt;quantity&gt;.nc</span></code></p></td>
+<td><p>NETCDF4</p></td>
+<td><p>One row per fixed-duration window: channel statistics over the
+preprocessed, band-limited slice.</p></td>
+</tr>
+<tr class="row-even"><td><p><code class="docutils literal notranslate"><span class="pre">&lt;dur&gt;-minutes/modal_&lt;quantity&gt;.nc</span></code></p></td>
+<td><p>h5netcdf (complex array support)</p></td>
+<td><p>One row per window: identified frequencies, damping ratios, mode
+shapes, uncertainty estimates (<code class="docutils literal notranslate"><span class="pre">std_frequencies</span></code>,
+<code class="docutils literal notranslate"><span class="pre">std_damping</span></code>), MPC, MPD, and singular-value PSD statistics.</p></td>
+</tr>
+</tbody>
+</table>
+</div>
+<p>All three databases share the same three-dimensional structure:</p>
+<ul class="simple">
+<li><p><strong>time</strong> — UTC-naive <code class="docutils literal notranslate"><span class="pre">datetime64[ns]</span></code>; gaps arise from system downtime
+or discarded quality-flagged windows.</p></li>
+<li><p><strong>modes</strong> — integer index; modes not identified in a given window are
+simply absent (the <code class="docutils literal notranslate"><span class="pre">modes</span></code> coordinate is sparse across time).</p></li>
+<li><p><strong>channels</strong> — string channel names; sensors added or replaced over the
+years introduce gaps in mode-shape data.</p></li>
+</ul>
+<p>The sparse structure is a deliberate choice.  <code class="docutils literal notranslate"><span class="pre">xr.Dataset.combine_first</span></code>
+fills only the <em>missing</em> entries from a new dataset, preserving existing
+values on overlap — this is the merge primitive used throughout
+<code class="docutils literal notranslate"><span class="pre">monitoring.save_ds</span></code>.  The pattern:</p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">current_ds</span> <span class="o">=</span> <span class="n">current_ds</span><span class="o">.</span><span class="n">combine_first</span><span class="p">(</span><span class="n">new_ds</span><span class="p">)</span>
+</pre></div>
+</div>
+<p>means “fill gaps in <code class="docutils literal notranslate"><span class="pre">current_ds</span></code> with values from <code class="docutils literal notranslate"><span class="pre">new_ds</span></code>; on
+conflict, keep <code class="docutils literal notranslate"><span class="pre">current_ds</span></code> values.”  This is the opposite precedence from
+<code class="docutils literal notranslate"><span class="pre">xr.merge</span></code>, which raises on conflicts.</p>
+<p><strong>File-per-worker write pattern.</strong>  When multiple workers run in parallel,
+each writes to its own private file
+<code class="docutils literal notranslate"><span class="pre">modal_&lt;quantity&gt;.&lt;pid&gt;.nc</span></code> (a POSIX-unique name) and only
+acquires the <code class="docutils literal notranslate"><span class="pre">MultiLock</span></code> for the final merge step into
+the master <code class="docutils literal notranslate"><span class="pre">modal_&lt;quantity&gt;.nc</span></code>.  This keeps lock contention
+minimal: the expensive per-window computation happens without any lock held.</p>
+<p><strong>Why xarray / NetCDF?</strong>  Plain NumPy arrays require the caller to maintain
+separate index arrays; Pandas DataFrames handle 2-D data well but become
+unwieldy for ragged 3-D structures (time × modes × channels).  xarray
+coordinates carry their own labels, support boolean and slice selection by
+timestamp, and the NetCDF format is self-describing and directly readable
+by MATLAB, R, and Julia — a requirement for long-term archival of
+multi-year monitoring data.</p>
+</section>
+<section id="timestamp-handling">
+<span id="arch-timestamps"></span><h2>Timestamp handling<a class="headerlink" href="#timestamp-handling" title="Link to this heading">#</a></h2>
+<figure class="align-center" id="id2">
+<a class="reference internal image-reference" href="_images/timestamp_handling.png"><img alt="Timestamp handling layers" src="_images/timestamp_handling.png" style="width: 680px;" />
+</a>
+<figcaption>
+<p><span class="caption-text">Timestamp handling in pyOMA-Monitoring.  Every device-local naive time
+passes through a single conversion boundary (<code class="docutils literal notranslate"><span class="pre">TimeConvention</span></code>) before
+it is written to disk.  Two pinned bugs (unit hazard, NaT sentinel) are
+documented in <code class="docutils literal notranslate"><span class="pre">tests/test_time_handling.py</span></code>.</span><a class="headerlink" href="#id2" title="Link to this image">#</a></p>
+</figcaption>
+</figure>
+<p><strong>The problem.</strong>  Raw data files carry timestamps in device-local naive
+time (the Q.Station controller clock runs in <code class="docutils literal notranslate"><span class="pre">Europe/Berlin</span></code> but stores
+no timezone information; the FBG interrogator uses filesystem modification
+time via <code class="docutils literal notranslate"><span class="pre">tzlocal</span></code>).  DST transitions in <code class="docutils literal notranslate"><span class="pre">Europe/Berlin</span></code> mean that the
+same naive hour string can refer to two different UTC instants in autumn,
+and one hour entirely vanishes in spring.  A monitoring system accumulating
+data since 2015 has crossed many such transitions.</p>
+<p><strong>Single conversion boundary.</strong>  <code class="docutils literal notranslate"><span class="pre">time_convention.TimeConvention</span></code>
+(singleton <code class="docutils literal notranslate"><span class="pre">TC</span></code>) owns all Berlin↔UTC/DST logic.  No timezone conversion
+occurs anywhere else in the codebase:</p>
+<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="kn">from</span><span class="w"> </span><span class="nn">time_convention</span><span class="w"> </span><span class="kn">import</span> <span class="n">TC</span>
+
+<span class="c1"># Annotate a naive local datetime as Berlin-aware, then convert to UTC-naive</span>
+<span class="n">utc_naive</span> <span class="o">=</span> <span class="n">TC</span><span class="o">.</span><span class="n">to_storage_coord</span><span class="p">(</span><span class="n">aware_start_time</span><span class="p">)</span>
+<span class="c1"># → pd.Timestamp(aware).tz_convert(&#39;UTC&#39;).tz_localize(None).to_datetime64()</span>
+
+<span class="c1"># Recover for display / slicing</span>
+<span class="n">local_ts</span> <span class="o">=</span> <span class="n">TC</span><span class="o">.</span><span class="n">to_local</span><span class="p">(</span><span class="n">stored_utc_naive</span><span class="p">)</span>
+<span class="c1"># → pd.Timestamp(stored).tz_localize(&#39;Europe/Berlin&#39;, nonexistent=&#39;NaT&#39;)</span>
+</pre></div>
+</div>
+<p><strong>Dual on-disk storage contract.</strong>  Every result database stores the same
+instant in two encodings, both written once per row by
+<code class="docutils literal notranslate"><span class="pre">monitoring.create_file_info</span></code>:</p>
+<ul class="simple">
+<li><p><code class="docutils literal notranslate"><span class="pre">time</span></code> coordinate — tz-naive UTC <code class="docutils literal notranslate"><span class="pre">datetime64[ns]</span></code>; used as the
+xarray index for all merges and selections.</p></li>
+<li><p><code class="docutils literal notranslate"><span class="pre">start_time</span></code> / <code class="docutils literal notranslate"><span class="pre">file_time</span></code> variables — float64 POSIX seconds; used
+for gap-length arithmetic and recovery via <code class="docutils literal notranslate"><span class="pre">.astype('datetime64[s]')</span></code>.</p></li>
+</ul>
+<p>The two encodings carry the same information, and <code class="docutils literal notranslate"><span class="pre">tests/test_time_handling.py</span></code>
+verifies the round-trip fidelity.</p>
+<p><strong>DST gap handling.</strong>  <code class="docutils literal notranslate"><span class="pre">TC.to_local</span></code> passes <code class="docutils literal notranslate"><span class="pre">nonexistent='NaT'</span></code> to
+<code class="docutils literal notranslate"><span class="pre">tz_localize</span></code>, so timestamps in the spring-forward gap (02:00–02:59
+<code class="docutils literal notranslate"><span class="pre">Europe/Berlin</span></code> on the last Sunday in March) map to <code class="docutils literal notranslate"><span class="pre">NaT</span></code> rather than
+raising.  <code class="docutils literal notranslate"><span class="pre">create_stats</span></code> and <code class="docutils literal notranslate"><span class="pre">create_modal_results</span></code> skip <code class="docutils literal notranslate"><span class="pre">NaT</span></code>
+timestamps with a <code class="docutils literal notranslate"><span class="pre">pd.isnull</span></code> guard.  <code class="docutils literal notranslate"><span class="pre">TC.is_near_dst_transition</span></code>
+provides a wider ±3-hour exclusion zone used during file ingestion to avoid
+mis-stamped files recorded during the controller clock adjustment.</p>
+<p><strong>Two historical foot-guns, pinned as regression tests.</strong></p>
+<p><em>Bug 1 — ``’us’`` vs ``’s’`` duration unit.</em>  In several xarray
+arithmetic expressions across the codebase, the float <code class="docutils literal notranslate"><span class="pre">duration</span></code> column
+(stored in seconds) is multiplied by <code class="docutils literal notranslate"><span class="pre">np.timedelta64(1,</span> <span class="pre">'s')</span></code> to recover
+a <code class="docutils literal notranslate"><span class="pre">timedelta64</span></code>.  An earlier version used <code class="docutils literal notranslate"><span class="pre">'us'</span></code> (microseconds),
+making <code class="docutils literal notranslate"><span class="pre">duration=3600</span></code> add 3.6 ms instead of 1 hour.  The correct pattern
+is pinned in <code class="docutils literal notranslate"><span class="pre">TestXarrayTimeArithmetic</span></code> and <code class="docutils literal notranslate"><span class="pre">TestTimedeltaUnit</span></code>.</p>
+<p><em>Bug 2 — NaT → int64 sentinel.</em>  <code class="docutils literal notranslate"><span class="pre">TimeConvention.gap_lengths</span></code> shifts a
+<code class="docutils literal notranslate"><span class="pre">datetime64</span></code> DataArray by one position with <code class="docutils literal notranslate"><span class="pre">.shift(time=-1)</span></code>, which
+fills the last element with <code class="docutils literal notranslate"><span class="pre">NaT</span></code>.  Converting <code class="docutils literal notranslate"><span class="pre">NaT</span></code> directly to
+<code class="docutils literal notranslate"><span class="pre">int64</span></code> yields <code class="docutils literal notranslate"><span class="pre">np.iinfo(np.int64).min</span></code> ≈ −9.2×10¹⁸, which then
+propagates as an enormous negative gap length.  The fix masks elements
+equal to <code class="docutils literal notranslate"><span class="pre">INT64_MIN</span></code> to <code class="docutils literal notranslate"><span class="pre">np.nan</span></code> before scaling.  Pinned in
+<code class="docutils literal notranslate"><span class="pre">TestNatSentinel</span></code> and <code class="docutils literal notranslate"><span class="pre">TestNatInt64</span></code>.</p>
+<p>The entire set of library contracts and conversion chains is encoded in
+<code class="docutils literal notranslate"><span class="pre">tests/test_time_handling.py</span></code> as the executable specification.  When
+numpy, pandas, or xarray is upgraded, a failing test there is an explicit
+signal to audit the corresponding code path.</p>
+</section>
+<section id="engine-site-design">
+<span id="arch-site"></span><h2>Engine / site design<a class="headerlink" href="#engine-site-design" title="Link to this heading">#</a></h2>
+<figure class="align-center" id="id3">
+<a class="reference internal image-reference" href="_images/site_handling.png"><img alt="Engine and site module interaction" src="_images/site_handling.png" style="width: 700px;" />
+</a>
+<figcaption>
+<p><span class="caption-text">Engine / site interaction.  <code class="docutils literal notranslate"><span class="pre">daily.py</span></code> imports the site module, which
+registers its callbacks into a process-level <code class="docutils literal notranslate"><span class="pre">_SITES</span></code> registry.
+The engine dispatches through that registry; it never imports the site
+directly.  A second monitored structure is just another <code class="docutils literal notranslate"><span class="pre">site_*.py</span></code>.</span><a class="headerlink" href="#id3" title="Link to this image">#</a></p>
+</figcaption>
+</figure>
+<p><strong>The dependency direction is the key invariant.</strong></p>
+<p>The engine (<code class="docutils literal notranslate"><span class="pre">monitoring.py</span></code>) is completely site-agnostic.  It knows
+nothing about tower geometry, FBG calibration coefficients, or Gantner
+filename patterns.  All site-specific knowledge lives in a <em>site module</em>
+(<code class="docutils literal notranslate"><span class="pre">site_tower.py</span></code> for the tower; <code class="docutils literal notranslate"><span class="pre">site_example.py</span></code> is a public template
+for new deployments).  The dependency arrow points <em>inward</em>:
+the site module imports the engine (lazily, inside functions, to avoid
+circular imports at load time) — the engine never imports the site.</p>
+<p><strong>Registration.</strong>  Each site module calls
+<code class="docutils literal notranslate"><span class="pre">monitoring.register_site(site)</span></code> and <code class="docutils literal notranslate"><span class="pre">monitoring.set_active_site(site)</span></code>
+at import time.  <code class="docutils literal notranslate"><span class="pre">daily.py</span></code> selects the active site simply by importing
+the correct module:</p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="kn">import</span><span class="w"> </span><span class="nn">site_tower</span>    <span class="c1"># registers and activates on import</span>
+</pre></div>
+</div>
+<p>After that, every engine function dispatches through the process-level
+<code class="docutils literal notranslate"><span class="pre">_active_site</span></code> reference.</p>
+<p><strong>The</strong> <code class="docutils literal notranslate"><span class="pre">Site</span></code> <strong>dataclass</strong> is the contract between engine and site.
+It carries eight callable fields (hooks) and twelve configuration fields
+(paths, channel lists, etc.) — see <a class="reference internal" href="site_module.html"><span class="doc">Writing a Site Module</span></a> for the full
+reference.  The engine calls hooks like this (condensed from
+<code class="docutils literal notranslate"><span class="pre">monitoring.get_slice_corrected</span></code>):</p>
+<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="n">site</span> <span class="o">=</span> <span class="n">_active_site</span>
+<span class="k">if</span> <span class="n">site</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span><span class="p">:</span>
+    <span class="n">transform</span> <span class="o">=</span> <span class="n">site</span><span class="o">.</span><span class="n">transforms</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="n">quantity</span><span class="p">)</span>
+    <span class="k">if</span> <span class="n">transform</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span><span class="p">:</span>
+        <span class="n">data_slice</span> <span class="o">=</span> <span class="n">transform</span><span class="p">(</span><span class="o">*</span><span class="n">data_slice</span><span class="p">,</span> <span class="n">quantity</span><span class="o">=</span><span class="n">quantity</span><span class="p">,</span>
+                               <span class="n">start_time_local</span><span class="o">=</span><span class="n">start_time</span><span class="p">,</span>
+                               <span class="n">duration</span><span class="o">=</span><span class="n">duration</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">)</span>
+</pre></div>
+</div>
+<p><strong>Graceful failure.</strong>  If no site is registered (<code class="docutils literal notranslate"><span class="pre">_active_site</span> <span class="pre">is</span> <span class="pre">None</span></code>),
+engine functions fall back to safe defaults (no transforms, arithmetic mean
+for all channels, <code class="docutils literal notranslate"><span class="pre">start_time</span></code> returned unchanged from <code class="docutils literal notranslate"><span class="pre">sync_policy</span></code>).
+A <code class="docutils literal notranslate"><span class="pre">RuntimeError</span></code> is raised only when a hook is truly required and absent
+— for example, when modal analysis is requested but no <code class="docutils literal notranslate"><span class="pre">setup_prep</span></code> has
+been registered for the quantity.</p>
+<p><strong>Adding a second structure.</strong>  Copy <code class="docutils literal notranslate"><span class="pre">site_example.py</span></code>, rename it
+<code class="docutils literal notranslate"><span class="pre">site_newstructure.py</span></code>, implement the stubs, and import it.  Both sites
+can coexist in <code class="docutils literal notranslate"><span class="pre">_SITES</span></code>; <code class="docutils literal notranslate"><span class="pre">set_active_site</span></code> selects which one the engine
+uses.  The engine code is unchanged.</p>
+<p><strong>Public vs private.</strong>  The engine (<code class="docutils literal notranslate"><span class="pre">monitoring.py</span></code>,
+<code class="docutils literal notranslate"><span class="pre">time_convention.py</span></code>, <code class="docutils literal notranslate"><span class="pre">config.py</span></code>, <code class="docutils literal notranslate"><span class="pre">MultiLock.py</span></code>,
+<code class="docutils literal notranslate"><span class="pre">site_example.py</span></code>) is suitable for public distribution.  The concrete
+site module (<code class="docutils literal notranslate"><span class="pre">site_tower.py</span></code>) encodes site-specific geometry, calibration
+constants, and synchronisation-era logic that is not transferable to other
+structures, and may remain private.  See <a class="reference internal" href="configuration.html"><span class="doc">Configuration Guide</span></a> for the
+complete guide to writing and wiring a new site module.</p>
+</section>
+</section>
+
+
+                </article>
+              
+              
+              
+              
+              
+                <footer class="prev-next-footer d-print-none">
+                  
+<div class="prev-next-area">
+    <a class="left-prev"
+       href="index.html"
+       title="previous page">
+      <i class="fa-solid fa-angle-left"></i>
+      <div class="prev-next-info">
+        <p class="prev-next-subtitle">previous</p>
+        <p class="prev-next-title">pyOMA-Monitoring</p>
+      </div>
+    </a>
+    <a class="right-next"
+       href="pipeline.html"
+       title="next page">
+      <div class="prev-next-info">
+        <p class="prev-next-subtitle">next</p>
+        <p class="prev-next-title">The Daily Processing Pipeline</p>
+      </div>
+      <i class="fa-solid fa-angle-right"></i>
+    </a>
+</div>
+                </footer>
+              
+            </div>
+            
+            
+              
+                <dialog id="pst-secondary-sidebar-modal"></dialog>
+                <div id="pst-secondary-sidebar" class="bd-sidebar-secondary bd-toc"><div class="sidebar-secondary-items sidebar-secondary__inner">
+
+
+  <div class="sidebar-secondary-item">
+<div
+    id="pst-page-navigation-heading-2"
+    class="page-toc tocsection onthispage">
+    <i class="fa-solid fa-list"></i> On this page
+  </div>
+  <nav id="pst-page-toc-nav" class="page-toc" aria-labelledby="pst-page-navigation-heading-2">
+    <ul class="pst-show_toc_level nav section-nav flex-column">
+<li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#the-xarray-result-database">The xarray result database</a></li>
+<li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#timestamp-handling">Timestamp handling</a></li>
+<li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#engine-site-design">Engine / site design</a></li>
+</ul>
+  </nav></div>
+
+  <div class="sidebar-secondary-item">
+
+  <div class="tocsection sourcelink">
+    <a href="_sources/architecture.rst.txt">
+      <i class="fa-solid fa-file-lines"></i> Show Source
+    </a>
+  </div>
+</div>
+
+</div></div>
+              
+            
+          </div>
+          <footer class="bd-footer-content">
+            
+          </footer>
+        
+      </main>
+    </div>
+  </div>
+  
+  <!-- Scripts loaded after <body> so the DOM is not blocked -->
+  <script defer src="_static/scripts/bootstrap.js?digest=a95f357e85573c9b56d5"></script>
+<script defer src="_static/scripts/pydata-sphinx-theme.js?digest=a95f357e85573c9b56d5"></script>
+
+  <footer class="bd-footer">
+<div class="bd-footer__inner bd-page-width">
+  
+    <div class="footer-items__start">
+      
+        <div class="footer-item">
+
+  <p class="copyright">
+    
+      © Copyright 2024-2025, Simon Marwitz, Volkmar Zabel.
+      <br/>
+    
+  </p>
+</div>
+      
+        <div class="footer-item">
+
+  <p class="sphinx-version">
+    Created using <a href="https://www.sphinx-doc.org/">Sphinx</a> 8.2.3.
+    <br/>
+  </p>
+</div>
+      
+    </div>
+  
+  
+  
+    <div class="footer-items__end">
+      
+        <div class="footer-item">
+<p class="theme-version">
+  <!-- # L10n: Setting the PST URL as an argument as this does not need to be localized -->
+  Built with the <a href="https://pydata-sphinx-theme.readthedocs.io/en/stable/index.html">PyData Sphinx Theme</a> 0.19.0.
+</p></div>
+      
+    </div>
+  
+</div>
+
+  </footer>
+  </body>
+</html>

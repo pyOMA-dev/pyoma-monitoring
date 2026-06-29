@@ -1,0 +1,825 @@
+
+<!DOCTYPE html>
+
+
+<html lang="en" data-content_root="../" >
+
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>site_example &#8212; pyOMA-Monitoring  documentation</title>
+  
+  
+  
+  <script data-cfasync="false">
+    document.documentElement.dataset.mode = localStorage.getItem("mode") || "";
+    document.documentElement.dataset.theme = localStorage.getItem("theme") || "";
+  </script>
+  <!--
+    this give us a css class that will be invisible only if js is disabled
+  -->
+  <noscript>
+    <style>
+      .pst-js-only { display: none !important; }
+
+    </style>
+  </noscript>
+  
+  <!-- Loaded before other Sphinx assets -->
+  <link href="../_static/styles/theme.css?digest=a95f357e85573c9b56d5" rel="stylesheet" />
+<link href="../_static/styles/pydata-sphinx-theme.css?digest=a95f357e85573c9b56d5" rel="stylesheet" />
+
+    <link rel="stylesheet" type="text/css" href="../_static/pygments.css?v=8f2a1f02" />
+    <link rel="stylesheet" type="text/css" href="../_static/mystnb.11b39860a7a0cbfd473a3ad8a317855267ff0bd372690045ca344a6b62be495e.css" />
+    <link rel="stylesheet" type="text/css" href="../_static/autoclasstoc.css?v=08871587" />
+  
+  <!-- So that users can add custom icons -->
+  <script defer src="../_static/scripts/fontawesome.js?digest=a95f357e85573c9b56d5"></script>
+  <!-- Pre-loaded scripts that we'll load fully later -->
+  <link rel="preload" as="script" href="../_static/scripts/bootstrap.js?digest=a95f357e85573c9b56d5" />
+<link rel="preload" as="script" href="../_static/scripts/pydata-sphinx-theme.js?digest=a95f357e85573c9b56d5" />
+
+    <script src="../_static/documentation_options.js?v=5929fcd5"></script>
+    <script src="../_static/doctools.js?v=9bcbadda"></script>
+    <script src="../_static/sphinx_highlight.js?v=dc90522c"></script>
+    <script>DOCUMENTATION_OPTIONS.pagename = '_modules/site_example';</script>
+    <script>DOCUMENTATION_OPTIONS.search_as_you_type = false;</script>
+    <link rel="index" title="Index" href="../genindex.html" />
+    <link rel="search" title="Search" href="../search.html" />
+  <meta name="viewport" content="width=device-width, initial-scale=1"/>
+  <meta name="docsearch:language" content="en"/>
+  <meta name="docsearch:version" content="" />
+  
+    
+    <script src="../_static/searchtools.js"></script>
+    <script src="../_static/language_data.js"></script>
+    <script src="../searchindex.js"></script>
+  
+  </head>
+  <body data-default-mode="">
+  
+  
+  <div id="pst-skip-link" class="skip-link d-print-none"><a href="#main-content">Skip to main content</a></div>
+
+  
+  <div id="pst-scroll-pixel-helper"></div>
+  
+  <button type="button" class="btn rounded-pill" id="pst-back-to-top">
+    <i class="fa-solid fa-arrow-up"></i>Back to top</button>
+  
+  
+  
+  
+  <dialog id="pst-search-dialog">
+    
+<form class="bd-search d-flex align-items-center"
+      action="../search.html"
+      method="get">
+  <i class="fa-solid fa-magnifying-glass"></i>
+  <input type="search"
+         class="form-control"
+         name="q"
+         placeholder="Search the docs ..."
+         aria-label="Search the docs ..."
+         autocomplete="off"
+         autocorrect="off"
+         autocapitalize="off"
+         spellcheck="false"/>
+  <span class="search-button__kbd-shortcut"><kbd class="kbd-shortcut__modifier">Ctrl</kbd>+<kbd>K</kbd></span>
+</form>
+  </dialog>
+
+  <div class="pst-async-banner-revealer d-none">
+  <aside id="bd-header-version-warning" class="d-none d-print-none" aria-label="Version warning"></aside>
+</div>
+
+  
+    <header id="pst-header" class="bd-header navbar navbar-expand-lg bd-navbar d-print-none">
+<div class="bd-header__inner bd-page-width">
+  <button class="pst-navbar-icon sidebar-toggle primary-toggle" aria-label="Site navigation">
+    <span class="fa-solid fa-bars"></span>
+  </button>
+  
+  
+  <div class=" navbar-header-items__start">
+    
+      <div class="navbar-item">
+
+  
+    
+  
+
+<a class="navbar-brand logo" href="../index.html">
+  
+  
+  
+  
+  
+    
+    
+      
+    
+    
+    <img src="../_static/logo.png" class="logo__image only-light" alt="pyOMA-Monitoring  documentation - Home"/>
+    <img src="../_static/logo.png" class="logo__image only-dark pst-js-only" alt="pyOMA-Monitoring  documentation - Home"/>
+  
+  
+</a></div>
+    
+  </div>
+  
+  <div class=" navbar-header-items">
+    
+    <div class="me-auto navbar-header-items__center">
+      
+        <div class="navbar-item">
+<nav>
+  <ul class="bd-navbar-elements navbar-nav">
+    
+<li class="nav-item ">
+  <a class="nav-link nav-internal" href="../architecture.html">
+    Architecture
+  </a>
+</li>
+
+
+<li class="nav-item ">
+  <a class="nav-link nav-internal" href="../pipeline.html">
+    The Daily Processing Pipeline
+  </a>
+</li>
+
+
+<li class="nav-item ">
+  <a class="nav-link nav-internal" href="../configuration.html">
+    Configuration Guide
+  </a>
+</li>
+
+
+<li class="nav-item ">
+  <a class="nav-link nav-internal" href="../site_module.html">
+    Writing a Site Module
+  </a>
+</li>
+
+
+<li class="nav-item ">
+  <a class="nav-link nav-internal" href="../api_reference.html">
+    API Reference
+  </a>
+</li>
+
+  </ul>
+</nav></div>
+      
+    </div>
+    
+    
+    <div class="navbar-header-items__end">
+      
+        <div class="navbar-item navbar-persistent--container">
+          
+
+<button class="btn search-button-field search-button__button pst-js-only" title="Search" aria-label="Search" data-bs-placement="bottom" data-bs-toggle="tooltip">
+ <i class="fa-solid fa-magnifying-glass"></i>
+ <span class="search-button__default-text">Search</span>
+ <span class="search-button__kbd-shortcut"><kbd class="kbd-shortcut__modifier">Ctrl</kbd>+<kbd class="kbd-shortcut__modifier">K</kbd></span>
+</button>
+        </div>
+      
+      
+        <div class="navbar-item">
+
+<div class="theme-switch-container dropdown pst-js-only" data-bs-toggle="tooltip" data-bs-placement="bottom" title="Color mode">
+  <button class="btn btn-sm nav-link pst-navbar-icon theme-switch-button dropdown-toggle" aria-label="Color mode" data-bs-toggle="dropdown">
+    <i class="theme-switch fa-solid fa-sun fa-lg fa-fw" data-mode="light" title="Light"></i>
+    <i class="theme-switch fa-solid fa-moon fa-lg fa-fw" data-mode="dark" title="Dark"></i>
+    <i class="theme-switch fa-solid fa-circle-half-stroke fa-lg fa-fw" data-mode="auto" title="System Settings"></i>
+  </button>
+  <ul class="dropdown-menu dropdown-menu-end">
+    <li><button class="dropdown-item d-flex align-items-center theme-change-button" data-mode="auto"><i class="fa-solid fa-circle-half-stroke fa-lg fa-fw me-1"></i>System Settings</button></li>
+    <li><button class="dropdown-item d-flex align-items-center theme-change-button" data-mode="light"><i class="fa-solid fa-sun fa-lg fa-fw me-1"></i>Light</button></li>
+    <li><button class="dropdown-item d-flex align-items-center theme-change-button" data-mode="dark"><i class="fa-solid fa-moon fa-lg fa-fw me-1"></i>Dark</button></li>
+  </ul>
+</div></div>
+      
+        <div class="navbar-item"><ul class="navbar-icon-links"
+    aria-label="Icon Links">
+        <li class="nav-item">
+          
+          
+          
+          
+          
+          
+          
+          
+          <a href="https://github.com/pyOMA-dev/pyOMA-Monitoring" title="GitHub" class="nav-link pst-navbar-icon" rel="noopener" target="_blank" data-bs-toggle="tooltip" data-bs-placement="bottom"><i class="fa-brands fa-github fa-lg" aria-hidden="true"></i><span class="visually-hidden">GitHub</span></a>
+        </li>
+</ul></div>
+      
+    </div>
+    
+  </div>
+  
+  
+    <div class="navbar-persistent--mobile">
+
+<button class="btn search-button-field search-button__button pst-js-only" title="Search" aria-label="Search" data-bs-placement="bottom" data-bs-toggle="tooltip">
+ <i class="fa-solid fa-magnifying-glass"></i>
+ <span class="search-button__default-text">Search</span>
+ <span class="search-button__kbd-shortcut"><kbd class="kbd-shortcut__modifier">Ctrl</kbd>+<kbd class="kbd-shortcut__modifier">K</kbd></span>
+</button>
+    </div>
+  
+
+  
+</div>
+
+    </header>
+  
+
+  <div class="bd-container">
+    <div class="bd-container__inner bd-page-width">
+      
+      
+      
+        
+      
+      <dialog id="pst-primary-sidebar-modal"></dialog>
+      <div id="pst-primary-sidebar" class="bd-sidebar-primary bd-sidebar hide-on-wide">
+        
+
+  
+  <div class="sidebar-header-items sidebar-primary__section">
+    
+    
+      <div class="sidebar-header-items__center">
+        
+          
+          
+            <div class="navbar-item">
+<nav>
+  <ul class="bd-navbar-elements navbar-nav">
+    
+<li class="nav-item ">
+  <a class="nav-link nav-internal" href="../architecture.html">
+    Architecture
+  </a>
+</li>
+
+
+<li class="nav-item ">
+  <a class="nav-link nav-internal" href="../pipeline.html">
+    The Daily Processing Pipeline
+  </a>
+</li>
+
+
+<li class="nav-item ">
+  <a class="nav-link nav-internal" href="../configuration.html">
+    Configuration Guide
+  </a>
+</li>
+
+
+<li class="nav-item ">
+  <a class="nav-link nav-internal" href="../site_module.html">
+    Writing a Site Module
+  </a>
+</li>
+
+
+<li class="nav-item ">
+  <a class="nav-link nav-internal" href="../api_reference.html">
+    API Reference
+  </a>
+</li>
+
+  </ul>
+</nav></div>
+          
+        
+      </div>
+    
+    
+    
+      <div class="sidebar-header-items__end">
+        
+          <div class="navbar-item">
+
+<div class="theme-switch-container dropdown pst-js-only" data-bs-toggle="tooltip" data-bs-placement="bottom" title="Color mode">
+  <button class="btn btn-sm nav-link pst-navbar-icon theme-switch-button dropdown-toggle" aria-label="Color mode" data-bs-toggle="dropdown">
+    <i class="theme-switch fa-solid fa-sun fa-lg fa-fw" data-mode="light" title="Light"></i>
+    <i class="theme-switch fa-solid fa-moon fa-lg fa-fw" data-mode="dark" title="Dark"></i>
+    <i class="theme-switch fa-solid fa-circle-half-stroke fa-lg fa-fw" data-mode="auto" title="System Settings"></i>
+  </button>
+  <ul class="dropdown-menu dropdown-menu-end">
+    <li><button class="dropdown-item d-flex align-items-center theme-change-button" data-mode="auto"><i class="fa-solid fa-circle-half-stroke fa-lg fa-fw me-1"></i>System Settings</button></li>
+    <li><button class="dropdown-item d-flex align-items-center theme-change-button" data-mode="light"><i class="fa-solid fa-sun fa-lg fa-fw me-1"></i>Light</button></li>
+    <li><button class="dropdown-item d-flex align-items-center theme-change-button" data-mode="dark"><i class="fa-solid fa-moon fa-lg fa-fw me-1"></i>Dark</button></li>
+  </ul>
+</div></div>
+        
+          <div class="navbar-item"><ul class="navbar-icon-links"
+    aria-label="Icon Links">
+        <li class="nav-item">
+          
+          
+          
+          
+          
+          
+          
+          
+          <a href="https://github.com/pyOMA-dev/pyOMA-Monitoring" title="GitHub" class="nav-link pst-navbar-icon" rel="noopener" target="_blank" data-bs-toggle="tooltip" data-bs-placement="bottom"><i class="fa-brands fa-github fa-lg" aria-hidden="true"></i><span class="visually-hidden">GitHub</span></a>
+        </li>
+</ul></div>
+        
+      </div>
+    
+  </div>
+  
+  
+  <div class="sidebar-primary-items__end sidebar-primary__section">
+      <div class="sidebar-primary-item">
+<div id="ethical-ad-placement"
+      class="flat"
+      data-ea-publisher="readthedocs"
+      data-ea-type="readthedocs-sidebar"
+      data-ea-manual="true">
+</div></div>
+  </div>
+
+
+      </div>
+      
+      <main id="main-content" class="bd-main" role="main">
+        
+        
+          <div class="bd-content">
+            <div class="bd-article-container">
+              
+              <div class="bd-header-article d-print-none">
+<div class="header-article-items header-article__inner">
+  
+    <div class="header-article-items__start">
+      
+        <div class="header-article-item">
+
+<nav aria-label="Breadcrumb" class="d-print-none">
+  <ul class="bd-breadcrumbs">
+    
+    <li class="breadcrumb-item breadcrumb-home">
+      <a href="../index.html" class="nav-link" aria-label="Home">
+        <i class="fa-solid fa-home"></i>
+      </a>
+    </li>
+    
+    <li class="breadcrumb-item"><a href="index.html" class="nav-link">Module code</a></li>
+    
+    <li class="breadcrumb-item active" aria-current="page"><span class="ellipsis">site_example</span></li>
+  </ul>
+</nav>
+</div>
+      
+    </div>
+  
+  
+</div>
+</div>
+              
+              
+              
+                
+<div id="searchbox"></div>
+                <article class="bd-article">
+                  
+  <h1>Source code for site_example</h1><div class="highlight"><pre>
+<span></span><span class="sd">&quot;&quot;&quot;Example / template site module for pyOMA-Monitoring.</span>
+
+<span class="sd">Copy this file, rename it ``site_&lt;yoursite&gt;.py``, and fill in every</span>
+<span class="sd">``raise NotImplementedError`` stub with your site-specific logic.  Import the</span>
+<span class="sd">finished module once (e.g. at the top of ``daily.py``) to register and activate</span>
+<span class="sd">your site in the monitoring engine::</span>
+
+<span class="sd">    import site_mysite  # registers on import</span>
+
+<span class="sd">All engine functions in ``monitoring.py`` will then use your callbacks</span>
+<span class="sd">automatically.</span>
+<span class="sd">&quot;&quot;&quot;</span>
+
+<span class="kn">import</span><span class="w"> </span><span class="nn">logging</span>
+<span class="kn">import</span><span class="w"> </span><span class="nn">os</span>
+<span class="kn">from</span><span class="w"> </span><span class="nn">typing</span><span class="w"> </span><span class="kn">import</span> <span class="n">Dict</span><span class="p">,</span> <span class="n">List</span><span class="p">,</span> <span class="n">Optional</span><span class="p">,</span> <span class="n">Tuple</span>
+
+<span class="kn">import</span><span class="w"> </span><span class="nn">numpy</span><span class="w"> </span><span class="k">as</span><span class="w"> </span><span class="nn">np</span>
+<span class="kn">import</span><span class="w"> </span><span class="nn">pandas</span><span class="w"> </span><span class="k">as</span><span class="w"> </span><span class="nn">pd</span>
+
+<span class="n">logger</span> <span class="o">=</span> <span class="n">logging</span><span class="o">.</span><span class="n">getLogger</span><span class="p">(</span><span class="vm">__name__</span><span class="p">)</span>
+
+<span class="c1"># ---------------------------------------------------------------------------</span>
+<span class="c1"># Site configuration — replace every placeholder string / dict with real values</span>
+<span class="c1"># ---------------------------------------------------------------------------</span>
+
+<span class="c1">#: Absolute path to the root directory that holds the result databases</span>
+<span class="c1">#: (``file_info_*.nc``, ``stats_*.nc``, ``modal_*.nc``).</span>
+<span class="n">EXAMPLE_DB_ROOT_PATH</span><span class="p">:</span> <span class="nb">str</span> <span class="o">=</span> <span class="s2">&quot;/path/to/results/db/&quot;</span>
+
+<span class="c1">#: Absolute path to the root directory used for pre-processed signal slices.</span>
+<span class="n">EXAMPLE_SLICE_ROOT_PATH</span><span class="p">:</span> <span class="nb">str</span> <span class="o">=</span> <span class="s2">&quot;/path/to/slices/&quot;</span>
+
+<span class="c1">#: Absolute path to the directory that contains the OMA configuration files</span>
+<span class="c1">#: (``nodes``, ``lines``, ``master_slaves``, ``ssi_config``, …).</span>
+<span class="n">EXAMPLE_MODAL_CONF_DIR</span><span class="p">:</span> <span class="nb">str</span> <span class="o">=</span> <span class="s2">&quot;/path/to/modal_conf/&quot;</span>
+
+<span class="c1">#: Absolute path to the root directory that holds the raw measurement files.</span>
+<span class="n">EXAMPLE_FILE_ROOT_PATH</span><span class="p">:</span> <span class="nb">str</span> <span class="o">=</span> <span class="s2">&quot;/path/to/raw_data/&quot;</span>
+
+<span class="c1">#: Map *quantity* → *origin tag*.  The origin tag is the key used in</span>
+<span class="c1">#: :attr:`subpaths`, :attr:`all_channels`, and :attr:`dtstarts`.</span>
+<span class="c1">#: Add one entry per measured quantity.</span>
+<span class="c1">#:</span>
+<span class="c1">#: Example::</span>
+<span class="c1">#:</span>
+<span class="c1">#:     EXAMPLE_ORIGINS = {</span>
+<span class="c1">#:         &quot;accel&quot;: &quot;accel&quot;,</span>
+<span class="c1">#:         &quot;wind&quot;:  &quot;wind&quot;,</span>
+<span class="c1">#:     }</span>
+<span class="n">EXAMPLE_ORIGINS</span><span class="p">:</span> <span class="n">Dict</span><span class="p">[</span><span class="nb">str</span><span class="p">,</span> <span class="nb">str</span><span class="p">]</span> <span class="o">=</span> <span class="p">{</span>
+    <span class="s2">&quot;accel&quot;</span><span class="p">:</span> <span class="s2">&quot;accel&quot;</span><span class="p">,</span>
+    <span class="c1"># add more quantities here</span>
+<span class="p">}</span>
+
+<span class="c1">#: Map *origin tag* → relative sub-path under :data:`EXAMPLE_FILE_ROOT_PATH`.</span>
+<span class="n">EXAMPLE_SUBPATHS</span><span class="p">:</span> <span class="n">Dict</span><span class="p">[</span><span class="nb">str</span><span class="p">,</span> <span class="nb">str</span><span class="p">]</span> <span class="o">=</span> <span class="p">{</span>
+    <span class="s2">&quot;accel&quot;</span><span class="p">:</span> <span class="s2">&quot;accel/&quot;</span><span class="p">,</span>
+    <span class="c1"># add more origins here</span>
+<span class="p">}</span>
+
+<span class="c1">#: Map *quantity* → list of channel names that *must* be present in every slice.</span>
+<span class="n">EXAMPLE_ALL_CHANNELS</span><span class="p">:</span> <span class="n">Dict</span><span class="p">[</span><span class="nb">str</span><span class="p">,</span> <span class="n">List</span><span class="p">[</span><span class="nb">str</span><span class="p">]]</span> <span class="o">=</span> <span class="p">{</span>
+    <span class="s2">&quot;accel&quot;</span><span class="p">:</span> <span class="p">[</span><span class="s2">&quot;Accel_01&quot;</span><span class="p">,</span> <span class="s2">&quot;Accel_02&quot;</span><span class="p">],</span>
+    <span class="c1"># add more quantities here</span>
+<span class="p">}</span>
+
+<span class="c1">#: Map *quantity* → list of channel names that *may* be present (not required).</span>
+<span class="n">EXAMPLE_OPTIONAL_CHANNELS</span><span class="p">:</span> <span class="n">Dict</span><span class="p">[</span><span class="nb">str</span><span class="p">,</span> <span class="n">List</span><span class="p">[</span><span class="nb">str</span><span class="p">]]</span> <span class="o">=</span> <span class="p">{</span>
+    <span class="s2">&quot;accel&quot;</span><span class="p">:</span> <span class="p">[],</span>
+    <span class="c1"># add more quantities here</span>
+<span class="p">}</span>
+
+<span class="c1">#: Map *origin tag* → earliest available datetime (ISO string or</span>
+<span class="c1">#: ``datetime.datetime``).  Slices before this timestamp are skipped.</span>
+<span class="n">EXAMPLE_DTSTARTS</span><span class="p">:</span> <span class="n">Dict</span><span class="p">[</span><span class="nb">str</span><span class="p">,</span> <span class="nb">object</span><span class="p">]</span> <span class="o">=</span> <span class="p">{</span>
+    <span class="s2">&quot;accel&quot;</span><span class="p">:</span> <span class="s2">&quot;2020-01-01&quot;</span><span class="p">,</span>
+    <span class="c1"># add more origins here</span>
+<span class="p">}</span>
+
+<span class="c1">#: Map *channel name* → ``(min, max)`` plausibility range.  Samples outside</span>
+<span class="c1">#: this interval cause the affected time slice to be flagged as erroneous.</span>
+<span class="n">EXAMPLE_RANGES</span><span class="p">:</span> <span class="n">Dict</span><span class="p">[</span><span class="nb">str</span><span class="p">,</span> <span class="n">Tuple</span><span class="p">[</span><span class="nb">float</span><span class="p">,</span> <span class="nb">float</span><span class="p">]]</span> <span class="o">=</span> <span class="p">{</span>
+    <span class="s2">&quot;Accel_01&quot;</span><span class="p">:</span> <span class="p">(</span><span class="o">-</span><span class="mf">20.0</span><span class="p">,</span> <span class="mf">20.0</span><span class="p">),</span>
+    <span class="c1"># add more channels here</span>
+<span class="p">}</span>
+
+<span class="c1"># ---------------------------------------------------------------------------</span>
+<span class="c1"># Error rules</span>
+<span class="c1"># ---------------------------------------------------------------------------</span>
+
+<span class="c1">#: Map *quantity* → dict of kurtosis thresholds used by ``describe_stats``.</span>
+<span class="c1">#: Slices whose kurtosis falls outside ``[kurtosis_min, kurtosis_max]`` are</span>
+<span class="c1">#: flagged as erroneous.  Omit a quantity to apply no kurtosis check.</span>
+<span class="n">EXAMPLE_ERROR_RULES</span><span class="p">:</span> <span class="n">Dict</span><span class="p">[</span><span class="nb">str</span><span class="p">,</span> <span class="nb">dict</span><span class="p">]</span> <span class="o">=</span> <span class="p">{</span>
+    <span class="s2">&quot;accel&quot;</span><span class="p">:</span> <span class="p">{</span><span class="s2">&quot;kurtosis_max&quot;</span><span class="p">:</span> <span class="mi">5</span><span class="p">,</span> <span class="s2">&quot;kurtosis_min&quot;</span><span class="p">:</span> <span class="o">-</span><span class="mi">2</span><span class="p">},</span>
+<span class="p">}</span>
+
+<span class="c1"># ---------------------------------------------------------------------------</span>
+<span class="c1"># Modal frequency bands</span>
+<span class="c1"># ---------------------------------------------------------------------------</span>
+
+<span class="c1">#: List of ``(f_lo, f_hi)`` Hz bands passed to ``split_modepairs`` when</span>
+<span class="c1">#: assigning poles to named modes.  Add one tuple per expected mode.</span>
+<span class="n">EXAMPLE_MODAL_BANDS</span><span class="p">:</span> <span class="n">List</span><span class="p">[</span><span class="n">Tuple</span><span class="p">[</span><span class="nb">float</span><span class="p">,</span> <span class="nb">float</span><span class="p">]]</span> <span class="o">=</span> <span class="p">[</span>
+    <span class="p">(</span><span class="mf">0.5</span><span class="p">,</span> <span class="mf">1.0</span><span class="p">),</span>
+    <span class="c1"># add more bands here</span>
+<span class="p">]</span>
+
+<span class="c1"># ---------------------------------------------------------------------------</span>
+<span class="c1"># Pre-processing channel selection</span>
+<span class="c1"># ---------------------------------------------------------------------------</span>
+
+<span class="c1">#: Map *quantity* → list of channel names kept after the band-pass /</span>
+<span class="c1">#: decimation pre-processing step.  Only relevant for quantities that go</span>
+<span class="c1">#: through OMA (typically ``&quot;accel&quot;`` and strain-type quantities).</span>
+<span class="n">EXAMPLE_PREPROC_CHANNELS</span><span class="p">:</span> <span class="n">Dict</span><span class="p">[</span><span class="nb">str</span><span class="p">,</span> <span class="n">List</span><span class="p">[</span><span class="nb">str</span><span class="p">]]</span> <span class="o">=</span> <span class="p">{</span>
+    <span class="s2">&quot;accel&quot;</span><span class="p">:</span> <span class="p">[</span><span class="s2">&quot;Accel_01&quot;</span><span class="p">,</span> <span class="s2">&quot;Accel_02&quot;</span><span class="p">],</span>
+    <span class="c1"># add more quantities here</span>
+<span class="p">}</span>
+
+<span class="c1"># ---------------------------------------------------------------------------</span>
+<span class="c1"># Transform callbacks</span>
+<span class="c1"># ---------------------------------------------------------------------------</span>
+
+<span class="k">def</span><span class="w"> </span><span class="nf">_example_accel_transform</span><span class="p">(</span>
+    <span class="n">start_time</span><span class="p">,</span>
+    <span class="n">headers</span><span class="p">:</span> <span class="n">List</span><span class="p">[</span><span class="nb">str</span><span class="p">],</span>
+    <span class="n">units</span><span class="p">:</span> <span class="n">List</span><span class="p">[</span><span class="nb">str</span><span class="p">],</span>
+    <span class="n">end_time</span><span class="p">,</span>
+    <span class="n">sample_rate</span><span class="p">:</span> <span class="nb">float</span><span class="p">,</span>
+    <span class="n">measurement</span><span class="p">:</span> <span class="n">np</span><span class="o">.</span><span class="n">ndarray</span><span class="p">,</span>
+    <span class="n">quantity</span><span class="p">:</span> <span class="n">Optional</span><span class="p">[</span><span class="nb">str</span><span class="p">]</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
+    <span class="o">**</span><span class="n">kwargs</span><span class="p">,</span>
+<span class="p">):</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;Apply site-specific post-processing to a raw acceleration slice.</span>
+
+<span class="sd">    The function receives a *Slice* — a 6-tuple produced by</span>
+<span class="sd">    ``monitoring.get_slice`` — and must return a (possibly modified) *Slice*</span>
+<span class="sd">    of the same shape, or ``None`` to discard the slice entirely.</span>
+
+<span class="sd">    Parameters</span>
+<span class="sd">    ----------</span>
+<span class="sd">    start_time:</span>
+<span class="sd">        Timezone-aware ``datetime`` of the first sample.</span>
+<span class="sd">    headers:</span>
+<span class="sd">        List of channel names, length ``N``.</span>
+<span class="sd">    units:</span>
+<span class="sd">        List of unit strings, length ``N``.</span>
+<span class="sd">    end_time:</span>
+<span class="sd">        Timezone-aware ``datetime`` of the last sample.</span>
+<span class="sd">    sample_rate:</span>
+<span class="sd">        Samples per second.</span>
+<span class="sd">    measurement:</span>
+<span class="sd">        2-D NumPy array of shape ``(T, N)``.</span>
+<span class="sd">    quantity:</span>
+<span class="sd">        The quantity key (e.g. ``&quot;accel&quot;``), injected by the engine.</span>
+<span class="sd">    **kwargs:</span>
+<span class="sd">        Additional keyword arguments passed through from the engine (e.g.</span>
+<span class="sd">        ``start_time_local``, ``duration``, ``file_info_temp``).</span>
+
+<span class="sd">    Returns</span>
+<span class="sd">    -------</span>
+<span class="sd">    tuple | None</span>
+<span class="sd">        Modified ``(start_time, headers, units, end_time, sample_rate,</span>
+<span class="sd">        measurement)`` 6-tuple, or ``None`` to drop the slice.</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+    <span class="k">raise</span> <span class="ne">NotImplementedError</span><span class="p">(</span><span class="s2">&quot;Implement site-specific acceleration transform here&quot;</span><span class="p">)</span>
+
+
+<span class="c1"># ---------------------------------------------------------------------------</span>
+<span class="c1"># setup_prep callbacks</span>
+<span class="c1"># ---------------------------------------------------------------------------</span>
+
+<span class="k">def</span><span class="w"> </span><span class="nf">_example_setup_accel</span><span class="p">(</span><span class="n">headers</span><span class="p">:</span> <span class="n">List</span><span class="p">[</span><span class="nb">str</span><span class="p">]):</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;Return the OMA channel-role mapping for acceleration data.</span>
+
+<span class="sd">    Called once per modal-analysis slice, immediately before constructing a</span>
+<span class="sd">    ``PreProcessSignals`` object.</span>
+
+<span class="sd">    Parameters</span>
+<span class="sd">    ----------</span>
+<span class="sd">    headers:</span>
+<span class="sd">        Ordered list of channel names present in the slice.</span>
+
+<span class="sd">    Returns</span>
+<span class="sd">    -------</span>
+<span class="sd">    ref_channels : list[int]</span>
+<span class="sd">        Indices into *headers* of the reference (roving-reference) channels.</span>
+<span class="sd">    accel_channels : list[int]</span>
+<span class="sd">        Indices of all acceleration channels.</span>
+<span class="sd">    disp_channels : list[int]</span>
+<span class="sd">        Indices of all displacement channels (empty if none).</span>
+<span class="sd">    chan_dofs_dict : dict[str, list]</span>
+<span class="sd">        Mapping *channel name* → ``[node_id, azimuth_deg, inclination_deg]``</span>
+<span class="sd">        used to assemble the ``channel_dofs`` file consumed by pyOMA.</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+    <span class="k">raise</span> <span class="ne">NotImplementedError</span><span class="p">(</span><span class="s2">&quot;Implement site-specific OMA channel mapping here&quot;</span><span class="p">)</span>
+
+
+<span class="c1"># ---------------------------------------------------------------------------</span>
+<span class="c1"># Synchronisation-era policy</span>
+<span class="c1"># ---------------------------------------------------------------------------</span>
+
+<span class="k">def</span><span class="w"> </span><span class="nf">_example_sync_policy</span><span class="p">(</span><span class="n">start_time</span><span class="p">,</span> <span class="n">file_time</span><span class="p">,</span> <span class="n">duration</span><span class="p">):</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;Return the synchronised start time for this recording.</span>
+
+<span class="sd">    The monitoring engine calls this for every file it reads.  The default</span>
+<span class="sd">    implementation simply returns *start_time* unchanged.  Override this</span>
+<span class="sd">    function when the DAQ clock differs from wall time in a known, era-dependent</span>
+<span class="sd">    way (e.g. the file&#39;s filesystem timestamp is more reliable than the embedded</span>
+<span class="sd">    timestamp during a specific period).</span>
+
+<span class="sd">    Parameters</span>
+<span class="sd">    ----------</span>
+<span class="sd">    start_time:</span>
+<span class="sd">        Timezone-aware start time embedded in the file header.</span>
+<span class="sd">    file_time:</span>
+<span class="sd">        Timezone-aware filesystem modification time of the file.</span>
+<span class="sd">    duration:</span>
+<span class="sd">        ``datetime.timedelta`` length of the recording.</span>
+
+<span class="sd">    Returns</span>
+<span class="sd">    -------</span>
+<span class="sd">    datetime.datetime</span>
+<span class="sd">        The corrected, timezone-aware start time to use as the time coordinate</span>
+<span class="sd">        in all databases.</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+    <span class="k">return</span> <span class="n">start_time</span>  <span class="c1"># default: trust the embedded timestamp</span>
+
+
+<span class="c1"># ---------------------------------------------------------------------------</span>
+<span class="c1"># File-list discovery</span>
+<span class="c1"># ---------------------------------------------------------------------------</span>
+
+<span class="k">def</span><span class="w"> </span><span class="nf">_example_get_file_list</span><span class="p">(</span>
+    <span class="n">origin</span><span class="p">:</span> <span class="nb">str</span><span class="p">,</span>
+    <span class="n">reduced</span><span class="p">:</span> <span class="nb">bool</span> <span class="o">=</span> <span class="kc">False</span><span class="p">,</span>
+    <span class="n">file_info</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span>
+<span class="p">)</span> <span class="o">-&gt;</span> <span class="n">List</span><span class="p">[</span><span class="nb">str</span><span class="p">]:</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;Return absolute paths of all data files for *origin*.</span>
+
+<span class="sd">    The engine calls this callback with ``reduced=True`` during incremental</span>
+<span class="sd">    updates (only new files) and with ``reduced=False`` for a full scan.</span>
+
+<span class="sd">    Parameters</span>
+<span class="sd">    ----------</span>
+<span class="sd">    origin:</span>
+<span class="sd">        Origin tag (a value from :data:`EXAMPLE_ORIGINS`).</span>
+<span class="sd">    reduced:</span>
+<span class="sd">        When ``True`` and *file_info* is provided, return only files not yet</span>
+<span class="sd">        present in *file_info*.</span>
+<span class="sd">    file_info:</span>
+<span class="sd">        ``xarray.Dataset`` of already-processed files (the current</span>
+<span class="sd">        ``file_info_&lt;origin&gt;.nc`` database).  May be ``None``.</span>
+
+<span class="sd">    Returns</span>
+<span class="sd">    -------</span>
+<span class="sd">    list[str]</span>
+<span class="sd">        Absolute file paths to process.</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+    <span class="k">raise</span> <span class="ne">NotImplementedError</span><span class="p">(</span><span class="s2">&quot;Implement site-specific file discovery here&quot;</span><span class="p">)</span>
+
+
+<span class="c1"># ---------------------------------------------------------------------------</span>
+<span class="c1"># Circular-mean helper (optional)</span>
+<span class="c1"># ---------------------------------------------------------------------------</span>
+
+<span class="k">def</span><span class="w"> </span><span class="nf">_example_channel_mean_fn</span><span class="p">(</span>
+    <span class="n">header</span><span class="p">:</span> <span class="nb">str</span><span class="p">,</span>
+    <span class="n">measurement</span><span class="p">:</span> <span class="n">np</span><span class="o">.</span><span class="n">ndarray</span><span class="p">,</span>
+    <span class="n">headers</span><span class="p">:</span> <span class="n">List</span><span class="p">[</span><span class="nb">str</span><span class="p">],</span>
+<span class="p">)</span> <span class="o">-&gt;</span> <span class="n">Optional</span><span class="p">[</span><span class="nb">float</span><span class="p">]:</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;Return a custom mean for *header*, or ``None`` to use the arithmetic mean.</span>
+
+<span class="sd">    Used by ``describe_stats`` when computing summary statistics.  Implement</span>
+<span class="sd">    this for directional channels (e.g. wind direction) where the arithmetic</span>
+<span class="sd">    mean is undefined.</span>
+
+<span class="sd">    Parameters</span>
+<span class="sd">    ----------</span>
+<span class="sd">    header:</span>
+<span class="sd">        Name of the channel whose mean is being computed.</span>
+<span class="sd">    measurement:</span>
+<span class="sd">        Full 2-D measurement array of shape ``(T, N)``.</span>
+<span class="sd">    headers:</span>
+<span class="sd">        List of all channel names, length ``N``.</span>
+
+<span class="sd">    Returns</span>
+<span class="sd">    -------</span>
+<span class="sd">    float | None</span>
+<span class="sd">        The custom mean value, or ``None`` to fall back to the arithmetic mean.</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+    <span class="k">return</span> <span class="kc">None</span>  <span class="c1"># default: use arithmetic mean for all channels</span>
+
+
+<span class="c1"># ---------------------------------------------------------------------------</span>
+<span class="c1"># Site registration</span>
+<span class="c1"># ---------------------------------------------------------------------------</span>
+
+<div class="viewcode-block" id="register_example_site">
+<a class="viewcode-back" href="../api_reference.html#site_example.register_example_site">[docs]</a>
+<span class="k">def</span><span class="w"> </span><span class="nf">register_example_site</span><span class="p">()</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;Register and activate the example site in the monitoring engine.</span>
+
+<span class="sd">    Called automatically when this module is imported.  Safe to call multiple</span>
+<span class="sd">    times — it simply overwrites the registry entry for ``&quot;example&quot;``.</span>
+
+<span class="sd">    Raises</span>
+<span class="sd">    ------</span>
+<span class="sd">    NotImplementedError</span>
+<span class="sd">        Any stub callback that has not been implemented yet will raise this</span>
+<span class="sd">        error at runtime when the engine first invokes it.</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+    <span class="kn">import</span><span class="w"> </span><span class="nn">monitoring</span><span class="w"> </span><span class="k">as</span><span class="w"> </span><span class="nn">_m</span>  <span class="c1"># late import avoids circular dependency at load time</span>
+
+    <span class="n">example_site</span> <span class="o">=</span> <span class="n">_m</span><span class="o">.</span><span class="n">Site</span><span class="p">(</span>
+        <span class="n">name</span><span class="o">=</span><span class="s2">&quot;example&quot;</span><span class="p">,</span>
+        <span class="c1"># --- processing callbacks ---</span>
+        <span class="n">transforms</span><span class="o">=</span><span class="p">{</span>
+            <span class="s2">&quot;accel&quot;</span><span class="p">:</span> <span class="n">_example_accel_transform</span><span class="p">,</span>
+            <span class="c1"># add more quantities here; omit a quantity for no-op processing</span>
+        <span class="p">},</span>
+        <span class="n">setup_prep</span><span class="o">=</span><span class="p">{</span>
+            <span class="s2">&quot;accel&quot;</span><span class="p">:</span> <span class="n">_example_setup_accel</span><span class="p">,</span>
+            <span class="c1"># add more quantities here</span>
+        <span class="p">},</span>
+        <span class="n">error_rules</span><span class="o">=</span><span class="n">EXAMPLE_ERROR_RULES</span><span class="p">,</span>
+        <span class="n">sync_policy</span><span class="o">=</span><span class="n">_example_sync_policy</span><span class="p">,</span>
+        <span class="n">modal_bands</span><span class="o">=</span><span class="n">EXAMPLE_MODAL_BANDS</span><span class="p">,</span>
+        <span class="n">file_list_fn</span><span class="o">=</span><span class="n">_example_get_file_list</span><span class="p">,</span>
+        <span class="n">channel_mean_fn</span><span class="o">=</span><span class="n">_example_channel_mean_fn</span><span class="p">,</span>
+        <span class="n">preproc_channels</span><span class="o">=</span><span class="n">EXAMPLE_PREPROC_CHANNELS</span><span class="p">,</span>
+        <span class="c1"># --- site configuration ---</span>
+        <span class="n">db_root_path</span><span class="o">=</span><span class="n">EXAMPLE_DB_ROOT_PATH</span><span class="p">,</span>
+        <span class="n">slice_root_path</span><span class="o">=</span><span class="n">EXAMPLE_SLICE_ROOT_PATH</span><span class="p">,</span>
+        <span class="n">modal_conf_dir</span><span class="o">=</span><span class="n">EXAMPLE_MODAL_CONF_DIR</span><span class="p">,</span>
+        <span class="n">file_root_path</span><span class="o">=</span><span class="n">EXAMPLE_FILE_ROOT_PATH</span><span class="p">,</span>
+        <span class="n">origins</span><span class="o">=</span><span class="n">EXAMPLE_ORIGINS</span><span class="p">,</span>
+        <span class="n">subpaths</span><span class="o">=</span><span class="n">EXAMPLE_SUBPATHS</span><span class="p">,</span>
+        <span class="n">all_channels</span><span class="o">=</span><span class="n">EXAMPLE_ALL_CHANNELS</span><span class="p">,</span>
+        <span class="n">optional_channels</span><span class="o">=</span><span class="n">EXAMPLE_OPTIONAL_CHANNELS</span><span class="p">,</span>
+        <span class="n">dtstarts</span><span class="o">=</span><span class="n">EXAMPLE_DTSTARTS</span><span class="p">,</span>
+        <span class="n">ranges</span><span class="o">=</span><span class="n">EXAMPLE_RANGES</span><span class="p">,</span>
+    <span class="p">)</span>
+
+    <span class="n">_m</span><span class="o">.</span><span class="n">register_site</span><span class="p">(</span><span class="n">example_site</span><span class="p">)</span>
+    <span class="n">_m</span><span class="o">.</span><span class="n">set_active_site</span><span class="p">(</span><span class="n">example_site</span><span class="p">)</span></div>
+
+
+
+<span class="n">register_example_site</span><span class="p">()</span>
+</pre></div>
+
+                </article>
+              
+              
+              
+              
+              
+                <footer class="prev-next-footer d-print-none">
+                  
+<div class="prev-next-area">
+</div>
+                </footer>
+              
+            </div>
+            
+            
+              
+            
+          </div>
+          <footer class="bd-footer-content">
+            
+          </footer>
+        
+      </main>
+    </div>
+  </div>
+  
+  <!-- Scripts loaded after <body> so the DOM is not blocked -->
+  <script defer src="../_static/scripts/bootstrap.js?digest=a95f357e85573c9b56d5"></script>
+<script defer src="../_static/scripts/pydata-sphinx-theme.js?digest=a95f357e85573c9b56d5"></script>
+
+  <footer class="bd-footer">
+<div class="bd-footer__inner bd-page-width">
+  
+    <div class="footer-items__start">
+      
+        <div class="footer-item">
+
+  <p class="copyright">
+    
+      © Copyright 2024-2025, Simon Marwitz, Volkmar Zabel.
+      <br/>
+    
+  </p>
+</div>
+      
+        <div class="footer-item">
+
+  <p class="sphinx-version">
+    Created using <a href="https://www.sphinx-doc.org/">Sphinx</a> 8.2.3.
+    <br/>
+  </p>
+</div>
+      
+    </div>
+  
+  
+  
+    <div class="footer-items__end">
+      
+        <div class="footer-item">
+<p class="theme-version">
+  <!-- # L10n: Setting the PST URL as an argument as this does not need to be localized -->
+  Built with the <a href="https://pydata-sphinx-theme.readthedocs.io/en/stable/index.html">PyData Sphinx Theme</a> 0.19.0.
+</p></div>
+      
+    </div>
+  
+</div>
+
+  </footer>
+  </body>
+</html>

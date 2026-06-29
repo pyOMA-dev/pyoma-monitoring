@@ -8,19 +8,54 @@ metadata (channel names, units, sample rate, start timestamp).
 Version 0.1 — Bauhaus-Universität Weimar, Institute of Structural Mechanics.
 """
 import datetime
-import pytz
-import os
-import sys
 import logging
-logger = logging.getLogger(__name__)
-logger.setLevel(logging.INFO)
+import os
 import struct
+import sys
+import warnings
+
 import numpy as np
 import pandas as pd
-import warnings
+import pytz
+
+logger = logging.getLogger(__name__)
+logger.setLevel(logging.INFO)
 
 
 def getDataTypeChar( dActTimeDataType ):
+    """Map a UDBF data-type integer to its NumPy format character and byte size.
+
+    Parameters
+    ----------
+    dActTimeDataType : int
+        UDBF data-type code as defined in the Q.station firmware specification:
+
+        ============  ========  ======
+        Code          Type      Bytes
+        ============  ========  ======
+        2             int8      1
+        3             uint8     1
+        4             int16     2
+        5             uint16    2
+        6             int32     4
+        7             uint32    4
+        8             float32   4
+        12            float64   8
+        14            uint64    8
+        ============  ========  ======
+
+    Returns
+    -------
+    type_char : str
+        Single-character ``struct`` format string (e.g. ``'f'`` for float32).
+    type_size : int
+        Byte size of the type.
+
+    Raises
+    ------
+    SystemExit
+        When *dActTimeDataType* is not in the supported type map.
+    """
     ######################################################################################
     # Begin Function definitions
     ######################################################################################
@@ -91,6 +126,35 @@ def getDataTypeChar( dActTimeDataType ):
         return (thisDataTypeChar,thisDataTypeSize)
 
 def read_csv(inFileName, path):
+    """Read a Gantner CSV export file and return channel time-series data.
+
+    The CSV format uses a tab delimiter with two header rows (channel names
+    and units) and a comma decimal separator.  The recording start time is
+    parsed from the filename (format: ``*_<date>_<time>_<msec>.csv``).
+
+    Parameters
+    ----------
+    inFileName : str or file-like
+        Path to the CSV file, or an open ``bz2.BZ2File`` wrapping it.
+    path : str
+        Original file path string, used to extract the start timestamp from
+        the filename (must follow the ``*_YYYY-MM-DD_HH-MM-SS_uuuuuu.csv``
+        naming convention).
+
+    Returns
+    -------
+    headers : list of str
+        Channel names from the first header row.
+    units : list of str
+        Unit strings from the second header row.
+    start_time : datetime.datetime
+        UTC-aware recording start timestamp parsed from the filename.
+    sample_rate : float
+        Sample rate inferred from the path (20 Hz for temperature, 100 Hz
+        for wind); 0 when the quantity cannot be determined.
+    measurement : numpy.ndarray
+        Data matrix of shape ``(n_samples, n_channels)``.
+    """
     if isinstance(inFileName, str):
         fd = open( inFileName , 'rb')
     else:
@@ -120,6 +184,34 @@ def read_csv(inFileName, path):
     return headers, units, pytz.utc.localize(start_time), sample_rate, measurement
 
 def read_bin(InFileName):
+    """Read a Gantner UDBF binary file and return channel time-series data.
+
+    Parses the Universal Data Binary Format (UDBF) header to extract channel
+    names, units, sample rate, and the absolute start timestamp, then reads
+    all data samples into a single NumPy array.  Both raw ``.dat`` file paths
+    and open ``bz2.BZ2File`` objects are accepted.
+
+    Parameters
+    ----------
+    InFileName : str or file-like
+        Path to the ``.dat`` binary file, or an already-opened ``bz2.BZ2File``
+        wrapping it.
+
+    Returns
+    -------
+    Names : list of str
+        Channel names (first entry is always ``'Time'``).
+    Units : list of str
+        Unit strings corresponding to each channel (first entry ``'s'``).
+    start_time : datetime.datetime
+        UTC-aware recording start timestamp computed from the UDBF
+        ``StartTime`` field.
+    SampleRate : float
+        Recording sample rate in Hz.
+    dataValues : numpy.ndarray, shape (n_samples, n_channels + 1)
+        All channel data including the time column (column 0) in seconds
+        relative to ``start_time``.
+    """
     if isinstance(InFileName, str):
         fd = open( InFileName , 'rb')
     else:
@@ -188,12 +280,12 @@ def read_bin(InFileName):
     for i in range(VariableCount) :
         # read Name
         NameStr=u""
-        NameLen=struct.unpack(BigEndianFlag+"h",fd.read(2))[0];
+        NameLen=struct.unpack(BigEndianFlag+"h",fd.read(2))[0]
         Name=fd.read(NameLen)
         NameStr=Name[:-1].decode()
         #NameStr=Name.decode('cp1252').encode('utf-8')[:-1]
         #for i in Name.decode('cp1252').encode('utf-8')[:-1]:
-        #    NameStr+=i;
+        #    NameStr+=i
         #print NameStr
         
         Names.append(NameStr)
@@ -227,7 +319,7 @@ def read_bin(InFileName):
         # read Unit
         if( version < 106):
             sys.exit("Unit: NotSupported version of datafile!!")
-        UnitLen=struct.unpack(BigEndianFlag+"h",fd.read(2))[0];
+        UnitLen=struct.unpack(BigEndianFlag+"h",fd.read(2))[0]
         Unit=fd.read(UnitLen)
 
         #UnitStr=Unit.decode('cp1252').encode('utf-8')[:-1]
@@ -244,26 +336,26 @@ def read_bin(InFileName):
     #check if it's a star
     while 1:
         
-        currentFilePosition = fd.tell();
-        char = struct.unpack(BigEndianFlag+"c",fd.read(1))[0];
+        currentFilePosition = fd.tell()
+        char = struct.unpack(BigEndianFlag+"c",fd.read(1))[0]
         try:
             char=char.decode()
         except Exception:
-            fd.seek(currentFilePosition, 0);
+            fd.seek(currentFilePosition, 0)
             break
         if not char == '*':
-            fd.seek(currentFilePosition, 0);
+            fd.seek(currentFilePosition, 0)
             break
 
 
     
-    TimeDataType=getDataTypeChar(dActTimeDataType);
+    TimeDataType=getDataTypeChar(dActTimeDataType)
     
     DataTypeChars=[]
     DataTypeSize=[]
     for i in range(VariableCount):
-        DataTypeChars.append(getDataTypeChar(DataTypes[i])[0]);
-        DataTypeSize.append(getDataTypeChar(DataTypes[i])[1]);
+        DataTypeChars.append(getDataTypeChar(DataTypes[i])[0])
+        DataTypeSize.append(getDataTypeChar(DataTypes[i])[1])
 
     
     ######## Starttime #################
@@ -301,6 +393,7 @@ def read_bin(InFileName):
     
 
 def main():
+    """Standalone smoke test: read a hard-coded ``.dat.bz2`` file and print the result."""
     path='/home/towermonitoring/towerdata/Wind_kontinuierlich__9_2017-05-03_00-00-00_000000.dat.bz2'
     #path='/vegas/scratch/womo1998/towerdata/towerdata_bin/Wind_kontinuierlich__9_2017-03-07_23-00-00_000000.dat.bz2'
     #path ='/vegas/scratch/womo1998/towerdata/towerdata_bin/Temp_konti__0_2017-01-01_00-00-00_000000.dat.bz2'

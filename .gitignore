@@ -42,3 +42,5 @@ PYOMA_MONITORING_REFACTOR_BRIEFING.md
 .gitignore
 .ipynb_checkpoints/Untitled-checkpoint.ipynb
 Untitled.ipynb
+agent-checkpoint.json
+PYOMA_MONITORING_DOCS_BRIEFING.md
