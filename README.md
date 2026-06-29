@@ -74,7 +74,9 @@ write a new `site_<name>.py` and import it instead.
 ## Installation
 
 ```bash
-pip install -r requirements.txt
+git clone https://github.com/pyOMA-dev/pyOMA-Monitoring.git
+cd pyOMA-Monitoring
+pip install -e .
 ```
 
 `pyOMA` is not on PyPI — install it directly from GitHub:
