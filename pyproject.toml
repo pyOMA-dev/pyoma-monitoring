@@ -24,7 +24,6 @@ classifiers = [
     "Programming Language :: Python :: 3.11",
     "Programming Language :: Python :: 3.12",
     "Programming Language :: Python :: 3.13",
-    "Programming Language :: Python :: 3.14",
     "Topic :: Scientific/Engineering",
     "Topic :: Scientific/Engineering :: Physics",
 ]
@@ -43,9 +42,16 @@ dependencies = [
     "netcdf4",
     "h5py",
     "pyyaml",
+    "pyOMA @ git+https://github.com/pyOMA-dev/pyOMA.git",
 ]
-optional-dependencies = [
-    "pyOMA",
+
+[project.optional-dependencies]
+docs = [
+    "sphinx",
+    "pydata-sphinx-theme",
+    "myst-nb",
+    "sphinx-copybutton",
 ]
+
 [tool.setuptools]
 py-modules = ["monitoring", "daily", "config", "gantner_reader", "fbg_strain_reader", "post_processing", "time_convention", "site_tower", "site_example", "MultiLock"]
