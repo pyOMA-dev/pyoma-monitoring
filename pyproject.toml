@@ -42,8 +42,10 @@ dependencies = [
     "h5netcdf",
     "netcdf4",
     "h5py",
-    "pyOMA",
     "pyyaml",
+]
+optional-dependencies = [
+    "pyOMA",
 ]
 [tool.setuptools]
 py-modules = ["monitoring", "daily", "config", "gantner_reader", "fbg_strain_reader", "post_processing", "time_convention", "site_tower", "site_example", "MultiLock"]
