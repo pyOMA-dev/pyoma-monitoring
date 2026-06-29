@@ -49,7 +49,10 @@ docs = [
     "sphinx",
     "pydata-sphinx-theme",
     "myst-nb",
-    "sphinx-copybutton",
+    "sphinx-copybutton",    
+    "sphinxcontrib-blockdiag",
+    "sphinx-collections",
+    "autoclasstoc",
 ]
 
 [tool.setuptools]
